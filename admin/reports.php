@@ -347,7 +347,7 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                     <h2 class="section-title">📊 Requests by Status</h2>
                     <div class="chart-container">
                         <?php 
-                        $max_count = max(array_column($by_status, 'Count'));
+                        $max_count = !empty($by_status) ? max(array_column($by_status, 'Count')) : 0;
                         foreach ($by_status as $item): 
                             $percentage = $max_count > 0 ? ($item['Count'] / $max_count) * 100 : 0;
                         ?>
@@ -360,6 +360,9 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        <?php if (empty($by_status)): ?>
+                            <p style="text-align: center; color: #64748b; padding: 2rem;">No data available for the selected date range.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -368,7 +371,7 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                     <h2 class="section-title">⚡ Requests by Priority</h2>
                     <div class="chart-container">
                         <?php 
-                        $max_count = max(array_column($by_priority, 'Count'));
+                        $max_count = !empty($by_priority) ? max(array_column($by_priority, 'Count')) : 0;
                         foreach ($by_priority as $item): 
                             $percentage = $max_count > 0 ? ($item['Count'] / $max_count) * 100 : 0;
                         ?>
@@ -381,6 +384,9 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        <?php if (empty($by_priority)): ?>
+                            <p style="text-align: center; color: #64748b; padding: 2rem;">No data available for the selected date range.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
