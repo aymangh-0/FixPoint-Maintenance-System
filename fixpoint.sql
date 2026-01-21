@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 21, 2026 at 07:02 PM
+-- Generation Time: Jan 21, 2026 at 11:17 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -33,8 +33,16 @@ CREATE TABLE `assignment` (
   `TechnicianID` int(11) NOT NULL,
   `AdminID` int(11) NOT NULL,
   `AssignedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `StartedAt` timestamp NULL DEFAULT NULL,
   `CompletedAt` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `assignment`
+--
+
+INSERT INTO `assignment` (`AssignmentID`, `RequestID`, `TechnicianID`, `AdminID`, `AssignedAt`, `StartedAt`, `CompletedAt`) VALUES
+(1, 1, 2, 1, '2026-01-21 20:02:37', '2026-01-21 20:03:14', '2026-01-21 20:03:24');
 
 -- --------------------------------------------------------
 
@@ -76,6 +84,13 @@ CREATE TABLE `feedback` (
   `Comment` text DEFAULT NULL,
   `SubmittedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `feedback`
+--
+
+INSERT INTO `feedback` (`FeedbackID`, `RequestID`, `UserID`, `Rating`, `Comment`, `SubmittedAt`) VALUES
+(1, 1, 4, 5, '', '2026-01-21 20:04:55');
 
 -- --------------------------------------------------------
 
@@ -124,6 +139,13 @@ CREATE TABLE `maintenancerequest` (
   `CompletedAt` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `maintenancerequest`
+--
+
+INSERT INTO `maintenancerequest` (`RequestID`, `UserID`, `LocationID`, `CategoryID`, `PriorityID`, `StatusID`, `Title`, `Description`, `SubmittedAt`, `UpdatedAt`, `CompletedAt`) VALUES
+(1, 4, 6, 1, 3, 5, 'Broken AC', 'not working', '2026-01-21 19:47:19', '2026-01-21 20:03:24', '2026-01-21 20:03:24');
+
 -- --------------------------------------------------------
 
 --
@@ -138,6 +160,18 @@ CREATE TABLE `notification` (
   `IsRead` tinyint(1) DEFAULT 0,
   `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `notification`
+--
+
+INSERT INTO `notification` (`NotificationID`, `UserID`, `RequestID`, `Message`, `IsRead`, `CreatedAt`) VALUES
+(1, 1, 1, 'New maintenance request #1 submitted by Ayman Ahmed Alghamdi', 0, '2026-01-21 19:47:19'),
+(2, 4, 1, 'Your request #1 has been assigned to a technician', 0, '2026-01-21 20:02:37'),
+(3, 2, 1, 'New maintenance request #1 has been assigned to you', 0, '2026-01-21 20:02:37'),
+(4, 4, 1, 'Your request #1 is now being worked on by a technician', 0, '2026-01-21 20:03:14'),
+(5, 4, 1, 'Your request #1 has been completed! Please review and provide feedback.', 0, '2026-01-21 20:03:24'),
+(6, 1, 1, 'New feedback received for request #1 (5 stars)', 0, '2026-01-21 20:04:55');
 
 -- --------------------------------------------------------
 
@@ -173,6 +207,13 @@ CREATE TABLE `requestphoto` (
   `PhotoPath` varchar(255) NOT NULL,
   `UploadedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `requestphoto`
+--
+
+INSERT INTO `requestphoto` (`PhotoID`, `RequestID`, `PhotoPath`, `UploadedAt`) VALUES
+(1, 1, '../uploads/requests/request_1_1769024839.jpg', '2026-01-21 19:47:19');
 
 -- --------------------------------------------------------
 
@@ -234,6 +275,16 @@ CREATE TABLE `statushistory` (
   `ChangedBy` int(11) NOT NULL,
   `ChangedAt` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `statushistory`
+--
+
+INSERT INTO `statushistory` (`HistoryID`, `RequestID`, `OldStatusID`, `NewStatusID`, `ChangedBy`, `ChangedAt`) VALUES
+(1, 1, NULL, 1, 4, '2026-01-21 19:47:19'),
+(2, 1, 1, 3, 1, '2026-01-21 20:02:37'),
+(3, 1, 3, 4, 2, '2026-01-21 20:03:14'),
+(4, 1, 4, 5, 2, '2026-01-21 20:03:24');
 
 -- --------------------------------------------------------
 
@@ -381,7 +432,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `assignment`
 --
 ALTER TABLE `assignment`
-  MODIFY `AssignmentID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `AssignmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -393,7 +444,7 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `location`
@@ -405,13 +456,13 @@ ALTER TABLE `location`
 -- AUTO_INCREMENT for table `maintenancerequest`
 --
 ALTER TABLE `maintenancerequest`
-  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `NotificationID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `NotificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `priority`
@@ -423,7 +474,7 @@ ALTER TABLE `priority`
 -- AUTO_INCREMENT for table `requestphoto`
 --
 ALTER TABLE `requestphoto`
-  MODIFY `PhotoID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `PhotoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `role`
@@ -441,7 +492,7 @@ ALTER TABLE `status`
 -- AUTO_INCREMENT for table `statushistory`
 --
 ALTER TABLE `statushistory`
-  MODIFY `HistoryID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `HistoryID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `user`
