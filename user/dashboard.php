@@ -1,0 +1,206 @@
+<?php
+/**
+ * FixPoint - User Dashboard
+ * Dashboard for students and faculty to view their requests and submit new ones
+ */
+
+session_start();
+
+// Redirect if not logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php");
+    exit();
+}
+
+// Redirect if not a regular user (Student or Faculty)
+if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['role_id'] != 4)) {
+    header("Location: ../index.php");
+    exit();
+}
+
+require_once '../config/database.php';
+require_once '../config/helpers.php';
+
+// Get user information
+$user_id = $_SESSION['user_id'];
+$user_name = $_SESSION['name'];
+$user_email = $_SESSION['email'];
+
+// Get user request limits and stats
+$limit_info = checkRequestLimits($conn, $user_id);
+$stats = getUserRequestStats($conn, $user_id);
+
+// Get user's recent requests (last 10)
+$sql = "SELECT 
+            mr.RequestID,
+            mr.Title,
+            mr.Description,
+            mr.SubmittedAt,
+            l.BuildingName,
+            l.RoomNumber,
+            c.CategoryName,
+            p.PriorityLevel,
+            s.StatusName
+        FROM maintenancerequest mr
+        JOIN location l ON mr.LocationID = l.LocationID
+        JOIN category c ON mr.CategoryID = c.CategoryID
+        JOIN priority p ON mr.PriorityID = p.PriorityID
+        JOIN status s ON mr.StatusID = s.StatusID
+        WHERE mr.UserID = ?
+        ORDER BY mr.SubmittedAt DESC
+        LIMIT 10";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - FixPoint</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <span class="logo-icon">🔧</span>
+                    <span class="logo-text">FixPoint</span>
+                    <span class="logo-subtitle">SEU</span>
+                </div>
+                <nav class="nav-links">
+                    <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
+                    <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <div class="dashboard-container">
+            <!-- Dashboard Header / Welcome Message -->
+            <div class="dashboard-header">
+                <h1 class="welcome-text">Welcome back, <?php echo e(explode(' ', $user_name)[0]); ?>! 👋</h1>
+                <p class="user-info">
+                    <?php echo e($user_email); ?> | 
+                    <strong>User Dashboard</strong>
+                </p>
+            </div>
+
+            <!-- Request Limit Alert -->
+            <?php if (!$limit_info['can_submit']): ?>
+                <div class="limit-alert danger">
+                    ⚠️ <strong>Request Limit Reached:</strong> <?php echo e($limit_info['message']); ?>
+                </div>
+            <?php elseif ($limit_info['week_remaining'] <= 1 || $limit_info['month_remaining'] <= 2): ?>
+                <div class="limit-alert">
+                    💡 <strong>Reminder:</strong> <?php echo e($limit_info['message']); ?>
+                </div>
+            <?php else: ?>
+                <div class="limit-alert success">
+                    ✅ <?php echo e($limit_info['message']); ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">📊 Total Requests</div>
+                    <div class="stat-value"><?php echo $stats['Total']; ?></div>
+                    <div class="stat-info">All time submissions</div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-label">⏳ Pending</div>
+                    <div class="stat-value"><?php echo $stats['Pending']; ?></div>
+                    <div class="stat-info">Awaiting review</div>
+                </div>
+
+                <div class="stat-card info">
+                    <div class="stat-label">🔧 In Progress</div>
+                    <div class="stat-value"><?php echo $stats['In Progress']; ?></div>
+                    <div class="stat-info">Being worked on</div>
+                </div>
+
+                <div class="stat-card success">
+                    <div class="stat-label">✅ Completed</div>
+                    <div class="stat-value"><?php echo $stats['Completed']; ?></div>
+                    <div class="stat-info">Issues resolved</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2 class="quick-actions-title">Quick Actions</h2>
+                <div class="action-buttons">
+                    <a href="submit-request.php" class="btn btn-primary btn-large">
+                        ➕ Submit New Request
+                    </a>
+                    <a href="my-requests.php" class="btn btn-secondary btn-large">
+                        📋 View All My Requests
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Requests -->
+            <div class="requests-section">
+                <h2 class="section-title">Recent Requests</h2>
+                
+                <?php if (count($requests) > 0): ?>
+                    <div style="overflow-x: auto;">
+                        <table class="requests-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Location</th>
+                                    <th>Category</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($requests as $req): ?>
+                                    <tr>
+                                        <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
+                                        <td class="request-title"><?php echo e($req['Title']); ?></td>
+                                        <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
+                                        <td><?php echo e($req['CategoryName']); ?></td>
+                                        <td>
+                                            <span class="priority-badge <?php echo getPriorityBadgeClass($req['PriorityLevel']); ?>">
+                                                <?php echo e($req['PriorityLevel']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge <?php echo getStatusBadgeClass($req['StatusName']); ?>">
+                                                <?php echo e($req['StatusName']); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="no-requests">
+                        <div class="no-requests-icon">📭</div>
+                        <h3>No requests yet</h3>
+                        <p>Click "Submit New Request" to report your first maintenance issue.</p>
+                        <br>
+                        <a href="submit-request.php" class="btn btn-primary">Get Started</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

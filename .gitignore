@@ -1,0 +1,35 @@
+# Database Configuration (IMPORTANT - Don't upload passwords!)
+config/database.php
+
+# Uploaded Files
+uploads/
+uploads/*
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary Files
+*.tmp
+*.log
+*.cache
+
+# PHP
+vendor/
+composer.lock
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# Environment Variables
+.env 
