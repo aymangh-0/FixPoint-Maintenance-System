@@ -111,7 +111,7 @@ $history_stmt->execute();
 $history = $history_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Check if feedback already submitted
-$feedback_sql = "SELECT FeedbackID, Rating, Comment, CreatedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
+$feedback_sql = "SELECT FeedbackID, Rating, Comment, SubmittedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
 $feedback_stmt = $conn->prepare($feedback_sql);
 $feedback_stmt->bind_param("ii", $request_id, $user_id);
 $feedback_stmt->execute();
@@ -444,7 +444,7 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                         <?php endif; ?>
                         
                         <div style="color: #065f46; font-size: 0.875rem; margin-top: 1rem;">
-                            ✅ Feedback submitted on <?php echo formatDate($feedback['CreatedAt'], 'M d, Y - H:i'); ?>
+                            ✅ Feedback submitted on <?php echo formatDate($feedback['SubmittedAt'], 'M d, Y - H:i'); ?>
                         </div>
                     </div>
                 <?php else: ?>

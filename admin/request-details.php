@@ -233,7 +233,7 @@ $history_stmt->execute();
 $history = $history_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Get feedback if exists
-$feedback_sql = "SELECT f.Rating, f.Comment, f.CreatedAt, u.Name as UserName 
+$feedback_sql = "SELECT f.Rating, f.Comment, f.SubmittedAt, u.Name as UserName 
                  FROM feedback f
                  JOIN user u ON f.UserID = u.UserID
                  WHERE f.RequestID = ?";
@@ -668,7 +668,7 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                     
                     <div class="detail-row">
                         <div class="detail-label">Submitted On</div>
-                        <div class="detail-value"><?php echo formatDate($feedback['CreatedAt'], 'M d, Y - H:i'); ?></div>
+                        <div class="detail-value"><?php echo formatDate($feedback['SubmittedAt'], 'M d, Y - H:i'); ?></div>
                     </div>
                 </div>
             </div>

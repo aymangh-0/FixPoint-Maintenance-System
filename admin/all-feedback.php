@@ -1,7 +1,7 @@
 <?php
 /**
- * FixPoint - Submit Feedback
- * Allow users to rate and review completed maintenance requests
+ * FixPoint - All Feedback (Admin)
+ * View all user feedback and ratings
  */
 
 session_start();
@@ -12,8 +12,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Redirect if not a regular user (Student or Faculty)
-if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['role_id'] != 4)) {
+// Redirect if not admin
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
     header("Location: ../index.php");
     exit();
 }
@@ -21,94 +21,65 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['rol
 require_once '../config/database.php';
 require_once '../config/helpers.php';
 
-$user_id = $_SESSION['user_id'];
-$request_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$error = '';
-$success = '';
+// Get filter parameters
+$rating_filter = isset($_GET['rating']) ? (int)$_GET['rating'] : 0;
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Get request details
+// Build query
 $sql = "SELECT 
+            f.FeedbackID,
+            f.Rating,
+            f.Comment,
+            f.SubmittedAt,
             mr.RequestID,
-            mr.Title,
-            mr.Description,
-            mr.UserID,
-            mr.StatusID,
-            mr.CompletedAt,
-            s.StatusName
-        FROM maintenancerequest mr
-        JOIN status s ON mr.StatusID = s.StatusID
-        WHERE mr.RequestID = ? AND mr.UserID = ?";
+            mr.Title as RequestTitle,
+            u.Name as UserName,
+            u.Email as UserEmail,
+            r.RoleName
+        FROM feedback f
+        JOIN maintenancerequest mr ON f.RequestID = mr.RequestID
+        JOIN user u ON f.UserID = u.UserID
+        JOIN role r ON u.RoleID = r.RoleID
+        WHERE 1=1";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ii", $request_id, $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows == 0) {
-    header("Location: my-requests.php");
-    exit();
+// Apply rating filter
+if ($rating_filter > 0) {
+    $sql .= " AND f.Rating = $rating_filter";
 }
 
-$request = $result->fetch_assoc();
-
-// Check if request is completed
-if ($request['StatusID'] != 5) {
-    $error = "Feedback can only be submitted for completed requests.";
+// Apply search
+if (!empty($search)) {
+    $sql .= " AND (mr.Title LIKE '%" . $conn->real_escape_string($search) . "%' 
+              OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%'
+              OR f.Comment LIKE '%" . $conn->real_escape_string($search) . "%')";
 }
 
-// Check if feedback already exists
-$check_sql = "SELECT FeedbackID FROM feedback WHERE RequestID = ? AND UserID = ?";
-$check_stmt = $conn->prepare($check_sql);
-$check_stmt->bind_param("ii", $request_id, $user_id);
-$check_stmt->execute();
-$existing_feedback = $check_stmt->get_result();
+$sql .= " ORDER BY f.SubmittedAt DESC";
 
-$already_submitted = $existing_feedback->num_rows > 0;
+$result = $conn->query($sql);
+$feedback_list = $result->fetch_all(MYSQLI_ASSOC);
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$already_submitted) {
-    $rating = (int)$_POST['rating'];
-    $comment = trim($_POST['comment']);
-    
-    // Validate
-    if ($rating < 1 || $rating > 5) {
-        $error = "Please select a valid rating (1-5 stars)";
-    } else {
-        // Insert feedback
-        $insert_sql = "INSERT INTO feedback (RequestID, UserID, Rating, Comment) VALUES (?, ?, ?, ?)";
-        $insert_stmt = $conn->prepare($insert_sql);
-        $insert_stmt->bind_param("iiis", $request_id, $user_id, $rating, $comment);
-        
-        if ($insert_stmt->execute()) {
-            // Notify admin
-            $admin_sql = "SELECT UserID FROM user WHERE RoleID = 1";
-            $admin_result = $conn->query($admin_sql);
-            while ($admin = $admin_result->fetch_assoc()) {
-                createNotification(
-                    $conn,
-                    $admin['UserID'], 
-                    "New feedback received for request #$request_id ($rating stars)", 
-                    $request_id
-                );
-            }
-            
-            $success = "Thank you for your feedback! Your review has been submitted.";
-            $already_submitted = true;
-        } else {
-            $error = "Failed to submit feedback. Please try again.";
-        }
-    }
+// Get statistics
+$stats = [];
+
+// Total feedback
+$stats['total'] = count($feedback_list);
+
+// Average rating
+$total_rating = 0;
+$rating_counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+
+foreach ($feedback_list as $fb) {
+    $total_rating += $fb['Rating'];
+    $rating_counts[$fb['Rating']]++;
 }
 
-// Get existing feedback if already submitted
-$feedback = null;
-if ($already_submitted) {
-    $get_sql = "SELECT Rating, Comment, CreatedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
-    $get_stmt = $conn->prepare($get_sql);
-    $get_stmt->bind_param("ii", $request_id, $user_id);
-    $get_stmt->execute();
-    $feedback = $get_stmt->get_result()->fetch_assoc();
-}
+$stats['average'] = $stats['total'] > 0 ? round($total_rating / $stats['total'], 1) : 0;
+$stats['5_star'] = $rating_counts[5];
+$stats['4_star'] = $rating_counts[4];
+$stats['3_star'] = $rating_counts[3];
+$stats['2_star'] = $rating_counts[2];
+$stats['1_star'] = $rating_counts[1];
 
 ?>
 <!DOCTYPE html>
@@ -116,94 +87,9 @@ if ($already_submitted) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Feedback - FixPoint</title>
+    <title>All Feedback - Admin</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/auth.css">
-    <style>
-        .rating-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 2rem 0;
-        }
-        
-        .stars {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 3rem;
-            margin: 1rem 0;
-        }
-        
-        .star {
-            cursor: pointer;
-            color: #cbd5e1;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        
-        .star:hover,
-        .star.active {
-            color: #fbbf24;
-            transform: scale(1.1);
-        }
-        
-        .star.active {
-            animation: starPulse 0.3s ease;
-        }
-        
-        @keyframes starPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        .rating-label {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-top: 0.5rem;
-        }
-        
-        .rating-description {
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-        
-        .request-info {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            margin-bottom: 2rem;
-            border-left: 4px solid #2563eb;
-        }
-        
-        .request-info-title {
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-        }
-        
-        .submitted-feedback {
-            background: #d1fae5;
-            border: 2px solid #a7f3d0;
-            padding: 2rem;
-            border-radius: 1rem;
-            text-align: center;
-        }
-        
-        .submitted-feedback h3 {
-            color: #065f46;
-            margin-bottom: 1rem;
-        }
-        
-        .your-rating {
-            display: flex;
-            justify-content: center;
-            gap: 0.25rem;
-            font-size: 2rem;
-            margin: 1rem 0;
-            color: #fbbf24;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
     <!-- Header -->
@@ -213,11 +99,13 @@ if ($already_submitted) {
                 <div class="logo">
                     <span class="logo-icon">🔧</span>
                     <span class="logo-text">FixPoint</span>
-                    <span class="logo-subtitle">SEU</span>
+                    <span class="logo-subtitle">Admin</span>
                 </div>
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="my-requests.php" class="nav-link">My Requests</a>
+                    <a href="all-requests.php" class="nav-link">All Requests</a>
+                    <a href="users.php" class="nav-link">Users</a>
+                    <a href="all-feedback.php" class="nav-link">Feedback</a>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>
@@ -225,210 +113,168 @@ if ($already_submitted) {
         </div>
     </header>
 
-    <div class="auth-container" style="background: #f8fafc;">
-        <div style="max-width: 700px; width: 100%; margin-top: 2rem;">
+    <div class="dashboard">
+        <div class="dashboard-container">
             
-            <!-- Back Button -->
-            <div style="margin-bottom: 1rem;">
-                <a href="request-details.php?id=<?php echo $request_id; ?>" class="btn btn-outline">← Back to Request</a>
+            <!-- Page Header -->
+            <div class="dashboard-header">
+                <h1 class="welcome-text">User Feedback ⭐</h1>
+                <p class="user-info">View and analyze all user feedback and ratings</p>
             </div>
-            
-            <div class="auth-card">
-                <div class="auth-header">
-                    <div class="auth-logo">⭐</div>
-                    <h1 class="auth-title">Submit Feedback</h1>
-                    <p class="auth-subtitle">Rate your experience with this maintenance request</p>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">📊 Total Feedback</div>
+                    <div class="stat-value"><?php echo $stats['total']; ?></div>
+                    <div class="stat-info">All submissions</div>
                 </div>
-                
-                <!-- Request Info -->
-                <div class="request-info">
-                    <div class="request-info-title">Request #<?php echo $request['RequestID']; ?>:</div>
-                    <div><?php echo e($request['Title']); ?></div>
-                    <?php if ($request['CompletedAt']): ?>
-                        <div style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">
-                            Completed on <?php echo formatDate($request['CompletedAt'], 'M d, Y'); ?>
-                        </div>
-                    <?php endif; ?>
+
+                <div class="stat-card success">
+                    <div class="stat-label">⭐ Average Rating</div>
+                    <div class="stat-value"><?php echo $stats['average']; ?></div>
+                    <div class="stat-info">Out of 5.0</div>
                 </div>
+
+                <div class="stat-card" style="border-left-color: #fbbf24;">
+                    <div class="stat-label">🌟 5 Stars</div>
+                    <div class="stat-value"><?php echo $stats['5_star']; ?></div>
+                    <div class="stat-info">Excellent ratings</div>
+                </div>
+
+                <div class="stat-card" style="border-left-color: #a3e635;">
+                    <div class="stat-label">⭐ 4 Stars</div>
+                    <div class="stat-value"><?php echo $stats['4_star']; ?></div>
+                    <div class="stat-info">Very good ratings</div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-label">⚠️ 3 Stars or Below</div>
+                    <div class="stat-value"><?php echo $stats['3_star'] + $stats['2_star'] + $stats['1_star']; ?></div>
+                    <div class="stat-info">Needs attention</div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="requests-section" style="margin-bottom: 2rem;">
+                <h2 class="section-title">🔍 Filters & Search</h2>
                 
-                <!-- Error Messages -->
-                <?php if ($error): ?>
-                    <div class="alert alert-error">
-                        ❌ <?php echo e($error); ?>
-                    </div>
-                <?php endif; ?>
-                
-                <!-- Success Message -->
-                <?php if ($success): ?>
-                    <div class="alert alert-success">
-                        ✅ <?php echo e($success); ?>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if ($already_submitted && $feedback): ?>
-                    <!-- Already Submitted Feedback -->
-                    <div class="submitted-feedback">
-                        <h3>✅ Feedback Already Submitted</h3>
-                        <p style="color: #065f46; margin-bottom: 1.5rem;">
-                            Thank you for your feedback! Here's what you submitted:
-                        </p>
-                        
-                        <div class="your-rating">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <span><?php echo $i <= $feedback['Rating'] ? '⭐' : '☆'; ?></span>
-                            <?php endfor; ?>
-                        </div>
-                        
-                        <div style="background: white; padding: 1.5rem; border-radius: 0.75rem; margin-top: 1.5rem; text-align: left;">
-                            <strong style="color: #1e293b;">Your Comment:</strong>
-                            <p style="color: #64748b; margin-top: 0.5rem;">
-                                <?php echo $feedback['Comment'] ? e($feedback['Comment']) : '<em>No comment provided</em>'; ?>
-                            </p>
-                            <small style="color: #94a3b8;">
-                                Submitted on <?php echo formatDate($feedback['CreatedAt'], 'M d, Y - H:i'); ?>
-                            </small>
-                        </div>
-                        
-                        <div style="margin-top: 2rem;">
-                            <a href="my-requests.php" class="btn btn-primary">View My Requests</a>
-                        </div>
+                <form method="GET" action="" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                    <!-- Rating Filter -->
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Filter by Rating</label>
+                        <select name="rating" class="form-input" style="width: 100%;">
+                            <option value="0" <?php echo ($rating_filter == 0) ? 'selected' : ''; ?>>All Ratings</option>
+                            <option value="5" <?php echo ($rating_filter == 5) ? 'selected' : ''; ?>>⭐⭐⭐⭐⭐ 5 Stars</option>
+                            <option value="4" <?php echo ($rating_filter == 4) ? 'selected' : ''; ?>>⭐⭐⭐⭐ 4 Stars</option>
+                            <option value="3" <?php echo ($rating_filter == 3) ? 'selected' : ''; ?>>⭐⭐⭐ 3 Stars</option>
+                            <option value="2" <?php echo ($rating_filter == 2) ? 'selected' : ''; ?>>⭐⭐ 2 Stars</option>
+                            <option value="1" <?php echo ($rating_filter == 1) ? 'selected' : ''; ?>>⭐ 1 Star</option>
+                        </select>
                     </div>
                     
-                <?php elseif ($request['StatusID'] == 5): ?>
-                    <!-- Feedback Form -->
-                    <form method="POST" action="" id="feedbackForm">
-                        <!-- Rating -->
-                        <div class="rating-container">
-                            <label style="font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">
-                                How would you rate the service? *
-                            </label>
-                            
-                            <input type="hidden" name="rating" id="rating" value="0" required>
-                            
-                            <div class="stars" id="starRating">
-                                <span class="star" data-rating="1">☆</span>
-                                <span class="star" data-rating="2">☆</span>
-                                <span class="star" data-rating="3">☆</span>
-                                <span class="star" data-rating="4">☆</span>
-                                <span class="star" data-rating="5">☆</span>
+                    <!-- Search Box -->
+                    <div style="flex: 2; min-width: 300px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Search</label>
+                        <input 
+                            type="text" 
+                            name="search" 
+                            class="form-input" 
+                            placeholder="Search by user name, request title, or comment..."
+                            value="<?php echo e($search); ?>"
+                            style="width: 100%;"
+                        >
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="submit" class="btn btn-primary">🔍 Search</button>
+                        <a href="all-feedback.php" class="btn btn-outline">🔄 Reset</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Feedback List -->
+            <div class="requests-section">
+                <h2 class="section-title">
+                    Feedback List 
+                    <span style="color: #64748b; font-size: 1rem; font-weight: 400;">
+                        (<?php echo count($feedback_list); ?> results)
+                    </span>
+                </h2>
+                
+                <?php if (count($feedback_list) > 0): ?>
+                    <div style="display: grid; gap: 1.5rem;">
+                        <?php foreach ($feedback_list as $fb): ?>
+                            <div style="background: white; border: 2px solid #e2e8f0; padding: 1.5rem; border-radius: 0.75rem;">
+                                <!-- Header -->
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                                    <div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <span style="font-weight: 600; color: #1e293b;">
+                                                <?php echo e($fb['UserName']); ?>
+                                            </span>
+                                            <span style="background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                                <?php echo e($fb['RoleName']); ?>
+                                            </span>
+                                        </div>
+                                        <div style="color: #64748b; font-size: 0.875rem;">
+                                            For Request #<?php echo $fb['RequestID']; ?>: <?php echo e($fb['RequestTitle']); ?>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="text-align: right;">
+                                        <div style="color: #fbbf24; font-size: 1.5rem; margin-bottom: 0.25rem;">
+                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                <?php echo $i <= $fb['Rating'] ? '⭐' : '☆'; ?>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <div style="color: #64748b; font-size: 0.875rem;">
+                                            <?php echo formatDate($fb['SubmittedAt'], 'M d, Y'); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Comment -->
+                                <?php if ($fb['Comment']): ?>
+                                <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #2563eb;">
+                                    <div style="color: #1e293b; white-space: pre-line;">
+                                        "<?php echo e($fb['Comment']); ?>"
+                                    </div>
+                                </div>
+                                <?php else: ?>
+                                <div style="color: #94a3b8; font-style: italic; font-size: 0.875rem;">
+                                    No additional comment provided
+                                </div>
+                                <?php endif; ?>
+                                
+                                <!-- Actions -->
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <a href="request-details.php?id=<?php echo $fb['RequestID']; ?>" 
+                                       class="btn btn-secondary" 
+                                       style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                        📋 View Request
+                                    </a>
+                                </div>
                             </div>
-                            
-                            <div class="rating-label" id="ratingLabel">Select your rating</div>
-                            <div class="rating-description" id="ratingDesc"></div>
-                        </div>
-                        
-                        <!-- Comment -->
-                        <div class="form-group">
-                            <label for="comment" class="form-label">Additional Comments (Optional)</label>
-                            <textarea 
-                                id="comment" 
-                                name="comment" 
-                                class="form-input" 
-                                rows="5"
-                                placeholder="Tell us more about your experience..."
-                            ></textarea>
-                            <small style="color: #64748b;">Share any additional thoughts about the service quality, response time, or technician performance</small>
-                        </div>
-                        
-                        <button type="submit" class="btn-submit" id="submitBtn" disabled>
-                            📤 Submit Feedback
-                        </button>
-                    </form>
-                    
-                <?php else: ?>
-                    <div class="alert alert-error">
-                        ⚠️ Feedback can only be submitted for completed requests.
+                        <?php endforeach; ?>
                     </div>
-                    <a href="my-requests.php" class="btn btn-secondary">Back to My Requests</a>
+                <?php else: ?>
+                    <div class="no-requests">
+                        <div class="no-requests-icon">⭐</div>
+                        <h3>No feedback found</h3>
+                        <?php if ($rating_filter > 0 || !empty($search)): ?>
+                            <p>No feedback matches your current filters.</p>
+                            <br>
+                            <a href="all-feedback.php" class="btn btn-secondary">Clear Filters</a>
+                        <?php else: ?>
+                            <p>No feedback has been submitted yet.</p>
+                        <?php endif; ?>
+                    </div>
                 <?php endif; ?>
-                
             </div>
+            
         </div>
     </div>
-
-    <script>
-        const stars = document.querySelectorAll('.star');
-        const ratingInput = document.getElementById('rating');
-        const ratingLabel = document.getElementById('ratingLabel');
-        const ratingDesc = document.getElementById('ratingDesc');
-        const submitBtn = document.getElementById('submitBtn');
-        
-        const ratingLabels = {
-            1: 'Poor',
-            2: 'Fair',
-            3: 'Good',
-            4: 'Very Good',
-            5: 'Excellent'
-        };
-        
-        const ratingDescriptions = {
-            1: 'Service needs significant improvement',
-            2: 'Service was below expectations',
-            3: 'Service met expectations',
-            4: 'Service exceeded expectations',
-            5: 'Outstanding service!'
-        };
-        
-        let selectedRating = 0;
-        
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                selectedRating = parseInt(this.dataset.rating);
-                ratingInput.value = selectedRating;
-                updateStars(selectedRating);
-                updateLabels(selectedRating);
-                submitBtn.disabled = false;
-            });
-            
-            star.addEventListener('mouseenter', function() {
-                const hoverRating = parseInt(this.dataset.rating);
-                updateStars(hoverRating);
-                updateLabels(hoverRating);
-            });
-        });
-        
-        document.getElementById('starRating').addEventListener('mouseleave', function() {
-            if (selectedRating > 0) {
-                updateStars(selectedRating);
-                updateLabels(selectedRating);
-            } else {
-                resetStars();
-            }
-        });
-        
-        function updateStars(rating) {
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.textContent = '⭐';
-                    star.classList.add('active');
-                } else {
-                    star.textContent = '☆';
-                    star.classList.remove('active');
-                }
-            });
-        }
-        
-        function updateLabels(rating) {
-            ratingLabel.textContent = ratingLabels[rating];
-            ratingDesc.textContent = ratingDescriptions[rating];
-        }
-        
-        function resetStars() {
-            stars.forEach(star => {
-                star.textContent = '☆';
-                star.classList.remove('active');
-            });
-            ratingLabel.textContent = 'Select your rating';
-            ratingDesc.textContent = '';
-        }
-        
-        // Form validation
-        document.getElementById('feedbackForm')?.addEventListener('submit', function(e) {
-            if (selectedRating === 0) {
-                e.preventDefault();
-                alert('Please select a rating before submitting');
-            }
-        });
-    </script>
 </body>
 </html>

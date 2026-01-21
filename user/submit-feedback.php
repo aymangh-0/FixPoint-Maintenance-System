@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$already_submitted) {
 // Get existing feedback if already submitted
 $feedback = null;
 if ($already_submitted) {
-    $get_sql = "SELECT Rating, Comment, CreatedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
+    $get_sql = "SELECT Rating, Comment, SubmittedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
     $get_stmt = $conn->prepare($get_sql);
     $get_stmt->bind_param("ii", $request_id, $user_id);
     $get_stmt->execute();
@@ -285,7 +285,7 @@ if ($already_submitted) {
                                 <?php echo $feedback['Comment'] ? e($feedback['Comment']) : '<em>No comment provided</em>'; ?>
                             </p>
                             <small style="color: #94a3b8;">
-                                Submitted on <?php echo formatDate($feedback['CreatedAt'], 'M d, Y - H:i'); ?>
+                                Submitted on <?php echo formatDate($feedback['SubmittedAt'], 'M d, Y - H:i'); ?>
                             </small>
                         </div>
                         
