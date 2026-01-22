@@ -37,7 +37,7 @@
                 <h1 class="hero-title">University Maintenance Made Easy</h1>
                 <p class="hero-subtitle">Report issues, track progress, and get problems fixed faster with FixPoint</p>
                 <div class="hero-buttons">
-                    <a href="auth/register.php" class="btn btn-primary btn-large">Submit Your First Request</a>
+                    <a href="auth/login.php" class="btn btn-primary btn-large">Submit Your First Request</a>
                     <a href="#how-it-works" class="btn btn-secondary btn-large">How It Works</a>
                 </div>
                 <div class="hero-stats">
