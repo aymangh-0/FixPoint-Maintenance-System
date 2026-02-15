@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     if (in_array($file_type, $allowed_types)) {
                         // Validate file size (max 5MB)
-                        if ($_FILES['photo']['size'] <= 5 * 1024 * 1024) {
+                        if ($_FILES['photo']['size'] <= 20 * 1024 * 1024) {
                             $file_extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
                             $new_filename = 'request_' . $request_id . '_' . time() . '.' . $file_extension;
                             $upload_path = $upload_dir . $new_filename;
@@ -328,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             accept="image/jpeg,image/jpg,image/png,image/gif"
                             <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
                         >
-                        <small style="color: #64748b; font-size: 0.875rem;">Upload a photo of the issue (JPG, PNG, GIF - Max 5MB)</small>
+                        <small style="color: #64748b; font-size: 0.875rem;">Upload a photo of the issue (JPG, PNG, GIF - Max 20MB)</small>
                     </div>
                     
                     <!-- Submit Button -->
