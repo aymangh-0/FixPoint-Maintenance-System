@@ -142,6 +142,7 @@ foreach ($assigned_requests as $req) {
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="my-tasks.php" class="nav-link">My Tasks</a>
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($tech_name); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>
