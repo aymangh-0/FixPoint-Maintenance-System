@@ -350,5 +350,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </div>
+    <script src="../assets/js/submit-request-validation.js"></script>
 </body>
 </html>
