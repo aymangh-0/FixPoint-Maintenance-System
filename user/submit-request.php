@@ -45,9 +45,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $confirm_duplicate = isset($_POST['confirm_duplicate']) ? $_POST['confirm_duplicate'] : 'no';
     
     // Validate inputs
-    if (empty($title) || empty($description) || $location_id == 0 || $category_id == 0) {
-        $error = "Please fill in all required fields";
+    if (empty($title)) {
+        $error = "Title is required";
     } 
+    elseif (strlen($title) < 10) {
+        $error = "Title must be at least 10 characters long";
+    } 
+        elseif (strlen($title) > 200) {
+            $error = "Title must not exceed 200 characters";
+    } 
+        elseif (empty($description)) {
+            $error = "Description is required";
+    } 
+        elseif (strlen($description) < 20) {
+            $error = "Description must be at least 20 characters";
+    } 
+        elseif ($location_id == 0) {
+            $error = "Please select a location";
+    } 
+        elseif ($category_id == 0) {
+            $error = "Please select a category";
+    } 
+        elseif ($priority_id == 0) {
+            $error = "Please select a priority level";
+    }
     // Check request limits
     elseif (!$limit_info['can_submit']) {
         $error = $limit_info['message'];
