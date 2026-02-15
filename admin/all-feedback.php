@@ -106,6 +106,7 @@ $stats['1_star'] = $rating_counts[1];
                     <a href="all-requests.php" class="nav-link">All Requests</a>
                     <a href="users.php" class="nav-link">Users</a>
                     <a href="all-feedback.php" class="nav-link">Feedback</a>
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>
