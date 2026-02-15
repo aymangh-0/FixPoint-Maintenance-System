@@ -218,6 +218,7 @@ if ($already_submitted) {
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="my-requests.php" class="nav-link">My Requests</a>
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>

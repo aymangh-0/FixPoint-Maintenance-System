@@ -152,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">← Back to Dashboard</a>
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>

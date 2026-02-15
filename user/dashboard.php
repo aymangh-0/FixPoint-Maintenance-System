@@ -76,6 +76,7 @@ $requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     <span class="logo-subtitle">SEU</span>
                 </div>
                 <nav class="nav-links">
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>

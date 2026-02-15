@@ -93,6 +93,7 @@ $stats = getUserRequestStats($conn, $user_id);
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="submit-request.php" class="btn btn-primary">➕ New Request</a>
+                    <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>
