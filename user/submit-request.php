@@ -140,6 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $request_id
                     );
                 }
+
+                require_once '../config/email-service.php';
+                emailNewRequest($conn, $request_id, $title, $description, $_SESSION['name'], '', '', '');
                 
                 $success = "Request submitted successfully! Request ID: #$request_id";
                 
