@@ -70,36 +70,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Set session security timestamps
                 $_SESSION['last_activity'] = time();
                 $_SESSION['last_regeneration'] = time();
-                // Log successful login
-                logLoginSuccess($conn, $email, $user['UserID']);
-                } else {
-                    logLoginFailedPassword($conn, $email, $user['UserID']);
-                    $error = "Incorrect password";
-                }
-                } else {
-                    logLoginFailedEmail($conn, $email);
-                    $error = "No account found with this email";
-                }
-                
-                // Redirect based on role
-                if ($user['RoleID'] == 1) {
-                    header("Location: ../admin/dashboard.php");
-                } elseif ($user['RoleID'] == 2) {
-                    header("Location: ../technician/dashboard.php");
-                } else {
-                    header("Location: ../user/dashboard.php");
-                }
-                exit();
+            // Log successful login
+            logLoginSuccess($conn, $email, $user['UserID']);
+            
+            // Redirect based on role
+            if ($user['RoleID'] == 1) {
+                header("Location: ../admin/dashboard.php");
+            } elseif ($user['RoleID'] == 2) {
+                header("Location: ../technician/dashboard.php");
             } else {
-                $error = "Incorrect password";
+                header("Location: ../user/dashboard.php");
             }
+            exit();
         } else {
-            $error = "No account found with this email";
+            logLoginFailedPassword($conn, $email, $user['UserID']);
+            $error = "Incorrect password";
         }
-        
-        $stmt->close();
+    } else {
+        logLoginFailedEmail($conn, $email);
+        $error = "No account found with this email";
     }
-}
+
 ?>
 
 <!DOCTYPE html>
