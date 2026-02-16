@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             required
                             value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
                         >
-                        <small style="color: #64748b; font-size: 0.875rem;">Use your university email for verification</small>
+                        <small style="color: #64748b; font-size: 0.875rem;"></small>
                     </div>
                     
                     <div class="form-group">
