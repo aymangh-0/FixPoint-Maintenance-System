@@ -28,6 +28,7 @@ if (isset($_SESSION['user_id'])) {
 
 // Include database connection
 require_once '../config/database.php';
+require_once '../config/audit-logger.php';
 
 // Initialize variables
 $error = '';
@@ -69,6 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Set session security timestamps
                 $_SESSION['last_activity'] = time();
                 $_SESSION['last_regeneration'] = time();
+                // Log successful login
+                logLoginSuccess($conn, $email, $user['UserID']);
+                } else {
+                    logLoginFailedPassword($conn, $email, $user['UserID']);
+                    $error = "Incorrect password";
+                }
+                } else {
+                    logLoginFailedEmail($conn, $email);
+                    $error = "No account found with this email";
+                }
                 
                 // Redirect based on role
                 if ($user['RoleID'] == 1) {

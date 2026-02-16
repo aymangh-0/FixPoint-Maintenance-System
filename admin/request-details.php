@@ -70,6 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     // Notify technician
                     createNotification($conn, $technician_id, "New maintenance request #$request_id has been assigned to you", $request_id);
+                    require_once '../config/audit-logger.php';
+                    logTechnicianAssignment($conn, $admin_id, $request_id, $technician_id);
                     
                     // Send email notifications
                     require_once '../config/email-service.php';
@@ -115,6 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 // Log status change
                 logStatusChange($conn, $request_id, $old_status_id, $new_status_id, $admin_id);
+                require_once '../config/audit-logger.php';
+                logStatusChangeAudit($conn, $admin_id, $request_id, $old_status_name, $new_status_name);
                 
                 // Notify requester
                 $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";

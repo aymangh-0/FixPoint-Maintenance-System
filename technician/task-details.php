@@ -46,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($update_stmt->execute()) {
             // Log status change
             logStatusChange($conn, $request_id, 3, 4, $tech_id);
+            require_once '../config/audit-logger.php';
+            logStatusChangeAudit($conn, $tech_id, $request_id, 'Assigned', 'In Progress');
+
             
             // Notify requester
             $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";
@@ -84,6 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($update_stmt->execute()) {
             // Log status change with notes
             logStatusChange($conn, $request_id, 4, 5, $tech_id);
+            require_once '../config/audit-logger.php';
+            logStatusChangeAudit($conn, $tech_id, $request_id, 'Assigned', 'In Progress');
+
             
             // Notify requester
             $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";

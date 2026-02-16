@@ -87,15 +87,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Insert request
             $insert_sql = "INSERT INTO maintenancerequest 
-                          (UserID, LocationID, CategoryID, PriorityID, StatusID, Title, Description) 
-                          VALUES (?, ?, ?, ?, 1, ?, ?)";
+                        (UserID, LocationID, CategoryID, PriorityID, StatusID, Title, Description) 
+                        VALUES (?, ?, ?, ?, 1, ?, ?)";
             
             $stmt = $conn->prepare($insert_sql);
             $stmt->bind_param("iiiiss", $user_id, $location_id, $category_id, $priority_id, $title, $description);
             
             if ($stmt->execute()) {
                 $request_id = $stmt->insert_id;
-                
+                require_once '../config/audit-logger.php';
+                logRequestSubmission($conn, $user_id, $request_id);
                 // Handle photo upload if provided
                 if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
                     $upload_dir = '../uploads/requests/';
