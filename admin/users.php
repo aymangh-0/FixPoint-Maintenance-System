@@ -249,6 +249,7 @@ $stats['Total'] = array_sum($stats);
                     <a href="all-requests.php" class="nav-link">All Requests</a>
                     <a href="users.php" class="nav-link">Users</a>
                     <a href="reports.php" class="nav-link">Reports</a>
+                    <a href="backup.php" class="nav-link">Backup</a>
                     <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>

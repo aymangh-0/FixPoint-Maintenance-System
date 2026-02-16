@@ -444,6 +444,7 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="all-requests.php" class="nav-link">All Requests</a>
+                    <a href="backup.php" class="nav-link">Backup</a>
                     <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
