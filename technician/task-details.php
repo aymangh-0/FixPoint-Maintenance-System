@@ -54,6 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $requester_id = $req_stmt->get_result()->fetch_assoc()['UserID'];
             
             createNotification($conn, $requester_id, "Your request #$request_id is now being worked on by a technician", $request_id);
+
+            // Send email notification
+            require_once '../config/email-service.php';
+            emailStatusUpdate($conn, $request_id, $requester_id, 'In Progress');
             
             $success = "Work started! Status updated to 'In Progress'.";
         } else {
@@ -88,6 +92,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $requester_id = $req_stmt->get_result()->fetch_assoc()['UserID'];
             
             createNotification($conn, $requester_id, "Your request #$request_id has been completed! Please review and provide feedback.", $request_id);
+
+            // Send email notification
+            require_once '../config/email-service.php';
+            emailRequestCompleted($conn, $request_id);
             
             $success = "Task marked as complete! The requester has been notified.";
         } else {
