@@ -52,23 +52,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif (strlen($title) < 10) {
         $error = "Title must be at least 10 characters long";
     } 
-        elseif (strlen($title) > 200) {
-            $error = "Title must not exceed 200 characters";
+    elseif (strlen($title) > 200) {
+        $error = "Title must not exceed 200 characters";
     } 
-        elseif (empty($description)) {
-            $error = "Description is required";
+    elseif (empty($description)) {
+        $error = "Description is required";
     } 
-        elseif (strlen($description) < 20) {
-            $error = "Description must be at least 20 characters";
+    elseif (strlen($description) < 20) {
+        $error = "Description must be at least 20 characters";
     } 
-        elseif ($location_id == 0) {
-            $error = "Please select a location";
+    elseif ($location_id == 0) {
+        $error = "Please select a location";
     } 
-        elseif ($category_id == 0) {
-            $error = "Please select a category";
+    elseif ($category_id == 0) {
+        $error = "Please select a category";
     } 
-        elseif ($priority_id == 0) {
-            $error = "Please select a priority level";
+    elseif ($priority_id == 0) {
+        $error = "Please select a priority level";
+    }
+    // Validate photo is uploaded
+    elseif (!isset($_FILES['photo']) || $_FILES['photo']['error'] != 0) {
+        $error = "Please upload a photo of the issue — it is required";
     }
     // Check request limits
     elseif (!$limit_info['can_submit']) {
@@ -97,7 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $request_id = $stmt->insert_id;
                 require_once '../config/audit-logger.php';
                 logRequestSubmission($conn, $user_id, $request_id);
-                // Handle photo upload if provided
+                
+                // Handle photo upload (required)
                 if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
                     $upload_dir = '../uploads/requests/';
                     
@@ -257,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Location Selection -->
                     <div class="form-group">
-                        <label for="location_id" class="form-label">Location *</label>
+                        <label for="location_id" class="form-label">Location <span style="color: #ef4444;">*</span></label>
                         <select 
                             id="location_id" 
                             name="location_id" 
@@ -278,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Category Selection -->
                     <div class="form-group">
-                        <label for="category_id" class="form-label">Category *</label>
+                        <label for="category_id" class="form-label">Category <span style="color: #ef4444;">*</span></label>
                         <select 
                             id="category_id" 
                             name="category_id" 
@@ -299,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Priority Selection -->
                     <div class="form-group">
-                        <label for="priority_id" class="form-label">Priority *</label>
+                        <label for="priority_id" class="form-label">Priority <span style="color: #ef4444;">*</span></label>
                         <select 
                             id="priority_id" 
                             name="priority_id" 
@@ -320,7 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Title -->
                     <div class="form-group">
-                        <label for="title" class="form-label">Title *</label>
+                        <label for="title" class="form-label">Title <span style="color: #ef4444;">*</span></label>
                         <input 
                             type="text" 
                             id="title" 
@@ -337,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Description -->
                     <div class="form-group">
-                        <label for="description" class="form-label">Description *</label>
+                        <label for="description" class="form-label">Description <span style="color: #ef4444;">*</span></label>
                         <textarea 
                             id="description" 
                             name="description" 
@@ -350,18 +355,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <small style="color: #64748b; font-size: 0.875rem;">Include as much detail as possible to help technicians understand the problem</small>
                     </div>
                     
-                    <!-- Photo Upload -->
+                    <!-- Photo Upload (Required) -->
                     <div class="form-group">
-                        <label for="photo" class="form-label">Photo (Optional)</label>
+                        <label for="photo" class="form-label">Upload Photo <span style="color: #ef4444;">*</span></label>
                         <input 
                             type="file" 
                             id="photo" 
                             name="photo" 
                             class="form-input" 
                             accept="image/jpeg,image/jpg,image/png,image/gif"
+                            required
                             <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
                         >
-                        <small style="color: #64748b; font-size: 0.875rem;">Upload a photo of the issue (JPG, PNG, GIF - Max 20MB)</small>
+                        <small style="color: #64748b; font-size: 0.875rem;">📷 A photo of the issue is required (JPG, PNG, GIF - Max 20MB)</small>
                     </div>
                     
                     <!-- Submit Button -->
