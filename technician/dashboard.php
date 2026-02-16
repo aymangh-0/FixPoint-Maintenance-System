@@ -5,6 +5,7 @@
  */
 
 session_start();
+require_once '../config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {

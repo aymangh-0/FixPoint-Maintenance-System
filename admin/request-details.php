@@ -5,6 +5,7 @@
  */
 
 session_start();
+require_once '../config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -70,6 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // Notify technician
                     createNotification($conn, $technician_id, "New maintenance request #$request_id has been assigned to you", $request_id);
                     
+                    // Send email notifications
+                    require_once '../config/email-service.php';
+                    emailTechnicianAssigned($conn, $request_id, $technician_id);
+                    emailStatusUpdate($conn, $request_id, $requester_id, 'Assigned');
                     $success = "Technician assigned successfully!";
                 } else {
                     $error = "Failed to assign technician.";
@@ -125,6 +130,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $status_name = $status_stmt->get_result()->fetch_assoc()['StatusName'];
                 
                 createNotification($conn, $requester_id, "Your request #$request_id status changed to: $status_name", $request_id);
+
+                require_once '../config/email-service.php';
+                emailStatusUpdate($conn, $request_id, $requester_id, $new_status_name);
                 
                 $success = "Status updated successfully!";
             } else {

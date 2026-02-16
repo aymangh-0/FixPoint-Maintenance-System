@@ -5,6 +5,7 @@
  */
 
 session_start();
+require_once '../config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -91,7 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$already_submitted) {
                     $request_id
                 );
             }
-            
+            // Send email notification to admins
+            require_once '../config/email-service.php';
+            emailFeedbackReceived($conn, $request_id, $_SESSION['name'], $rating, $comment);
             $success = "Thank you for your feedback! Your review has been submitted.";
             $already_submitted = true;
         } else {

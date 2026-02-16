@@ -7,6 +7,13 @@
 // Start session
 session_start();
 
+// Check for timeout message
+$timeout_msg = '';
+if (isset($_SESSION['timeout_message'])) {
+    $timeout_msg = $_SESSION['timeout_message'];
+    unset($_SESSION['timeout_message']);
+}
+
 // If user is already logged in, redirect to appropriate dashboard
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role_id'] == 1) {
@@ -58,6 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['name'] = $user['Name'];
                 $_SESSION['email'] = $user['Email'];
                 $_SESSION['role_name'] = $user['RoleName'];
+
+                // Set session security timestamps
+                $_SESSION['last_activity'] = time();
+                $_SESSION['last_regeneration'] = time();
                 
                 // Redirect based on role
                 if ($user['RoleID'] == 1) {
@@ -110,6 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php if ($success): ?>
                     <div class="alert alert-success">
                         ✅ <?php echo htmlspecialchars($success); ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($timeout_msg): ?>
+                    <div class="alert alert-warning" style="background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                        ⏰ <?php echo htmlspecialchars($timeout_msg); ?>
                     </div>
                 <?php endif; ?>
                 
