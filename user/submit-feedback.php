@@ -95,6 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !$already_submitted) {
             // Send email notification to admins
             require_once '../config/email-service.php';
             emailFeedbackReceived($conn, $request_id, $_SESSION['name'], $rating, $comment);
+            require_once '../config/audit-logger.php';
+            logFeedbackSubmission($conn, $user_id, $request_id, $rating);
+
             $success = "Thank you for your feedback! Your review has been submitted.";
             $already_submitted = true;
         } else {
