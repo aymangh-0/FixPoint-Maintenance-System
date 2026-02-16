@@ -166,7 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         Login to Dashboard
                     </button>
                 </form>
-                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="forgot-password.php" style="color: #2563eb; text-decoration: none; font-size: 0.9rem;">
+                    🔑 Forgot your password?
+                    </a>
+                </div>
                 <div class="auth-footer">
                     <p style="color: #64748b; margin-bottom: 0.5rem;">Don't have an account?</p>
                     <a href="register.php" class="auth-link">Create New Account →</a>

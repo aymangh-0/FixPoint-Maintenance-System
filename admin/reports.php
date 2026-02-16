@@ -25,8 +25,8 @@ require_once '../config/helpers.php';
 $admin_id = $_SESSION['user_id'];
 
 // Get date range filter
-$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-01'); // First day of current month
-$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d'); // Today
+$date_from = isset($_GET['from']) ? $_GET['from'] : '2024-01-01'; // First day of current month
+$date_to = isset($_GET['to']) ? $_GET['to'] . ' 23:59:59' : date('Y-m-d') . ' 23:59:59';
 
 // === OVERALL STATISTICS ===
 $stats = [];
@@ -515,12 +515,12 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                     <button onclick="window.print()" class="btn btn-primary">
                         🖨️ Print Report
                     </button>
-                    <button onclick="alert('CSV export feature coming soon!')" class="btn btn-secondary">
+                    <a href="export-csv.php?from=<?php echo $date_from; ?>&to=<?php echo $date_to; ?>" class="btn btn-secondary">
                         📊 Export to CSV
-                    </button>
-                    <button onclick="alert('PDF export feature coming soon!')" class="btn btn-secondary">
+                    </a>
+                    <a href="export-pdf.php?from=<?php echo $date_from; ?>&to=<?php echo $date_to; ?>" target="_blank" class="btn btn-secondary">
                         📄 Export to PDF
-                    </button>
+                    </a>
                 </div>
             </div>
 

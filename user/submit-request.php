@@ -146,7 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 require_once '../config/email-service.php';
                 emailNewRequest($conn, $request_id, $title, $description, $_SESSION['name'], '', '', '');
                 
-                $success = "Request submitted successfully! Request ID: #$request_id";
+                // Auto-assign technician
+                require_once '../config/auto-assign.php';
+                $assign_result = autoAssignTechnician($conn, $request_id);
+                if ($assign_result['assigned']) {
+                    $success = "Request submitted and auto-assigned to " . $assign_result['technician_name'] . "! Request ID: #$request_id";
+                } else {
+                    $success = "Request submitted successfully! Request ID: #$request_id (Waiting for admin to assign a technician)";
+                }
                 
                 // Redirect after 2 seconds
                 header("refresh:2;url=dashboard.php");
