@@ -11,6 +11,7 @@
 
 // Get unread notification count for current user
 $_notif_count = 0;
+$_total_notif_count = 0;
 $_recent_notifications = [];
 
 if (isset($_SESSION['user_id'])) {
@@ -21,6 +22,14 @@ if (isset($_SESSION['user_id'])) {
     $notif_count_stmt->execute();
     $_notif_count = $notif_count_stmt->get_result()->fetch_assoc()['unread'];
     $notif_count_stmt->close();
+
+    // Count total notifications
+    $total_count_sql = "SELECT COUNT(*) as total FROM notification WHERE UserID = ?";
+    $total_count_stmt = $conn->prepare($total_count_sql);
+    $total_count_stmt->bind_param("i", $_SESSION['user_id']);
+    $total_count_stmt->execute();
+    $_total_notif_count = $total_count_stmt->get_result()->fetch_assoc()['total'];
+    $total_count_stmt->close();
     
     // Get latest 5 notifications for dropdown preview
     $notif_sql = "SELECT 
@@ -133,9 +142,14 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
     font-size: 0.95rem;
 }
 
-.notif-mark-all {
+.notif-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.notif-mark-all, .notif-delete-all {
     font-size: 0.8rem;
-    color: #2563eb;
     cursor: pointer;
     text-decoration: none;
     font-weight: 500;
@@ -144,7 +158,15 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
     padding: 0;
 }
 
-.notif-mark-all:hover {
+.notif-mark-all {
+    color: #2563eb;
+}
+
+.notif-delete-all {
+    color: #ef4444;
+}
+
+.notif-mark-all:hover, .notif-delete-all:hover {
     text-decoration: underline;
 }
 
@@ -154,13 +176,16 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
 }
 
 .notif-item {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     padding: 0.875rem 1.25rem;
     border-bottom: 1px solid #f1f5f9;
     text-decoration: none;
     color: inherit;
     transition: background 0.2s;
     cursor: pointer;
+    gap: 0.5rem;
 }
 
 .notif-item:hover {
@@ -174,6 +199,11 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
 
 .notif-item.unread:hover {
     background: #dbeafe;
+}
+
+.notif-item-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .notif-message {
@@ -190,6 +220,24 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
 .notif-time {
     font-size: 0.75rem;
     color: #94a3b8;
+}
+
+.notif-item-delete {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.notif-item-delete:hover {
+    color: #ef4444;
+    background: #fee2e2;
 }
 
 .notif-empty {
@@ -234,33 +282,38 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
     <div class="notif-dropdown" id="notifDropdown">
         <div class="notif-dropdown-header">
             <span class="notif-dropdown-title">Notifications</span>
-            <?php if ($_notif_count > 0): ?>
-                <button class="notif-mark-all" onclick="markAllRead(event)">Mark all as read</button>
-            <?php endif; ?>
+            <div class="notif-header-actions">
+                <?php if ($_notif_count > 0): ?>
+                    <button class="notif-mark-all" onclick="markAllRead(event)">✓ Read all</button>
+                <?php endif; ?>
+                <?php if ($_total_notif_count > 0): ?>
+                    <button class="notif-delete-all" onclick="deleteAllNotifs(event)">🗑️ Clear all</button>
+                <?php endif; ?>
+            </div>
         </div>
         
-        <div class="notif-list">
+        <div class="notif-list" id="notifList">
             <?php if (count($_recent_notifications) > 0): ?>
                 <?php foreach ($_recent_notifications as $notif): ?>
-                    <a href="<?php 
-                        if ($notif['RequestID']) {
-                            // Link to appropriate details page based on role
-                            if ($_SESSION['role_id'] == 1) {
-                                echo $_notif_base_path . 'admin/request-details.php?id=' . $notif['RequestID'];
-                            } elseif ($_SESSION['role_id'] == 2) {
-                                echo $_notif_base_path . 'technician/task-details.php?id=' . $notif['RequestID'];
+                    <div class="notif-item <?php echo $notif['IsRead'] ? '' : 'unread'; ?>" id="notif-<?php echo $notif['NotificationID']; ?>">
+                        <a href="<?php 
+                            if ($notif['RequestID']) {
+                                if ($_SESSION['role_id'] == 1) {
+                                    echo $_notif_base_path . 'admin/request-details.php?id=' . $notif['RequestID'];
+                                } elseif ($_SESSION['role_id'] == 2) {
+                                    echo $_notif_base_path . 'technician/task-details.php?id=' . $notif['RequestID'];
+                                } else {
+                                    echo $_notif_base_path . 'user/request-details.php?id=' . $notif['RequestID'];
+                                }
                             } else {
-                                echo $_notif_base_path . 'user/request-details.php?id=' . $notif['RequestID'];
+                                echo '#';
                             }
-                        } else {
-                            echo '#';
-                        }
-                    ?>" 
-                       class="notif-item <?php echo $notif['IsRead'] ? '' : 'unread'; ?>"
-                       onclick="markAsRead(<?php echo $notif['NotificationID']; ?>)">
-                        <div class="notif-message"><?php echo htmlspecialchars($notif['Message']); ?></div>
-                        <div class="notif-time"><?php echo timeAgo($notif['CreatedAt']); ?></div>
-                    </a>
+                        ?>" class="notif-item-content" onclick="markAsRead(<?php echo $notif['NotificationID']; ?>)" style="text-decoration:none; color:inherit;">
+                            <div class="notif-message"><?php echo htmlspecialchars($notif['Message']); ?></div>
+                            <div class="notif-time"><?php echo timeAgo($notif['CreatedAt']); ?></div>
+                        </a>
+                        <button class="notif-item-delete" onclick="deleteSingleNotif(event, <?php echo $notif['NotificationID']; ?>)" title="Delete">✕</button>
+                    </div>
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="notif-empty">
@@ -280,13 +333,14 @@ if (in_array($_current_dir, ['admin', 'user', 'technician', 'auth', 'config'])) 
 
 <!-- Notification Bell JavaScript -->
 <script>
+var notifBasePath = '<?php echo $_notif_base_path; ?>';
+
 function toggleNotifDropdown(e) {
     e.stopPropagation();
     var dropdown = document.getElementById('notifDropdown');
     dropdown.classList.toggle('show');
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     var wrapper = document.getElementById('notifWrapper');
     var dropdown = document.getElementById('notifDropdown');
@@ -296,9 +350,8 @@ document.addEventListener('click', function(e) {
 });
 
 function markAsRead(notifId) {
-    // Send AJAX request to mark notification as read
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', '<?php echo $_notif_base_path; ?>config/mark-notification-read.php', true);
+    xhr.open('POST', notifBasePath + 'config/mark-notification-read.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.send('notification_id=' + notifId);
 }
@@ -308,26 +361,99 @@ function markAllRead(e) {
     e.preventDefault();
     
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', '<?php echo $_notif_base_path; ?>config/mark-notification-read.php', true);
+    xhr.open('POST', notifBasePath + 'config/mark-notification-read.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onload = function() {
         if (xhr.status === 200) {
-            // Remove badge
             var badge = document.getElementById('notifBadge');
             if (badge) badge.remove();
             
-            // Remove unread styling from all items
             var items = document.querySelectorAll('.notif-item.unread');
             items.forEach(function(item) {
                 item.classList.remove('unread');
             });
             
-            // Hide "Mark all as read" button
             var markAllBtn = document.querySelector('.notif-mark-all');
             if (markAllBtn) markAllBtn.style.display = 'none';
         }
     };
     xhr.send('mark_all=1');
+}
+
+function deleteSingleNotif(e, notifId) {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', notifBasePath + 'config/mark-notification-read.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var item = document.getElementById('notif-' + notifId);
+            if (item) {
+                item.style.transition = 'opacity 0.3s, height 0.3s';
+                item.style.opacity = '0';
+                item.style.height = '0';
+                item.style.overflow = 'hidden';
+                item.style.padding = '0';
+                setTimeout(function() { item.remove(); checkEmpty(); }, 300);
+            }
+            updateBadgeCount(-1);
+        }
+    };
+    xhr.send('delete_id=' + notifId);
+}
+
+function deleteAllNotifs(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (!confirm('Delete all notifications?')) return;
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', notifBasePath + 'config/mark-notification-read.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var badge = document.getElementById('notifBadge');
+            if (badge) badge.remove();
+            
+            document.getElementById('notifList').innerHTML = 
+                '<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div>No notifications</div></div>';
+            
+            var footer = document.querySelector('.notif-dropdown-footer');
+            if (footer) footer.remove();
+            
+            var actions = document.querySelector('.notif-header-actions');
+            if (actions) actions.innerHTML = '';
+        }
+    };
+    xhr.send('delete_all=1');
+}
+
+function updateBadgeCount(change) {
+    var badge = document.getElementById('notifBadge');
+    if (badge) {
+        var current = parseInt(badge.textContent) || 0;
+        var newCount = Math.max(0, current + change);
+        if (newCount <= 0) {
+            badge.remove();
+        } else {
+            badge.textContent = newCount;
+        }
+    }
+}
+
+function checkEmpty() {
+    var list = document.getElementById('notifList');
+    var items = list.querySelectorAll('.notif-item');
+    if (items.length === 0) {
+        list.innerHTML = '<div class="notif-empty"><div class="notif-empty-icon">🔔</div><div>No notifications</div></div>';
+        var footer = document.querySelector('.notif-dropdown-footer');
+        if (footer) footer.remove();
+        var actions = document.querySelector('.notif-header-actions');
+        if (actions) actions.innerHTML = '';
+    }
 }
 </script>
 

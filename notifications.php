@@ -1,11 +1,11 @@
 <?php
 /**
- * FixPoint - Notifications Page
+ * FixPoint - All Notifications Page
  * View all notifications for the logged-in user
  */
 
 session_start();
-require_once '../config/session-security.php';
+require_once 'config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -22,71 +22,90 @@ $role_id = $_SESSION['role_id'];
 // Handle filter
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 
-// Build query
+// Build query based on filter
+$where = "WHERE n.UserID = ?";
+if ($filter === 'unread') {
+    $where .= " AND n.IsRead = 0";
+} elseif ($filter === 'read') {
+    $where .= " AND n.IsRead = 1";
+}
+
+// Get notifications
 $sql = "SELECT 
             n.NotificationID,
             n.Message,
             n.IsRead,
             n.CreatedAt,
-            n.RequestID,
-            mr.Title as RequestTitle,
-            mr.StatusID
+            n.RequestID
         FROM notification n
-        LEFT JOIN maintenancerequest mr ON n.RequestID = mr.RequestID
-        WHERE n.UserID = ?";
-
-if ($filter == 'unread') {
-    $sql .= " AND n.IsRead = 0";
-} elseif ($filter == 'read') {
-    $sql .= " AND n.IsRead = 1";
-}
-
-$sql .= " ORDER BY n.CreatedAt DESC";
+        $where
+        ORDER BY n.CreatedAt DESC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
-// Count unread
-$unread_sql = "SELECT COUNT(*) as unread FROM notification WHERE UserID = ? AND IsRead = 0";
-$unread_stmt = $conn->prepare($unread_sql);
-$unread_stmt->bind_param("i", $user_id);
-$unread_stmt->execute();
-$unread_count = $unread_stmt->get_result()->fetch_assoc()['unread'];
+// Count stats
+$count_sql = "SELECT 
+    COUNT(*) as total,
+    SUM(CASE WHEN IsRead = 0 THEN 1 ELSE 0 END) as unread,
+    SUM(CASE WHEN IsRead = 1 THEN 1 ELSE 0 END) as read_count
+FROM notification WHERE UserID = ?";
+$count_stmt = $conn->prepare($count_sql);
+$count_stmt->bind_param("i", $user_id);
+$count_stmt->execute();
+$counts = $count_stmt->get_result()->fetch_assoc();
+$count_stmt->close();
 
-// Determine dashboard link based on role
-$dashboard_link = 'index.php';
-if ($role_id == 1) $dashboard_link = 'admin/dashboard.php';
-elseif ($role_id == 2) $dashboard_link = 'technician/dashboard.php';
-elseif ($role_id == 3 || $role_id == 4) $dashboard_link = 'user/dashboard.php';
-
-// Determine request detail link based on role
-function getRequestLink($request_id, $role_id) {
-    if ($role_id == 1) return 'admin/request-details.php?id=' . $request_id;
-    elseif ($role_id == 2) return 'technician/task-details.php?id=' . $request_id;
-    else return 'user/request-details.php?id=' . $request_id;
+// Determine base path for links
+$base_path = '';
+if ($role_id == 1) {
+    $details_path = 'admin/request-details.php?id=';
+    $dashboard_path = 'admin/dashboard.php';
+} elseif ($role_id == 2) {
+    $details_path = 'technician/task-details.php?id=';
+    $dashboard_path = 'technician/dashboard.php';
+} else {
+    $details_path = 'user/request-details.php?id=';
+    $dashboard_path = 'user/dashboard.php';
 }
 
-// Time ago helper
-function timeAgoFull($datetime) {
-    $now = new DateTime();
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
-    
-    if ($diff->y > 0) return $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ' ago';
-    if ($diff->m > 0) return $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ' ago';
-    if ($diff->d > 0) {
-        if ($diff->d == 1) return 'Yesterday';
-        if ($diff->d < 7) return $diff->d . ' days ago';
-        return floor($diff->d / 7) . ' week' . (floor($diff->d / 7) > 1 ? 's' : '') . ' ago';
+// Helper function for time ago (if not already defined)
+if (!function_exists('notifTimeAgo')) {
+    function notifTimeAgo($datetime) {
+        $now = new DateTime();
+        $ago = new DateTime($datetime);
+        $diff = $now->diff($ago);
+        
+        if ($diff->y > 0) return $diff->y . ' year' . ($diff->y > 1 ? 's' : '') . ' ago';
+        if ($diff->m > 0) return $diff->m . ' month' . ($diff->m > 1 ? 's' : '') . ' ago';
+        if ($diff->d > 0) {
+            if ($diff->d == 1) return 'Yesterday';
+            if ($diff->d < 7) return $diff->d . ' days ago';
+            return floor($diff->d / 7) . ' week' . (floor($diff->d / 7) > 1 ? 's' : '') . ' ago';
+        }
+        if ($diff->h > 0) return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
+        if ($diff->i > 0) return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
+        return 'Just now';
     }
-    if ($diff->h > 0) return $diff->h . ' hour' . ($diff->h > 1 ? 's' : '') . ' ago';
-    if ($diff->i > 0) return $diff->i . ' minute' . ($diff->i > 1 ? 's' : '') . ' ago';
-    return 'Just now';
 }
 
+// Get notification icon based on message content
+function getNotifIcon($message) {
+    if (strpos($message, 'assigned') !== false) return '👨‍🔧';
+    if (strpos($message, 'completed') !== false) return '✅';
+    if (strpos($message, 'progress') !== false || strpos($message, 'working') !== false) return '🔧';
+    if (strpos($message, 'feedback') !== false || strpos($message, 'stars') !== false) return '⭐';
+    if (strpos($message, 'submitted') !== false || strpos($message, 'new') !== false) return '📝';
+    if (strpos($message, 'cancelled') !== false) return '❌';
+    if (strpos($message, 'reviewed') !== false) return '👁️';
+    if (strpos($message, 'Error') !== false || strpos($message, '⚠️') !== false) return '⚠️';
+    return '🔔';
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,31 +115,85 @@ function timeAgoFull($datetime) {
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/dashboard.css">
     <style>
-        .notif-page-item {
+        .notif-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .notif-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .notif-filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            background: white;
+            transition: all 0.2s;
+        }
+        .notif-filter-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+        .notif-filter-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .notif-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .notif-action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-mark-all {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        .btn-mark-all:hover {
+            background: #bfdbfe;
+        }
+        .btn-delete-all {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        .btn-delete-all:hover {
+            background: #fecaca;
+        }
+        .notif-card {
             display: flex;
             align-items: flex-start;
             gap: 1rem;
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s;
-            text-decoration: none;
-            color: inherit;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
         }
-        
-        .notif-page-item:hover {
-            background: #f8fafc;
+        .notif-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        
-        .notif-page-item.unread {
+        .notif-card.unread {
             background: #eff6ff;
             border-left: 4px solid #2563eb;
         }
-        
-        .notif-page-item.unread:hover {
-            background: #dbeafe;
-        }
-        
-        .notif-icon {
+        .notif-card-icon {
             font-size: 1.5rem;
             flex-shrink: 0;
             width: 40px;
@@ -128,88 +201,88 @@ function timeAgoFull($datetime) {
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
             background: #f1f5f9;
+            border-radius: 50%;
         }
-        
-        .notif-page-item.unread .notif-icon {
+        .notif-card.unread .notif-card-icon {
             background: #dbeafe;
         }
-        
-        .notif-body {
+        .notif-card-content {
             flex: 1;
             min-width: 0;
         }
-        
-        .notif-page-message {
-            font-size: 0.95rem;
+        .notif-card-message {
             color: #1e293b;
+            font-size: 0.925rem;
             line-height: 1.5;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.375rem;
         }
-        
-        .notif-page-item.unread .notif-page-message {
+        .notif-card.unread .notif-card-message {
             font-weight: 600;
         }
-        
-        .notif-meta {
+        .notif-card-meta {
             display: flex;
-            align-items: center;
             gap: 1rem;
+            align-items: center;
             font-size: 0.8rem;
             color: #94a3b8;
         }
-        
-        .notif-request-tag {
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 0.15rem 0.5rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .notif-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #2563eb;
-            flex-shrink: 0;
-            margin-top: 0.5rem;
-        }
-        
-        .notif-page-item:not(.unread) .notif-dot {
-            background: transparent;
-        }
-        
-        .filter-tabs {
+        .notif-card-actions {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+            align-items: center;
         }
-        
-        .filter-tab {
-            padding: 0.5rem 1.25rem;
-            border-radius: 9999px;
-            text-decoration: none;
+        .notif-card-btn {
+            padding: 0.35rem 0.7rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            font-size: 0.875rem;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+            background: white;
             color: #64748b;
-            background: #f1f5f9;
+            cursor: pointer;
             transition: all 0.2s;
         }
-        
-        .filter-tab:hover {
-            background: #e2e8f0;
+        .notif-card-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
         }
-        
-        .filter-tab.active {
+        .notif-card-btn.delete-btn {
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+        .notif-card-btn.delete-btn:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        .notif-card-btn.view-btn {
             background: #2563eb;
             color: white;
+            border-color: #2563eb;
+        }
+        .notif-card-btn.view-btn:hover {
+            background: #1d4ed8;
+        }
+        .notif-empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+        .notif-empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .notif-page-header { flex-direction: column; align-items: flex-start; }
+            .notif-card { flex-direction: column; }
+            .notif-card-actions { width: 100%; justify-content: flex-end; }
         }
     </style>
 </head>
 <body>
+
     <!-- Header -->
     <header class="header">
         <div class="container">
@@ -217,10 +290,9 @@ function timeAgoFull($datetime) {
                 <div class="logo">
                     <span class="logo-icon">🔧</span>
                     <span class="logo-text">FixPoint</span>
-                    <span class="logo-subtitle">SEU</span>
                 </div>
                 <nav class="nav-links">
-                    <a href="<?php echo $dashboard_link; ?>" class="nav-link">← Dashboard</a>
+                    <a href="<?php echo $dashboard_path; ?>" class="nav-link">Dashboard</a>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="auth/logout.php" class="btn btn-outline">Logout</a>
                 </nav>
@@ -231,158 +303,180 @@ function timeAgoFull($datetime) {
     <div class="dashboard">
         <div class="dashboard-container">
             
-            <!-- Page Header -->
-            <div class="dashboard-header">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h1 class="welcome-text">🔔 Notifications</h1>
-                        <p class="user-info">
-                            <?php if ($unread_count > 0): ?>
-                                You have <strong><?php echo $unread_count; ?></strong> unread notification<?php echo $unread_count > 1 ? 's' : ''; ?>
-                            <?php else: ?>
-                                All caught up! No unread notifications.
-                            <?php endif; ?>
-                        </p>
+            <!-- Page Header with Filters and Actions -->
+            <div class="notif-page-header">
+                <div>
+                    <h1 class="welcome-text">🔔 Notifications</h1>
+                    <p style="color: #64748b; margin-top: 0.25rem;">
+                        <?php echo $counts['total']; ?> total · <?php echo $counts['unread']; ?> unread
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                    <!-- Filters -->
+                    <div class="notif-filters">
+                        <a href="notifications.php?filter=all" class="notif-filter-btn <?php echo $filter === 'all' ? 'active' : ''; ?>">
+                            All (<?php echo $counts['total']; ?>)
+                        </a>
+                        <a href="notifications.php?filter=unread" class="notif-filter-btn <?php echo $filter === 'unread' ? 'active' : ''; ?>">
+                            Unread (<?php echo $counts['unread']; ?>)
+                        </a>
+                        <a href="notifications.php?filter=read" class="notif-filter-btn <?php echo $filter === 'read' ? 'active' : ''; ?>">
+                            Read (<?php echo $counts['read_count']; ?>)
+                        </a>
                     </div>
-                    <?php if ($unread_count > 0): ?>
-                        <button onclick="markAllNotificationsRead()" class="btn btn-outline" id="markAllBtn">
-                            ✓ Mark All as Read
-                        </button>
+                    
+                    <!-- Action Buttons -->
+                    <?php if ($counts['total'] > 0): ?>
+                        <div class="notif-actions">
+                            <?php if ($counts['unread'] > 0): ?>
+                                <button class="notif-action-btn btn-mark-all" onclick="pageMarkAllRead()">
+                                    ✓ Mark all read
+                                </button>
+                            <?php endif; ?>
+                            <button class="notif-action-btn btn-delete-all" onclick="pageDeleteAll()">
+                                🗑️ Delete all
+                            </button>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">📊 Total</div>
-                    <div class="stat-value"><?php echo count($notifications); ?></div>
-                    <div class="stat-info">All notifications</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-label">🔔 Unread</div>
-                    <div class="stat-value"><?php echo $unread_count; ?></div>
-                    <div class="stat-info">Need attention</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-label">✅ Read</div>
-                    <div class="stat-value"><?php echo count($notifications) - $unread_count; ?></div>
-                    <div class="stat-info">Already seen</div>
-                </div>
-            </div>
-
             <!-- Notifications List -->
-            <div class="requests-section">
-                <!-- Filter Tabs -->
-                <div class="filter-tabs">
-                    <a href="notifications.php?filter=all" class="filter-tab <?php echo $filter == 'all' ? 'active' : ''; ?>">
-                        All
-                    </a>
-                    <a href="notifications.php?filter=unread" class="filter-tab <?php echo $filter == 'unread' ? 'active' : ''; ?>">
-                        🔵 Unread (<?php echo $unread_count; ?>)
-                    </a>
-                    <a href="notifications.php?filter=read" class="filter-tab <?php echo $filter == 'read' ? 'active' : ''; ?>">
-                        Read
-                    </a>
-                </div>
-                
+            <div id="notifPageList">
                 <?php if (count($notifications) > 0): ?>
-                    <div style="border: 1px solid #e2e8f0; border-radius: 0.75rem; overflow: hidden;">
-                        <?php foreach ($notifications as $notif): ?>
-                            <a href="<?php 
-                                if ($notif['RequestID']) {
-                                    echo getRequestLink($notif['RequestID'], $role_id);
-                                } else {
-                                    echo '#';
-                                }
-                            ?>" 
-                               class="notif-page-item <?php echo $notif['IsRead'] ? '' : 'unread'; ?>"
-                               onclick="markSingleRead(<?php echo $notif['NotificationID']; ?>)"
-                               id="notif-<?php echo $notif['NotificationID']; ?>">
-                                
-                                <div class="notif-icon">
-                                    <?php
-                                    // Choose icon based on message content
-                                    $msg = strtolower($notif['Message']);
-                                    if (strpos($msg, 'completed') !== false) echo '✅';
-                                    elseif (strpos($msg, 'assigned') !== false) echo '👨‍🔧';
-                                    elseif (strpos($msg, 'submitted') !== false || strpos($msg, 'new maintenance') !== false) echo '📝';
-                                    elseif (strpos($msg, 'in progress') !== false || strpos($msg, 'working') !== false) echo '🔧';
-                                    elseif (strpos($msg, 'feedback') !== false) echo '⭐';
-                                    elseif (strpos($msg, 'cancelled') !== false) echo '❌';
-                                    elseif (strpos($msg, 'reviewed') !== false) echo '👁️';
-                                    else echo '🔔';
-                                    ?>
+                    <?php foreach ($notifications as $notif): ?>
+                        <div class="notif-card <?php echo $notif['IsRead'] ? '' : 'unread'; ?>" id="page-notif-<?php echo $notif['NotificationID']; ?>">
+                            <div class="notif-card-icon">
+                                <?php echo getNotifIcon($notif['Message']); ?>
+                            </div>
+                            <div class="notif-card-content">
+                                <div class="notif-card-message"><?php echo e($notif['Message']); ?></div>
+                                <div class="notif-card-meta">
+                                    <span>🕐 <?php echo notifTimeAgo($notif['CreatedAt']); ?></span>
+                                    <span><?php echo formatDate($notif['CreatedAt']); ?></span>
+                                    <?php if (!$notif['IsRead']): ?>
+                                        <span style="color: #2563eb; font-weight: 600;">● New</span>
+                                    <?php endif; ?>
                                 </div>
-                                
-                                <div class="notif-body">
-                                    <div class="notif-page-message">
-                                        <?php echo e($notif['Message']); ?>
-                                    </div>
-                                    <div class="notif-meta">
-                                        <span><?php echo timeAgoFull($notif['CreatedAt']); ?></span>
-                                        <span>•</span>
-                                        <span><?php echo formatDate($notif['CreatedAt'], 'M d, Y - h:i A'); ?></span>
-                                        <?php if ($notif['RequestTitle']): ?>
-                                            <span class="notif-request-tag">
-                                                Request #<?php echo $notif['RequestID']; ?>
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                
-                                <div class="notif-dot"></div>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
+                            </div>
+                            <div class="notif-card-actions">
+                                <?php if ($notif['RequestID']): ?>
+                                    <a href="<?php echo $details_path . $notif['RequestID']; ?>" class="notif-card-btn view-btn">
+                                        View →
+                                    </a>
+                                <?php endif; ?>
+                                <button class="notif-card-btn delete-btn" onclick="pageDeleteOne(<?php echo $notif['NotificationID']; ?>)">
+                                    ✕ Delete
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php else: ?>
-                    <div class="no-requests">
-                        <div class="no-requests-icon">🔔</div>
+                    <div class="notif-empty-state">
+                        <div class="notif-empty-state-icon">🔔</div>
                         <h3>No notifications</h3>
-                        <?php if ($filter != 'all'): ?>
-                            <p>No <?php echo $filter; ?> notifications found.</p>
-                            <br>
-                            <a href="notifications.php" class="btn btn-secondary">View All</a>
-                        <?php else: ?>
-                            <p>You don't have any notifications yet. They'll appear here when there are updates on your requests.</p>
-                        <?php endif; ?>
+                        <p>
+                            <?php if ($filter === 'unread'): ?>
+                                You've read all your notifications!
+                            <?php elseif ($filter === 'read'): ?>
+                                No read notifications yet.
+                            <?php else: ?>
+                                You don't have any notifications yet.
+                            <?php endif; ?>
+                        </p>
+                        <a href="<?php echo $dashboard_path; ?>" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                            ← Back to Dashboard
+                        </a>
                     </div>
                 <?php endif; ?>
             </div>
-            
+
         </div>
     </div>
 
     <script>
-    function markSingleRead(notifId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'config/mark-notification-read.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.send('notification_id=' + notifId);
-    }
-
-    function markAllNotificationsRead() {
+    function pageDeleteOne(notifId) {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'config/mark-notification-read.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
             if (xhr.status === 200) {
-                // Remove unread styling
-                var items = document.querySelectorAll('.notif-page-item.unread');
-                items.forEach(function(item) {
-                    item.classList.remove('unread');
-                });
-                // Update button
-                var btn = document.getElementById('markAllBtn');
-                if (btn) {
-                    btn.textContent = '✓ All Marked as Read';
-                    btn.disabled = true;
-                    btn.style.opacity = '0.6';
+                var card = document.getElementById('page-notif-' + notifId);
+                if (card) {
+                    card.style.transition = 'opacity 0.3s, margin 0.3s, padding 0.3s, height 0.3s';
+                    card.style.opacity = '0';
+                    card.style.marginBottom = '0';
+                    card.style.padding = '0';
+                    card.style.height = '0';
+                    card.style.overflow = 'hidden';
+                    setTimeout(function() { 
+                        card.remove(); 
+                        checkPageEmpty();
+                    }, 300);
                 }
+            }
+        };
+        xhr.send('delete_id=' + notifId);
+    }
+
+    function pageDeleteAll() {
+        if (!confirm('Are you sure you want to delete all notifications?')) return;
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'config/mark-notification-read.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                document.getElementById('notifPageList').innerHTML = 
+                    '<div class="notif-empty-state">' +
+                    '<div class="notif-empty-state-icon">🔔</div>' +
+                    '<h3>All clear!</h3>' +
+                    '<p>All notifications have been deleted.</p>' +
+                    '<a href="<?php echo $dashboard_path; ?>" style="color: #2563eb; text-decoration: none; font-weight: 600;">← Back to Dashboard</a>' +
+                    '</div>';
+                
+                var actions = document.querySelector('.notif-actions');
+                if (actions) actions.remove();
+            }
+        };
+        xhr.send('delete_all=1');
+    }
+
+    function pageMarkAllRead() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'config/mark-notification-read.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var unreadCards = document.querySelectorAll('.notif-card.unread');
+                unreadCards.forEach(function(card) {
+                    card.classList.remove('unread');
+                    var newBadge = card.querySelector('.notif-card-meta span[style*="color: #2563eb"]');
+                    if (newBadge) newBadge.remove();
+                });
+                
+                var markBtn = document.querySelector('.btn-mark-all');
+                if (markBtn) markBtn.remove();
             }
         };
         xhr.send('mark_all=1');
     }
+
+    function checkPageEmpty() {
+        var list = document.getElementById('notifPageList');
+        var cards = list.querySelectorAll('.notif-card');
+        if (cards.length === 0) {
+            list.innerHTML = 
+                '<div class="notif-empty-state">' +
+                '<div class="notif-empty-state-icon">🔔</div>' +
+                '<h3>No notifications</h3>' +
+                '<p>All notifications have been removed.</p>' +
+                '<a href="<?php echo $dashboard_path; ?>" style="color: #2563eb; text-decoration: none; font-weight: 600;">← Back to Dashboard</a>' +
+                '</div>';
+        }
+    }
     </script>
+
 </body>
 </html>

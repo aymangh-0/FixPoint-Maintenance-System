@@ -1,0 +1,44 @@
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-16 19:41:32
+------------------------------------------------------------
+MESSAGE:  mysqli::__construct(): (HY000/2002): No connection could be made because the target machine actively refused it
+FILE:     C:\xampp\htdocs\fixpoint\config\database.php
+LINE:     10
+URL:      GET /FixPoint/auth/login.php
+IP:       ::1
+USER:     Not logged in
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-16 19:41:40
+------------------------------------------------------------
+MESSAGE:  mysqli::__construct(): Error while reading greeting packet. PID=7116
+FILE:     C:\xampp\htdocs\fixpoint\config\database.php
+LINE:     10
+URL:      GET /FixPoint/auth/login.php
+IP:       ::1
+USER:     Not logged in
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-16 19:41:40
+------------------------------------------------------------
+MESSAGE:  mysqli::__construct(): (HY000/2006): MySQL server has gone away
+FILE:     C:\xampp\htdocs\fixpoint\config\database.php
+LINE:     10
+URL:      GET /FixPoint/auth/login.php
+IP:       ::1
+USER:     Not logged in
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-16 19:51:41
+------------------------------------------------------------
+MESSAGE:  mysqli::__construct(): (HY000/2002): No connection could be made because the target machine actively refused it
+FILE:     C:\xampp\htdocs\fixpoint\config\database.php
+LINE:     10
+URL:      GET /FixPoint/admin/dashboard.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------

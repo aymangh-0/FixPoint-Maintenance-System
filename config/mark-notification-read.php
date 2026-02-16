@@ -1,12 +1,11 @@
 <?php
 /**
- * FixPoint - Mark Notification as Read (AJAX Handler)
- * Handles marking individual or all notifications as read
+ * FixPoint - Notification Handler (AJAX)
+ * Handles: mark as read (single/all), delete (single/all)
  */
 
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
@@ -17,7 +16,41 @@ require_once 'database.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Mark all notifications as read
+// DELETE ALL notifications
+if (isset($_POST['delete_all']) && $_POST['delete_all'] == '1') {
+    $sql = "DELETE FROM notification WHERE UserID = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'All notifications deleted']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to delete notifications']);
+    }
+    $stmt->close();
+    exit();
+}
+
+// DELETE single notification
+if (isset($_POST['delete_id'])) {
+    $notif_id = (int)$_POST['delete_id'];
+    
+    $sql = "DELETE FROM notification WHERE NotificationID = ? AND UserID = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $notif_id, $user_id);
+    
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to delete notification']);
+    }
+    $stmt->close();
+    exit();
+}
+
+// MARK ALL as read
 if (isset($_POST['mark_all']) && $_POST['mark_all'] == '1') {
     $sql = "UPDATE notification SET IsRead = 1 WHERE UserID = ? AND IsRead = 0";
     $stmt = $conn->prepare($sql);
@@ -33,7 +66,7 @@ if (isset($_POST['mark_all']) && $_POST['mark_all'] == '1') {
     exit();
 }
 
-// Mark single notification as read
+// MARK single as read
 if (isset($_POST['notification_id'])) {
     $notif_id = (int)$_POST['notification_id'];
     
