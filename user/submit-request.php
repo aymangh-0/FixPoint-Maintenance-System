@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $file_type = $_FILES['photo']['type'];
                     
                     if (in_array($file_type, $allowed_types)) {
-                        // Validate file size (max 5MB)
+                        // Validate file size (max 20MB)
                         if ($_FILES['photo']['size'] <= 20 * 1024 * 1024) {
                             $file_extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
                             $new_filename = 'request_' . $request_id . '_' . time() . '.' . $file_extension;
