@@ -49,9 +49,14 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     $stmt->close();
     
     // Create assignment
-    $assign_sql = "INSERT INTO assignment (RequestID, TechnicianID, AssignedAt) VALUES (?, ?, NOW())";
+// Get first admin ID for auto-assignment
+    $admin_sql = "SELECT UserID FROM user WHERE RoleID = 1 LIMIT 1";
+    $admin_result = $conn->query($admin_sql);
+    $admin_id = $admin_result->fetch_assoc()['UserID'];
+
+    $assign_sql = "INSERT INTO assignment (RequestID, TechnicianID, AdminID, AssignedAt) VALUES (?, ?, ?, NOW())";
     $assign_stmt = $conn->prepare($assign_sql);
-    $assign_stmt->bind_param("ii", $request_id, $tech_id);
+    $assign_stmt->bind_param("iii", $request_id, $tech_id, $admin_id);
     
     if (!$assign_stmt->execute()) {
         return [
@@ -99,7 +104,7 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     
     // Audit log
     if (function_exists('logAuditAction')) {
-        logAuditAction($conn, null, 'AUTO_ASSIGN', 'assignment', $request_id, null, 
+        logAuditAction($conn, $admin_id, 'AUTO_ASSIGN', 'assignment', $request_id, null, 
             "Auto-assigned to $tech_name (UserID: $tech_id) - Active tasks: " . $technician['ActiveTasks']);
     }
     
