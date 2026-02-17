@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Passwords do not match";
     } else {
         // Check if email already exists
-        $check_sql = "SELECT UserID FROM User WHERE Email = ?";
+        $check_sql = "SELECT UserID FROM user WHERE Email = ?";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("s", $email);
         $check_stmt->execute();
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Insert new user
             // RoleID = 3 (User), Default limits: 2/week, 8/month
-            $insert_sql = "INSERT INTO User (RoleID, Name, Email, Password, Phone, MaxRequestsPerWeek, MaxRequestsPerMonth) 
+            $insert_sql = "INSERT INTO user (RoleID, Name, Email, Password, Phone, MaxRequestsPerWeek, MaxRequestsPerMonth) 
                           VALUES (3, ?, ?, ?, ?, 2, 8)";
             $insert_stmt = $conn->prepare($insert_sql);
             $insert_stmt->bind_param("ssss", $name, $email, $password_hash, $phone);
