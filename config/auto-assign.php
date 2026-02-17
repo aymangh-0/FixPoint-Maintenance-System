@@ -70,7 +70,7 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     
     // Log status change (Pending → Assigned)
     if (function_exists('logStatusChange')) {
-        logStatusChange($conn, $request_id, 1, 3, null);
+    logStatusChange($conn, $request_id, 1, 3, $admin_id);
     }
     
     // Notify the technician

@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 21, 2026 at 11:17 PM
+-- Generation Time: Feb 16, 2026 at 09:01 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -42,7 +42,37 @@ CREATE TABLE `assignment` (
 --
 
 INSERT INTO `assignment` (`AssignmentID`, `RequestID`, `TechnicianID`, `AdminID`, `AssignedAt`, `StartedAt`, `CompletedAt`) VALUES
-(1, 1, 2, 1, '2026-01-21 20:02:37', '2026-01-21 20:03:14', '2026-01-21 20:03:24');
+(1, 1, 2, 1, '2026-01-21 20:02:37', '2026-01-21 20:03:14', '2026-01-21 20:03:24'),
+(2, 2, 2, 1, '2026-02-15 22:00:25', '2026-02-15 22:01:03', '2026-02-15 22:01:08'),
+(3, 3, 2, 1, '2026-02-16 16:30:54', '2026-02-16 16:31:34', '2026-02-16 16:31:51');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditlog`
+--
+
+CREATE TABLE `auditlog` (
+  `AuditID` int(11) NOT NULL,
+  `UserID` int(11) DEFAULT NULL,
+  `Action` varchar(100) NOT NULL,
+  `TableName` varchar(100) DEFAULT NULL,
+  `RecordID` int(11) DEFAULT NULL,
+  `OldValue` text DEFAULT NULL,
+  `NewValue` text DEFAULT NULL,
+  `IPAddress` varchar(45) DEFAULT NULL,
+  `PerformedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `auditlog`
+--
+
+INSERT INTO `auditlog` (`AuditID`, `UserID`, `Action`, `TableName`, `RecordID`, `OldValue`, `NewValue`, `IPAddress`, `PerformedAt`) VALUES
+(1, 1, 'ASSIGN_TECHNICIAN', 'assignment', 3, NULL, 'TechnicianID: 2', '::1', '2026-02-16 16:30:54'),
+(2, 2, 'UPDATE_STATUS', 'maintenancerequest', 3, 'Status: Assigned', 'Status: In Progress', '::1', '2026-02-16 16:31:34'),
+(3, 2, 'UPDATE_STATUS', 'maintenancerequest', 3, 'Status: Assigned', 'Status: In Progress', '::1', '2026-02-16 16:31:51'),
+(4, 4, 'SUBMIT_FEEDBACK', 'feedback', 3, NULL, 'Rating: 5', '::1', '2026-02-16 16:37:00');
 
 -- --------------------------------------------------------
 
@@ -90,7 +120,9 @@ CREATE TABLE `feedback` (
 --
 
 INSERT INTO `feedback` (`FeedbackID`, `RequestID`, `UserID`, `Rating`, `Comment`, `SubmittedAt`) VALUES
-(1, 1, 4, 5, '', '2026-01-21 20:04:55');
+(1, 1, 4, 5, '', '2026-01-21 20:04:55'),
+(2, 2, 4, 5, 'Thanks', '2026-02-15 22:02:26'),
+(3, 3, 4, 5, 'Thanks', '2026-02-16 16:37:00');
 
 -- --------------------------------------------------------
 
@@ -122,6 +154,36 @@ INSERT INTO `location` (`LocationID`, `BuildingName`, `FloorNumber`, `RoomNumber
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `loginlog`
+--
+
+CREATE TABLE `loginlog` (
+  `LogID` int(11) NOT NULL,
+  `Email` varchar(255) NOT NULL,
+  `UserID` int(11) DEFAULT NULL,
+  `Status` enum('Success','Failed') NOT NULL,
+  `FailReason` varchar(255) DEFAULT NULL,
+  `IPAddress` varchar(45) DEFAULT NULL,
+  `UserAgent` varchar(500) DEFAULT NULL,
+  `AttemptedAt` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `loginlog`
+--
+
+INSERT INTO `loginlog` (`LogID`, `Email`, `UserID`, `Status`, `FailReason`, `IPAddress`, `UserAgent`, `AttemptedAt`) VALUES
+(1, 'admin@seu.edu.sa', 1, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 13:56:11'),
+(2, 'admin@seu.edu.sa', 1, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 16:30:41'),
+(3, 'ahmed.tech@seu.edu.sa', 2, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 16:31:28'),
+(4, 'S220053790@seu.edu.sa', 4, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 16:36:24'),
+(5, 'ahmed.tech@seu.edu.sa', 2, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 19:26:58'),
+(6, 'ahmed.tech@seu.edu.sa', 2, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 19:34:35'),
+(7, 'S220053790@seu.edu.sa', 4, 'Success', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', '2026-02-16 19:56:36');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `maintenancerequest`
 --
 
@@ -144,7 +206,9 @@ CREATE TABLE `maintenancerequest` (
 --
 
 INSERT INTO `maintenancerequest` (`RequestID`, `UserID`, `LocationID`, `CategoryID`, `PriorityID`, `StatusID`, `Title`, `Description`, `SubmittedAt`, `UpdatedAt`, `CompletedAt`) VALUES
-(1, 4, 6, 1, 3, 5, 'Broken AC', 'not working', '2026-01-21 19:47:19', '2026-01-21 20:03:24', '2026-01-21 20:03:24');
+(1, 4, 6, 1, 3, 5, 'Broken AC', 'not working', '2026-01-21 19:47:19', '2026-01-21 20:03:24', '2026-01-21 20:03:24'),
+(2, 4, 4, 3, 1, 5, 'sdasqwdqwd', 'dqwdqwdqwdqwdqwdqwdqwdqwdqwd', '2026-02-15 21:59:27', '2026-02-15 22:01:08', '2026-02-15 22:01:08'),
+(3, 4, 6, 6, 2, 5, 'asdasdasdasd', 'asdasdasdasdasdasdasd', '2026-02-16 01:23:08', '2026-02-16 16:31:51', '2026-02-16 16:31:51');
 
 -- --------------------------------------------------------
 
@@ -166,12 +230,14 @@ CREATE TABLE `notification` (
 --
 
 INSERT INTO `notification` (`NotificationID`, `UserID`, `RequestID`, `Message`, `IsRead`, `CreatedAt`) VALUES
-(1, 1, 1, 'New maintenance request #1 submitted by Ayman Ahmed Alghamdi', 0, '2026-01-21 19:47:19'),
-(2, 4, 1, 'Your request #1 has been assigned to a technician', 0, '2026-01-21 20:02:37'),
-(3, 2, 1, 'New maintenance request #1 has been assigned to you', 0, '2026-01-21 20:02:37'),
-(4, 4, 1, 'Your request #1 is now being worked on by a technician', 0, '2026-01-21 20:03:14'),
-(5, 4, 1, 'Your request #1 has been completed! Please review and provide feedback.', 0, '2026-01-21 20:03:24'),
-(6, 1, 1, 'New feedback received for request #1 (5 stars)', 0, '2026-01-21 20:04:55');
+(3, 2, 1, 'New maintenance request #1 has been assigned to you', 1, '2026-01-21 20:02:37'),
+(6, 1, 1, 'New feedback received for request #1 (5 stars)', 1, '2026-01-21 20:04:55'),
+(7, 1, 2, 'New maintenance request #2 submitted by Ayman Ahmed Alghamdi', 1, '2026-02-15 21:59:27'),
+(9, 2, 2, 'New maintenance request #2 has been assigned to you', 1, '2026-02-15 22:00:25'),
+(12, 1, 2, 'New feedback received for request #2 (5 stars)', 1, '2026-02-15 22:02:26'),
+(13, 1, 3, 'New maintenance request #3 submitted by Ayman Ahmed Alghamdi', 1, '2026-02-16 01:23:08'),
+(15, 2, 3, 'New maintenance request #3 has been assigned to you', 1, '2026-02-16 16:30:54'),
+(18, 1, 3, 'New feedback received for request #3 (5 stars)', 1, '2026-02-16 16:37:00');
 
 -- --------------------------------------------------------
 
@@ -213,7 +279,8 @@ CREATE TABLE `requestphoto` (
 --
 
 INSERT INTO `requestphoto` (`PhotoID`, `RequestID`, `PhotoPath`, `UploadedAt`) VALUES
-(1, 1, '../uploads/requests/request_1_1769024839.jpg', '2026-01-21 19:47:19');
+(1, 1, '../uploads/requests/request_1_1769024839.jpg', '2026-01-21 19:47:19'),
+(2, 2, '../uploads/requests/request_2_1771192767.png', '2026-02-15 21:59:27');
 
 -- --------------------------------------------------------
 
@@ -284,7 +351,15 @@ INSERT INTO `statushistory` (`HistoryID`, `RequestID`, `OldStatusID`, `NewStatus
 (1, 1, NULL, 1, 4, '2026-01-21 19:47:19'),
 (2, 1, 1, 3, 1, '2026-01-21 20:02:37'),
 (3, 1, 3, 4, 2, '2026-01-21 20:03:14'),
-(4, 1, 4, 5, 2, '2026-01-21 20:03:24');
+(4, 1, 4, 5, 2, '2026-01-21 20:03:24'),
+(5, 2, NULL, 1, 4, '2026-02-15 21:59:27'),
+(6, 2, 1, 3, 1, '2026-02-15 22:00:25'),
+(7, 2, 3, 4, 2, '2026-02-15 22:01:03'),
+(8, 2, 4, 5, 2, '2026-02-15 22:01:08'),
+(9, 3, NULL, 1, 4, '2026-02-16 01:23:08'),
+(10, 3, 1, 3, 1, '2026-02-16 16:30:54'),
+(11, 3, 3, 4, 2, '2026-02-16 16:31:34'),
+(12, 3, 4, 5, 2, '2026-02-16 16:31:51');
 
 -- --------------------------------------------------------
 
@@ -335,6 +410,16 @@ ALTER TABLE `assignment`
   ADD KEY `idx_technician` (`TechnicianID`);
 
 --
+-- Indexes for table `auditlog`
+--
+ALTER TABLE `auditlog`
+  ADD PRIMARY KEY (`AuditID`),
+  ADD KEY `idx_user` (`UserID`),
+  ADD KEY `idx_action` (`Action`),
+  ADD KEY `idx_table` (`TableName`),
+  ADD KEY `idx_date` (`PerformedAt`);
+
+--
 -- Indexes for table `category`
 --
 ALTER TABLE `category`
@@ -354,6 +439,16 @@ ALTER TABLE `feedback`
 --
 ALTER TABLE `location`
   ADD PRIMARY KEY (`LocationID`);
+
+--
+-- Indexes for table `loginlog`
+--
+ALTER TABLE `loginlog`
+  ADD PRIMARY KEY (`LogID`),
+  ADD KEY `idx_email` (`Email`),
+  ADD KEY `idx_user` (`UserID`),
+  ADD KEY `idx_status` (`Status`),
+  ADD KEY `idx_date` (`AttemptedAt`);
 
 --
 -- Indexes for table `maintenancerequest`
@@ -432,7 +527,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `assignment`
 --
 ALTER TABLE `assignment`
-  MODIFY `AssignmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `AssignmentID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `auditlog`
+--
+ALTER TABLE `auditlog`
+  MODIFY `AuditID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -444,7 +545,7 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `FeedbackID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `location`
@@ -453,16 +554,22 @@ ALTER TABLE `location`
   MODIFY `LocationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `loginlog`
+--
+ALTER TABLE `loginlog`
+  MODIFY `LogID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `maintenancerequest`
 --
 ALTER TABLE `maintenancerequest`
-  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `RequestID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `NotificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `NotificationID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `priority`
@@ -474,7 +581,7 @@ ALTER TABLE `priority`
 -- AUTO_INCREMENT for table `requestphoto`
 --
 ALTER TABLE `requestphoto`
-  MODIFY `PhotoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `PhotoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `role`
@@ -492,7 +599,7 @@ ALTER TABLE `status`
 -- AUTO_INCREMENT for table `statushistory`
 --
 ALTER TABLE `statushistory`
-  MODIFY `HistoryID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `HistoryID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `user`
@@ -513,11 +620,23 @@ ALTER TABLE `assignment`
   ADD CONSTRAINT `assignment_ibfk_3` FOREIGN KEY (`AdminID`) REFERENCES `user` (`UserID`);
 
 --
+-- Constraints for table `auditlog`
+--
+ALTER TABLE `auditlog`
+  ADD CONSTRAINT `auditlog_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `user` (`UserID`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `feedback`
 --
 ALTER TABLE `feedback`
   ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`RequestID`) REFERENCES `maintenancerequest` (`RequestID`),
   ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`UserID`) REFERENCES `user` (`UserID`);
+
+--
+-- Constraints for table `loginlog`
+--
+ALTER TABLE `loginlog`
+  ADD CONSTRAINT `loginlog_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `user` (`UserID`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `maintenancerequest`
