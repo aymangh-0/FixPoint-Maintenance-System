@@ -46,9 +46,7 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     $technician = $result->fetch_assoc();
     $tech_id = $technician['UserID'];
     $tech_name = $technician['Name'];
-    $stmt->close();
-    
-    // Create assignment
+    $stmt->close();   
 // Get first admin ID for auto-assignment
     $admin_sql = "SELECT UserID FROM user WHERE RoleID = 1 LIMIT 1";
     $admin_result = $conn->query($admin_sql);
@@ -74,9 +72,9 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     $status_stmt->close();
     
     // Log status change (Pending → Assigned)
-    if (function_exists('logStatusChange')) {
+	if (function_exists('logStatusChange')) {
     logStatusChange($conn, $request_id, 1, 3, $admin_id);
-    }
+	}
     
     // Notify the technician
     if (function_exists('createNotification')) {
@@ -105,7 +103,7 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
     // Audit log
     if (function_exists('logAuditAction')) {
         logAuditAction($conn, $admin_id, 'AUTO_ASSIGN', 'assignment', $request_id, null, 
-            "Auto-assigned to $tech_name (UserID: $tech_id) - Active tasks: " . $technician['ActiveTasks']);
+   		 "Auto-assigned to $tech_name (UserID: $tech_id) - Active tasks: " . $technician['ActiveTasks']);
     }
     
     return [
