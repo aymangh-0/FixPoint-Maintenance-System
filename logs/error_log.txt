@@ -75,3 +75,14 @@ URL:      POST /FixPoint/admin/request-details.php?id=4
 IP:       ::1
 USER:     UserID: 1, Name: System Administrator, Role: Admin
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 02:21:26
+------------------------------------------------------------
+MESSAGE:  mysqli::__construct(): (HY000/2002): No connection could be made because the target machine actively refused it
+FILE:     C:\xampp\htdocs\fixpoint\config\database.php
+LINE:     10
+URL:      GET /FixPoint/auth/login.php
+IP:       ::1
+USER:     Not logged in
+------------------------------------------------------------
