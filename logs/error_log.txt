@@ -86,3 +86,16 @@ URL:      GET /FixPoint/auth/login.php
 IP:       ::1
 USER:     Not logged in
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-02-18 02:27:17
+------------------------------------------------------------
+MESSAGE:  Call to a member function fetch_all() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\audit-logs.php
+LINE:     71
+URL:      GET /FixPoint/admin/audit-logs.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------

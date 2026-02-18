@@ -42,7 +42,7 @@ if ($tab === 'audit') {
                 al.OldValue,
                 al.NewValue,
                 al.IPAddress,
-                al.CreatedAt,
+                al.PerformedAt,
                 u.Name as UserName,
                 u.Email as UserEmail
             FROM auditlog al
@@ -61,13 +61,13 @@ if ($tab === 'audit') {
     }
     
     if (!empty($date_from)) {
-        $sql .= " AND al.CreatedAt >= '" . $conn->real_escape_string($date_from) . " 00:00:00'";
+        $sql .= " AND al.PerformedAt >= '" . $conn->real_escape_string($date_from) . " 00:00:00'";
     }
     if (!empty($date_to)) {
-        $sql .= " AND al.CreatedAt <= '" . $conn->real_escape_string($date_to) . " 23:59:59'";
+        $sql .= " AND al.PerformedAt <= '" . $conn->real_escape_string($date_to) . " 23:59:59'";
     }
     
-    $sql .= " ORDER BY al.CreatedAt DESC LIMIT 200";
+    $sql .= " ORDER BY al.PerformedAt DESC LIMIT 200";
     $audit_logs = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
     
     // Get unique actions for filter
@@ -122,7 +122,7 @@ if ($tab === 'login') {
 $audit_count = $conn->query("SELECT COUNT(*) as c FROM auditlog")->fetch_assoc()['c'];
 $login_count = $conn->query("SELECT COUNT(*) as c FROM loginlog")->fetch_assoc()['c'];
 $failed_logins = $conn->query("SELECT COUNT(*) as c FROM loginlog WHERE Status = 'Failed'")->fetch_assoc()['c'];
-$today_actions = $conn->query("SELECT COUNT(*) as c FROM auditlog WHERE DATE(CreatedAt) = CURDATE()")->fetch_assoc()['c'];
+$today_actions = $conn->query("SELECT COUNT(*) as c FROM auditlog WHERE DATE(PerformedAt) = CURDATE()")->fetch_assoc()['c'];
 
 // Action icon helper
 function getActionIcon($action) {
@@ -406,7 +406,7 @@ function getActionColor($action) {
                                 <div class="log-meta">
                                     <span>👤 <?php echo $log['UserName'] ? e($log['UserName']) : 'System'; ?></span>
                                     <span>🌐 <?php echo e($log['IPAddress']); ?></span>
-                                    <span>🕐 <?php echo formatDate($log['CreatedAt']); ?></span>
+                                    <span>🕐 <?php echo formatDate($log['PerformedAt']); ?></span>
                                 </div>
                             </div>
                         </div>

@@ -247,7 +247,6 @@ $stats['Total'] = array_sum($stats);
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="all-requests.php" class="nav-link">All Requests</a>
-                    <a href="users.php" class="nav-link">Users</a>
                     <a href="reports.php" class="nav-link">Reports</a>
                     <a href="backup.php" class="nav-link">Backup</a>
                     <a href="locations.php" class="nav-link">Locations</a>

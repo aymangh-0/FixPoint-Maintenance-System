@@ -78,7 +78,7 @@ body {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .nav-link {
@@ -86,9 +86,70 @@ body {
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
+    color: var(--primary-color);
+}
+
+/* Nav Dropdown (More menu) */
+.nav-dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.nav-dropdown-toggle {
+    color: var(--dark);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.3s;
+}
+
+.nav-dropdown-toggle:hover {
+    color: var(--primary-color);
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--white);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e2e8f0;
+    min-width: 180px;
+    z-index: 9998;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.nav-dropdown-menu.show {
+    display: block;
+}
+
+.nav-dropdown-menu a {
+    display: block;
+    padding: 0.6rem 1.25rem;
+    color: var(--dark);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.nav-dropdown-menu a:hover {
+    background: var(--light-gray);
     color: var(--primary-color);
 }
 

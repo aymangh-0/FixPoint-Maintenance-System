@@ -124,10 +124,8 @@ $urgent_requests = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
                     <span class="logo-subtitle">SEU - Admin</span>
                 </div>
                 <nav class="nav-links">
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="all-requests.php" class="nav-link">All Requests</a>
                     <a href="users.php" class="nav-link">Users</a>
-                    <a href="reports.php" class="nav-link">Reports</a>
                     <a href="backup.php" class="nav-link">Backup</a>
                     <a href="locations.php" class="nav-link">Locations</a>
                     <a href="audit-logs.php" class="nav-link">Audit Logs</a>

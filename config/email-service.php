@@ -2,50 +2,29 @@
 /**
  * FixPoint - Email Service
  * Handles sending email notifications to users
- * 
- * MODES:
- * - 'log'  : (Default) Logs emails to file instead of sending (for development/demo)
- * - 'smtp' : Sends real emails via SMTP (for production)
- * 
- * SETUP FOR PRODUCTION:
- * 1. Install PHPMailer: composer require phpmailer/phpmailer
- * 2. Change EMAIL_MODE to 'smtp'
- * 3. Configure SMTP settings below
  */
 
 // ============================================
 // EMAIL CONFIGURATION
 // ============================================
 
-// Mode: 'log' = save to file (development), 'smtp' = send real emails (production)
-define('EMAIL_MODE', 'log');
+define('EMAIL_MODE', 'smtp');
 
-// SMTP Settings (configure when ready for production)
-define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_HOST', 'smtp-relay.brevo.com');
 define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'fixpoint.seu@gmail.com');    // Your Gmail address
-define('SMTP_PASSWORD', 'xxxx xxxx xxxx xxxx');       // Gmail App Password
-define('SMTP_FROM_EMAIL', 'fixpoint.seu@gmail.com');
-define('SMTP_FROM_NAME', 'FixPoint - SEU Maintenance');
-
-// Log file path (for development mode)
+define('SMTP_USERNAME', 'a2ab48001@smtp-brevo.com');
+define('SMTP_PASSWORD', 'xsmtpsib-7d603282b18175fcb03bb97e7a119161111d3eb0afbfb16364efa6c9cd043dcf-VW5i6AJhdEH9ZE3m');
+define('SMTP_FROM_EMAIL', 'a.aalghamdi147@gmail.com');
+define('SMTP_FROM_NAME',  'FixPoint - SEU Maintenance');
 define('EMAIL_LOG_FILE', __DIR__ . '/../logs/email_log.txt');
 
 // ============================================
 // EMAIL TEMPLATES
 // ============================================
 
-/**
- * Get email template based on notification type
- * 
- * @param string $type Type of notification
- * @param array $data Dynamic data for the template
- * @return array ['subject' => string, 'body' => string]
- */
 function getEmailTemplate($type, $data = []) {
     $templates = [
         
-        // When a new request is submitted (sent to admins)
         'new_request' => [
             'subject' => '🔔 New Maintenance Request #{request_id} - {title}',
             'body' => '
@@ -57,7 +36,6 @@ function getEmailTemplate($type, $data = []) {
                     <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
                         <h2 style="color: #1e293b; margin-top: 0;">📝 New Maintenance Request</h2>
                         <p style="color: #64748b;">A new maintenance request has been submitted and needs your review.</p>
-                        
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Request ID:</td><td style="padding: 8px 0; color: #1e293b;">#{request_id}</td></tr>
@@ -68,12 +46,10 @@ function getEmailTemplate($type, $data = []) {
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Priority:</td><td style="padding: 8px 0; color: #1e293b;">{priority}</td></tr>
                             </table>
                         </div>
-                        
                         <p style="color: #64748b;"><strong>Description:</strong><br>{description}</p>
-                        
                         <div style="text-align: center; margin-top: 25px;">
                             <a href="{site_url}/admin/request-details.php?id={request_id}" 
-                               style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                            style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                                 📋 Review Request
                             </a>
                         </div>
@@ -84,7 +60,6 @@ function getEmailTemplate($type, $data = []) {
                 </div>'
         ],
         
-        // When request status changes (sent to the requester)
         'status_update' => [
             'subject' => '📊 Request #{request_id} Status Updated - {new_status}',
             'body' => '
@@ -96,7 +71,6 @@ function getEmailTemplate($type, $data = []) {
                     <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
                         <h2 style="color: #1e293b; margin-top: 0;">📊 Request Status Updated</h2>
                         <p style="color: #64748b;">Hi {user_name}, your maintenance request status has been updated.</p>
-                        
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Request ID:</td><td style="padding: 8px 0; color: #1e293b;">#{request_id}</td></tr>
@@ -109,10 +83,9 @@ function getEmailTemplate($type, $data = []) {
                                 </tr>
                             </table>
                         </div>
-                        
                         <div style="text-align: center; margin-top: 25px;">
                             <a href="{site_url}/user/request-details.php?id={request_id}" 
-                               style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                                style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                                 👁️ View Request Details
                             </a>
                         </div>
@@ -122,8 +95,6 @@ function getEmailTemplate($type, $data = []) {
                     </div>
                 </div>'
         ],
-        
-        // When a technician is assigned (sent to technician)
         'technician_assigned' => [
             'subject' => '🔧 New Task Assigned - Request #{request_id}',
             'body' => '
@@ -135,7 +106,6 @@ function getEmailTemplate($type, $data = []) {
                     <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
                         <h2 style="color: #1e293b; margin-top: 0;">👨‍🔧 New Task Assigned to You</h2>
                         <p style="color: #64748b;">Hi {tech_name}, you have been assigned a new maintenance task.</p>
-                        
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Request ID:</td><td style="padding: 8px 0; color: #1e293b;">#{request_id}</td></tr>
@@ -146,12 +116,10 @@ function getEmailTemplate($type, $data = []) {
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Requester:</td><td style="padding: 8px 0; color: #1e293b;">{requester_name}</td></tr>
                             </table>
                         </div>
-                        
                         <p style="color: #64748b;"><strong>Description:</strong><br>{description}</p>
-                        
                         <div style="text-align: center; margin-top: 25px;">
                             <a href="{site_url}/technician/task-details.php?id={request_id}" 
-                               style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                            style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                                 🔧 View Task Details
                             </a>
                         </div>
@@ -162,7 +130,6 @@ function getEmailTemplate($type, $data = []) {
                 </div>'
         ],
         
-        // When request is completed (sent to requester)
         'request_completed' => [
             'subject' => '✅ Request #{request_id} Completed - Please Leave Feedback',
             'body' => '
@@ -174,7 +141,6 @@ function getEmailTemplate($type, $data = []) {
                     <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
                         <h2 style="color: #1e293b; margin-top: 0;">Great news, {user_name}!</h2>
                         <p style="color: #64748b;">Your maintenance request has been completed successfully.</p>
-                        
                         <div style="background: #d1fae5; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #a7f3d0;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr><td style="padding: 8px 0; color: #065f46; font-weight: 600;">Request ID:</td><td style="padding: 8px 0; color: #065f46;">#{request_id}</td></tr>
@@ -182,12 +148,10 @@ function getEmailTemplate($type, $data = []) {
                                 <tr><td style="padding: 8px 0; color: #065f46; font-weight: 600;">Status:</td><td style="padding: 8px 0;"><span style="background: #065f46; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px;">✅ Completed</span></td></tr>
                             </table>
                         </div>
-                        
                         <p style="color: #64748b;">We would love to hear your feedback! Please take a moment to rate the service.</p>
-                        
                         <div style="text-align: center; margin-top: 25px;">
                             <a href="{site_url}/user/submit-feedback.php?id={request_id}" 
-                               style="background: #f59e0b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                            style="background: #f59e0b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                                 ⭐ Leave Feedback
                             </a>
                         </div>
@@ -198,7 +162,6 @@ function getEmailTemplate($type, $data = []) {
                 </div>'
         ],
         
-        // When feedback is received (sent to admin)
         'feedback_received' => [
             'subject' => '⭐ New Feedback for Request #{request_id} - {rating} Stars',
             'body' => '
@@ -210,12 +173,10 @@ function getEmailTemplate($type, $data = []) {
                     <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
                         <h2 style="color: #1e293b; margin-top: 0;">⭐ New Feedback Received</h2>
                         <p style="color: #64748b;">A user has submitted feedback for a completed request.</p>
-                        
                         <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                             <div style="font-size: 2rem;">{stars}</div>
                             <div style="color: #92400e; font-weight: 600; margin-top: 5px;">{rating} out of 5 Stars</div>
                         </div>
-                        
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Request:</td><td style="padding: 8px 0; color: #1e293b;">#{request_id} - {title}</td></tr>
@@ -223,10 +184,9 @@ function getEmailTemplate($type, $data = []) {
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Comment:</td><td style="padding: 8px 0; color: #1e293b;">{comment}</td></tr>
                             </table>
                         </div>
-                        
                         <div style="text-align: center; margin-top: 25px;">
                             <a href="{site_url}/admin/all-feedback.php" 
-                               style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                            style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
                                 📊 View All Feedback
                             </a>
                         </div>
@@ -243,8 +203,6 @@ function getEmailTemplate($type, $data = []) {
     }
     
     $template = $templates[$type];
-    
-    // Replace placeholders with actual data
     $subject = $template['subject'];
     $body = $template['body'];
     
@@ -253,7 +211,6 @@ function getEmailTemplate($type, $data = []) {
         $body = str_replace('{' . $key . '}', htmlspecialchars($value), $body);
     }
     
-    // Set default site URL
     $site_url = 'http://localhost/fixpoint';
     $subject = str_replace('{site_url}', $site_url, $subject);
     $body = str_replace('{site_url}', $site_url, $body);
@@ -265,35 +222,17 @@ function getEmailTemplate($type, $data = []) {
 // SEND EMAIL FUNCTION
 // ============================================
 
-/**
- * Send an email notification
- * 
- * @param string $to_email Recipient email address
- * @param string $to_name Recipient name
- * @param string $subject Email subject
- * @param string $html_body HTML email body
- * @return bool Success status
- */
 function sendEmail($to_email, $to_name, $subject, $html_body) {
-    
     if (EMAIL_MODE === 'smtp') {
         return sendEmailSMTP($to_email, $to_name, $subject, $html_body);
     }
-    
-    // Default: Log mode - save to file
     return logEmail($to_email, $to_name, $subject, $html_body);
 }
 
-/**
- * Send email via SMTP (PHPMailer)
- * Requires: composer require phpmailer/phpmailer
- */
 function sendEmailSMTP($to_email, $to_name, $subject, $html_body) {
-    // Check if PHPMailer is available
     $phpmailer_path = __DIR__ . '/../vendor/autoload.php';
     
     if (!file_exists($phpmailer_path)) {
-        // PHPMailer not installed - fall back to logging
         logEmail($to_email, $to_name, $subject, $html_body, '[SMTP FALLBACK - PHPMailer not installed]');
         return false;
     }
@@ -303,7 +242,6 @@ function sendEmailSMTP($to_email, $to_name, $subject, $html_body) {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
     
     try {
-        // SMTP Configuration
         $mail->isSMTP();
         $mail->Host       = SMTP_HOST;
         $mail->SMTPAuth   = true;
@@ -312,11 +250,9 @@ function sendEmailSMTP($to_email, $to_name, $subject, $html_body) {
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = SMTP_PORT;
         
-        // Sender & Recipient
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($to_email, $to_name);
         
-        // Content
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
         $mail->Subject = $subject;
@@ -324,21 +260,15 @@ function sendEmailSMTP($to_email, $to_name, $subject, $html_body) {
         $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html_body));
         
         $mail->send();
-        
-        // Log successful send
         logEmail($to_email, $to_name, $subject, '[SENT SUCCESSFULLY VIA SMTP]');
-        
         return true;
+        
     } catch (Exception $e) {
-        // Log the error
         logEmail($to_email, $to_name, $subject, '[SMTP ERROR: ' . $mail->ErrorInfo . ']');
         return false;
     }
 }
 
-/**
- * Log email to file (for development/demo)
- */
 function logEmail($to_email, $to_name, $subject, $html_body, $note = '') {
     $log_dir = dirname(EMAIL_LOG_FILE);
     
@@ -361,44 +291,34 @@ function logEmail($to_email, $to_name, $subject, $html_body, $note = '') {
     $log_entry .= "$separator\n";
     
     file_put_contents(EMAIL_LOG_FILE, $log_entry, FILE_APPEND | LOCK_EX);
-    
     return true;
 }
 
 // ============================================
-// CONVENIENCE FUNCTIONS (Ready to use)
+// CONVENIENCE FUNCTIONS
 // ============================================
 
-/**
- * Send notification email when a new request is submitted
- */
 function emailNewRequest($conn, $request_id, $title, $description, $requester_name, $location, $category, $priority) {
-    // Get all admin emails
     $sql = "SELECT Email, Name FROM user WHERE RoleID = 1";
     $result = $conn->query($sql);
     
     while ($admin = $result->fetch_assoc()) {
         $template = getEmailTemplate('new_request', [
-            'request_id' => $request_id,
-            'title' => $title,
-            'description' => $description,
+            'request_id'     => $request_id,
+            'title'          => $title,
+            'description'    => $description,
             'requester_name' => $requester_name,
-            'location' => $location,
-            'category' => $category,
-            'priority' => $priority
+            'location'       => $location,
+            'category'       => $category,
+            'priority'       => $priority
         ]);
-        
         if ($template) {
             sendEmail($admin['Email'], $admin['Name'], $template['subject'], $template['body']);
         }
     }
 }
 
-/**
- * Send notification email when request status changes
- */
 function emailStatusUpdate($conn, $request_id, $user_id, $new_status) {
-    // Get user and request info
     $sql = "SELECT u.Email, u.Name, mr.Title 
             FROM user u 
             JOIN maintenancerequest mr ON mr.UserID = u.UserID 
@@ -411,70 +331,57 @@ function emailStatusUpdate($conn, $request_id, $user_id, $new_status) {
     if ($data) {
         $template = getEmailTemplate('status_update', [
             'request_id' => $request_id,
-            'title' => $data['Title'],
-            'user_name' => $data['Name'],
+            'title'      => $data['Title'],
+            'user_name'  => $data['Name'],
             'new_status' => $new_status
         ]);
-        
         if ($template) {
             sendEmail($data['Email'], $data['Name'], $template['subject'], $template['body']);
         }
     }
 }
 
-/**
- * Send notification email when technician is assigned
- */
 function emailTechnicianAssigned($conn, $request_id, $tech_id) {
-    // Get technician info
-    $tech_sql = "SELECT Email, Name FROM user WHERE UserID = ?";
-    $tech_stmt = $conn->prepare($tech_sql);
+    $tech_stmt = $conn->prepare("SELECT Email, Name FROM user WHERE UserID = ?");
     $tech_stmt->bind_param("i", $tech_id);
     $tech_stmt->execute();
     $tech = $tech_stmt->get_result()->fetch_assoc();
     
-    // Get request info
-    $req_sql = "SELECT mr.Title, mr.Description, u.Name as RequesterName,
-                       CONCAT(l.BuildingName, ' - Floor ', l.FloorNumber, ' - Room ', l.RoomNumber) as Location,
-                       c.CategoryName, p.PriorityLevel
+    $req_stmt = $conn->prepare("SELECT mr.Title, mr.Description, u.Name as RequesterName,
+                CONCAT(l.BuildingName, ' - Floor ', l.FloorNumber, ' - Room ', l.RoomNumber) as Location,
+                c.CategoryName, p.PriorityLevel
                 FROM maintenancerequest mr
                 JOIN user u ON mr.UserID = u.UserID
                 JOIN location l ON mr.LocationID = l.LocationID
                 JOIN category c ON mr.CategoryID = c.CategoryID
                 JOIN priority p ON mr.PriorityID = p.PriorityID
-                WHERE mr.RequestID = ?";
-    $req_stmt = $conn->prepare($req_sql);
+                WHERE mr.RequestID = ?");
     $req_stmt->bind_param("i", $request_id);
     $req_stmt->execute();
     $req = $req_stmt->get_result()->fetch_assoc();
     
     if ($tech && $req) {
         $template = getEmailTemplate('technician_assigned', [
-            'request_id' => $request_id,
-            'title' => $req['Title'],
-            'description' => $req['Description'],
-            'tech_name' => $tech['Name'],
+            'request_id'     => $request_id,
+            'title'          => $req['Title'],
+            'description'    => $req['Description'],
+            'tech_name'      => $tech['Name'],
             'requester_name' => $req['RequesterName'],
-            'location' => $req['Location'],
-            'category' => $req['CategoryName'],
-            'priority' => $req['PriorityLevel']
+            'location'       => $req['Location'],
+            'category'       => $req['CategoryName'],
+            'priority'       => $req['PriorityLevel']
         ]);
-        
         if ($template) {
             sendEmail($tech['Email'], $tech['Name'], $template['subject'], $template['body']);
         }
     }
 }
 
-/**
- * Send notification email when request is completed
- */
 function emailRequestCompleted($conn, $request_id) {
-    $sql = "SELECT u.Email, u.Name, mr.Title 
+    $stmt = $conn->prepare("SELECT u.Email, u.Name, mr.Title 
             FROM maintenancerequest mr
             JOIN user u ON mr.UserID = u.UserID
-            WHERE mr.RequestID = ?";
-    $stmt = $conn->prepare($sql);
+            WHERE mr.RequestID = ?");
     $stmt->bind_param("i", $request_id);
     $stmt->execute();
     $data = $stmt->get_result()->fetch_assoc();
@@ -482,48 +389,37 @@ function emailRequestCompleted($conn, $request_id) {
     if ($data) {
         $template = getEmailTemplate('request_completed', [
             'request_id' => $request_id,
-            'title' => $data['Title'],
-            'user_name' => $data['Name']
+            'title'      => $data['Title'],
+            'user_name'  => $data['Name']
         ]);
-        
         if ($template) {
             sendEmail($data['Email'], $data['Name'], $template['subject'], $template['body']);
         }
     }
 }
 
-/**
- * Send notification email when feedback is submitted
- */
 function emailFeedbackReceived($conn, $request_id, $user_name, $rating, $comment) {
-    // Get request title
-    $sql = "SELECT Title FROM maintenancerequest WHERE RequestID = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare("SELECT Title FROM maintenancerequest WHERE RequestID = ?");
     $stmt->bind_param("i", $request_id);
     $stmt->execute();
     $req = $stmt->get_result()->fetch_assoc();
     
-    // Generate stars display
     $stars = str_repeat('⭐', $rating) . str_repeat('☆', 5 - $rating);
     
-    // Send to all admins
-    $admin_sql = "SELECT Email, Name FROM user WHERE RoleID = 1";
-    $admin_result = $conn->query($admin_sql);
+    $admin_result = $conn->query("SELECT Email, Name FROM user WHERE RoleID = 1");
     
     while ($admin = $admin_result->fetch_assoc()) {
         $template = getEmailTemplate('feedback_received', [
             'request_id' => $request_id,
-            'title' => $req ? $req['Title'] : 'N/A',
-            'user_name' => $user_name,
-            'rating' => $rating,
-            'stars' => $stars,
-            'comment' => $comment ?: 'No comment provided'
+            'title'      => $req ? $req['Title'] : 'N/A',
+            'user_name'  => $user_name,
+            'rating'     => $rating,
+            'stars'      => $stars,
+            'comment'    => $comment ?: 'No comment provided'
         ]);
-        
         if ($template) {
             sendEmail($admin['Email'], $admin['Name'], $template['subject'], $template['body']);
         }
     }
 }
-
 ?>
