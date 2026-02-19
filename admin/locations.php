@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_location'])) {
     if (empty($building) || empty($floor) || empty($room)) {
         $error = "Building name, floor, and room are required.";
     } else {
-        // Check if location already exists
         $check_sql = "SELECT LocationID FROM location WHERE BuildingName = ? AND FloorNumber = ? AND RoomNumber = ?";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("sss", $building, $floor, $room);
@@ -76,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_location'])) {
     if (empty($building) || empty($floor) || empty($room)) {
         $error = "Building name, floor, and room are required.";
     } else {
-        // Get old values for audit
         $old_sql = "SELECT CONCAT(BuildingName, ' - ', FloorNumber, ' - ', RoomNumber) as OldLocation FROM location WHERE LocationID = ?";
         $old_stmt = $conn->prepare($old_sql);
         $old_stmt->bind_param("i", $loc_id);
@@ -104,8 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_location'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_location'])) {
     $loc_id = (int)$_POST['location_id'];
     
-    // Check if location is used in any requests
-    $check_sql = "SELECT COUNT(*) as count FROM maintenancerequest WHERE LocationID = ?";
+    // تحقق من وجود طلبات نشطة فقط (مو مكتملة أو ملغية)
+    $check_sql = "SELECT COUNT(*) as count FROM maintenancerequest 
+                  WHERE LocationID = ? 
+                  AND StatusID NOT IN (
+                      SELECT StatusID FROM status WHERE StatusName IN ('Completed', 'Cancelled')
+                  )";
     $check_stmt = $conn->prepare($check_sql);
     $check_stmt->bind_param("i", $loc_id);
     $check_stmt->execute();
@@ -113,9 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_location'])) {
     $check_stmt->close();
     
     if ($count > 0) {
-        $error = "Cannot delete this location. It is linked to $count maintenance request(s). Remove or reassign those requests first.";
+        $error = "Cannot delete this location. It has $count active request(s) still in progress.";
     } else {
-        // Get location name for audit
         $name_sql = "SELECT CONCAT(BuildingName, ' - ', FloorNumber, ' - ', RoomNumber) as LocName FROM location WHERE LocationID = ?";
         $name_stmt = $conn->prepare($name_sql);
         $name_stmt->bind_param("i", $loc_id);
@@ -138,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_location'])) {
 }
 
 // ============================================
-// Get all locations with request counts
+// Get all locations with request counts + active counts
 // ============================================
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
@@ -148,7 +149,10 @@ $sql = "SELECT
             l.FloorNumber,
             l.RoomNumber,
             l.Description,
-            COUNT(mr.RequestID) as RequestCount
+            COUNT(mr.RequestID) as RequestCount,
+            SUM(CASE WHEN mr.StatusID NOT IN (
+                SELECT StatusID FROM status WHERE StatusName IN ('Completed', 'Cancelled')
+            ) THEN 1 ELSE 0 END) as ActiveCount
         FROM location l
         LEFT JOIN maintenancerequest mr ON l.LocationID = mr.LocationID
         WHERE 1=1";
@@ -163,11 +167,9 @@ $sql .= " GROUP BY l.LocationID ORDER BY l.BuildingName, l.FloorNumber, l.RoomNu
 
 $locations = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 
-// Get unique building names for filter
 $buildings_sql = "SELECT DISTINCT BuildingName FROM location ORDER BY BuildingName";
 $buildings = $conn->query($buildings_sql)->fetch_all(MYSQLI_ASSOC);
 
-// Stats
 $total_locations = count($locations);
 $total_buildings = count($buildings);
 ?>
@@ -222,9 +224,7 @@ $total_buildings = count($buildings);
             padding: 0.25rem;
         }
         .modal-close:hover { color: #ef4444; }
-        .form-group {
-            margin-bottom: 1rem;
-        }
+        .form-group { margin-bottom: 1rem; }
         .form-group label {
             display: block;
             font-weight: 600;
@@ -279,7 +279,6 @@ $total_buildings = count($buildings);
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="nav">
@@ -292,8 +291,8 @@ $total_buildings = count($buildings);
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="all-requests.php" class="nav-link">All Requests</a>
                     <a href="users.php" class="nav-link">Users</a>
-                    <a href="locations.php" class="nav-link" style="color: #2563eb; font-weight: 600;">Locations</a>
                     <a href="reports.php" class="nav-link">Reports</a>
+                    <a href="audit-logs.php" class="nav-link">Audit Logs</a>
                     <?php include '../includes/notification-bell.php'; ?>
                     <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
                     <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
@@ -305,13 +304,11 @@ $total_buildings = count($buildings);
     <div class="dashboard">
         <div class="dashboard-container">
             
-            <!-- Page Header -->
             <div class="dashboard-header">
                 <h1 class="welcome-text">📍 Location Management</h1>
                 <p class="user-info">Add, edit, and manage campus locations</p>
             </div>
 
-            <!-- Alerts -->
             <?php if ($success): ?>
                 <div class="alert alert-success">✅ <?php echo e($success); ?></div>
             <?php endif; ?>
@@ -319,7 +316,6 @@ $total_buildings = count($buildings);
                 <div class="alert alert-error">❌ <?php echo e($error); ?></div>
             <?php endif; ?>
 
-            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">📍 Total Locations</div>
@@ -331,7 +327,6 @@ $total_buildings = count($buildings);
                 </div>
             </div>
 
-            <!-- Search & Add -->
             <div class="requests-section" style="margin-bottom: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <form method="GET" action="" style="display: flex; gap: 0.5rem; flex: 1; min-width: 250px;">
@@ -346,7 +341,6 @@ $total_buildings = count($buildings);
                 </div>
             </div>
 
-            <!-- Locations Table -->
             <div class="requests-section">
                 <h2 class="section-title">All Locations (<?php echo count($locations); ?>)</h2>
                 
@@ -386,12 +380,12 @@ $total_buildings = count($buildings);
                                                 <button class="action-btn btn-edit" onclick="openEditModal(<?php echo htmlspecialchars(json_encode($loc)); ?>)">
                                                     ✏️ Edit
                                                 </button>
-                                                <?php if ($loc['RequestCount'] == 0): ?>
+                                                <?php if ($loc['ActiveCount'] == 0): ?>
                                                     <button class="action-btn btn-delete" onclick="confirmDelete(<?php echo $loc['LocationID']; ?>, '<?php echo e($loc['BuildingName'] . ' - ' . $loc['RoomNumber']); ?>')">
                                                         🗑️ Delete
                                                     </button>
                                                 <?php else: ?>
-                                                    <button class="action-btn" style="background: #f1f5f9; color: #94a3b8; cursor: not-allowed;" title="Cannot delete: linked to requests" disabled>
+                                                    <button class="action-btn" style="background: #f1f5f9; color: #94a3b8; cursor: not-allowed;" disabled title="Has active requests">
                                                         🔒 In Use
                                                     </button>
                                                 <?php endif; ?>
@@ -512,7 +506,6 @@ $total_buildings = count($buildings);
         }
     }
 
-    // Close modal when clicking outside
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';

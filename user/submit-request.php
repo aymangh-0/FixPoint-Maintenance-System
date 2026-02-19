@@ -7,6 +7,7 @@
 session_start();
 require_once '../config/session-security.php';
 
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
@@ -21,6 +22,7 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['rol
 
 require_once '../config/database.php';
 require_once '../config/helpers.php';
+
 
 $user_id = $_SESSION['user_id'];
 $error = '';

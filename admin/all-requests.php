@@ -1,19 +1,16 @@
 <?php
 /**
  * FixPoint - All Requests (Admin)
- * View and manage all maintenance requests with filters and search
  */
 
 session_start();
 require_once '../config/session-security.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Redirect if not admin
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
     header("Location: ../index.php");
     exit();
@@ -24,14 +21,12 @@ require_once '../config/helpers.php';
 
 $admin_id = $_SESSION['user_id'];
 
-// Get filter parameters
-$status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
-$priority_filter = isset($_GET['priority']) ? $_GET['priority'] : 'all';
-$category_filter = isset($_GET['category']) ? $_GET['category'] : 'all';
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
+$status_filter   = isset($_GET['status'])   ? $_GET['status']         : 'all';
+$priority_filter = isset($_GET['priority']) ? $_GET['priority']       : 'all';
+$category_filter = isset($_GET['category']) ? $_GET['category']       : 'all';
+$search          = isset($_GET['search'])   ? trim($_GET['search'])   : '';
+$sort_by         = isset($_GET['sort'])     ? $_GET['sort']           : 'newest';
 
-// Build query
 $sql = "SELECT 
             mr.RequestID,
             mr.Title,
@@ -60,63 +55,50 @@ $sql = "SELECT
         JOIN status s ON mr.StatusID = s.StatusID
         WHERE 1=1";
 
-// Apply filters
 if ($status_filter != 'all') {
     $sql .= " AND s.StatusName = '" . $conn->real_escape_string($status_filter) . "'";
 }
-
 if ($priority_filter != 'all') {
     $sql .= " AND p.PriorityLevel = '" . $conn->real_escape_string($priority_filter) . "'";
 }
-
 if ($category_filter != 'all') {
     $sql .= " AND c.CategoryName = '" . $conn->real_escape_string($category_filter) . "'";
 }
-
-// Apply search
 if (!empty($search)) {
     $sql .= " AND (mr.Title LIKE '%" . $conn->real_escape_string($search) . "%' 
               OR mr.Description LIKE '%" . $conn->real_escape_string($search) . "%'
               OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%')";
 }
 
-// Apply sorting
 switch ($sort_by) {
-    case 'oldest':
-        $sql .= " ORDER BY mr.SubmittedAt ASC";
-        break;
-    case 'priority':
-        $sql .= " ORDER BY p.PriorityID DESC, mr.SubmittedAt DESC";
-        break;
-    case 'updated':
-        $sql .= " ORDER BY mr.UpdatedAt DESC";
-        break;
-    case 'newest':
-    default:
-        $sql .= " ORDER BY mr.SubmittedAt DESC";
-        break;
+    case 'oldest':   $sql .= " ORDER BY mr.SubmittedAt ASC"; break;
+    case 'priority': $sql .= " ORDER BY p.PriorityID DESC, mr.SubmittedAt DESC"; break;
+    case 'updated':  $sql .= " ORDER BY mr.UpdatedAt DESC"; break;
+    default:         $sql .= " ORDER BY mr.SubmittedAt DESC"; break;
 }
 
-$result = $conn->query($sql);
+$result   = $conn->query($sql);
 $requests = $result->fetch_all(MYSQLI_ASSOC);
 
-// Get statistics for current filters
-$stats = [];
-$stats['total'] = count($requests);
-$stats['pending'] = 0;
-$stats['in_progress'] = 0;
-$stats['completed'] = 0;
-
+$stats = ['total' => count($requests), 'pending' => 0, 'in_progress' => 0, 'completed' => 0];
 foreach ($requests as $req) {
     if ($req['StatusName'] == 'Pending') $stats['pending']++;
-    if ($req['StatusName'] == 'In Progress' || $req['StatusName'] == 'Assigned') $stats['in_progress']++;
+    if (in_array($req['StatusName'], ['In Progress', 'Assigned'])) $stats['in_progress']++;
     if ($req['StatusName'] == 'Completed') $stats['completed']++;
 }
 
-// Get dropdown data
 $categories = getAllCategories($conn);
 $priorities = getAllPriorities($conn);
 
+function getPriorityBorderClass($priority) {
+    $classes = [
+        'Critical' => 'priority-critical-border',
+        'High'     => 'priority-high-border',
+        'Medium'   => 'priority-medium-border',
+        'Low'      => 'priority-low-border',
+    ];
+    return $classes[$priority] ?? '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -128,7 +110,6 @@ $priorities = getAllPriorities($conn);
     <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="nav">
@@ -153,14 +134,14 @@ $priorities = getAllPriorities($conn);
 
     <div class="dashboard">
         <div class="dashboard-container">
-            
+
             <!-- Page Header -->
             <div class="dashboard-header">
                 <h1 class="welcome-text">All Maintenance Requests 📋</h1>
                 <p class="user-info">View, filter, and manage all system requests</p>
             </div>
 
-            <!-- Filter Stats -->
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">📊 Showing</div>
@@ -184,94 +165,82 @@ $priorities = getAllPriorities($conn);
                 </div>
             </div>
 
-            <!-- Filters Section -->
+            <!-- Filters -->
             <div class="requests-section" style="margin-bottom: 2rem;">
                 <h2 class="section-title">🔍 Filters & Search</h2>
-                
                 <form method="GET" action="" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
                     
-                    <!-- Status Filter -->
                     <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Status</label>
-                        <select name="status" class="form-input" style="width: 100%;">
-                            <option value="all" <?php echo ($status_filter == 'all') ? 'selected' : ''; ?>>All Status</option>
-                            <option value="Pending" <?php echo ($status_filter == 'Pending') ? 'selected' : ''; ?>>Pending</option>
-                            <option value="Reviewed" <?php echo ($status_filter == 'Reviewed') ? 'selected' : ''; ?>>Reviewed</option>
-                            <option value="Assigned" <?php echo ($status_filter == 'Assigned') ? 'selected' : ''; ?>>Assigned</option>
-                            <option value="In Progress" <?php echo ($status_filter == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                            <option value="Completed" <?php echo ($status_filter == 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                            <option value="Cancelled" <?php echo ($status_filter == 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Status</label>
+                        <select name="status" class="form-input" style="width:100%;">
+                            <option value="all"        <?php echo ($status_filter=='all')        ?'selected':''; ?>>All Status</option>
+                            <option value="Pending"    <?php echo ($status_filter=='Pending')    ?'selected':''; ?>>Pending</option>
+                            <option value="Reviewed"   <?php echo ($status_filter=='Reviewed')   ?'selected':''; ?>>Reviewed</option>
+                            <option value="Assigned"   <?php echo ($status_filter=='Assigned')   ?'selected':''; ?>>Assigned</option>
+                            <option value="In Progress"<?php echo ($status_filter=='In Progress')?'selected':''; ?>>In Progress</option>
+                            <option value="Completed"  <?php echo ($status_filter=='Completed')  ?'selected':''; ?>>Completed</option>
+                            <option value="Cancelled"  <?php echo ($status_filter=='Cancelled')  ?'selected':''; ?>>Cancelled</option>
                         </select>
                     </div>
-                    
-                    <!-- Priority Filter -->
+
                     <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Priority</label>
-                        <select name="priority" class="form-input" style="width: 100%;">
-                            <option value="all" <?php echo ($priority_filter == 'all') ? 'selected' : ''; ?>>All Priorities</option>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Priority</label>
+                        <select name="priority" class="form-input" style="width:100%;">
+                            <option value="all" <?php echo ($priority_filter=='all')?'selected':''; ?>>All Priorities</option>
                             <?php foreach ($priorities as $priority): ?>
-                                <option value="<?php echo e($priority['PriorityLevel']); ?>" 
-                                    <?php echo ($priority_filter == $priority['PriorityLevel']) ? 'selected' : ''; ?>>
+                                <option value="<?php echo e($priority['PriorityLevel']); ?>"
+                                    <?php echo ($priority_filter==$priority['PriorityLevel'])?'selected':''; ?>>
                                     <?php echo e($priority['PriorityLevel']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
-                    <!-- Category Filter -->
+
                     <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Category</label>
-                        <select name="category" class="form-input" style="width: 100%;">
-                            <option value="all" <?php echo ($category_filter == 'all') ? 'selected' : ''; ?>>All Categories</option>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Category</label>
+                        <select name="category" class="form-input" style="width:100%;">
+                            <option value="all" <?php echo ($category_filter=='all')?'selected':''; ?>>All Categories</option>
                             <?php foreach ($categories as $category): ?>
-                                <option value="<?php echo e($category['CategoryName']); ?>" 
-                                    <?php echo ($category_filter == $category['CategoryName']) ? 'selected' : ''; ?>>
+                                <option value="<?php echo e($category['CategoryName']); ?>"
+                                    <?php echo ($category_filter==$category['CategoryName'])?'selected':''; ?>>
                                     <?php echo e($category['CategoryName']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
-                    <!-- Sort By -->
+
                     <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Sort By</label>
-                        <select name="sort" class="form-input" style="width: 100%;">
-                            <option value="newest" <?php echo ($sort_by == 'newest') ? 'selected' : ''; ?>>Newest First</option>
-                            <option value="oldest" <?php echo ($sort_by == 'oldest') ? 'selected' : ''; ?>>Oldest First</option>
-                            <option value="priority" <?php echo ($sort_by == 'priority') ? 'selected' : ''; ?>>Priority (High to Low)</option>
-                            <option value="updated" <?php echo ($sort_by == 'updated') ? 'selected' : ''; ?>>Recently Updated</option>
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Sort By</label>
+                        <select name="sort" class="form-input" style="width:100%;">
+                            <option value="newest"   <?php echo ($sort_by=='newest')  ?'selected':''; ?>>Newest First</option>
+                            <option value="oldest"   <?php echo ($sort_by=='oldest')  ?'selected':''; ?>>Oldest First</option>
+                            <option value="priority" <?php echo ($sort_by=='priority')?'selected':''; ?>>Priority (High to Low)</option>
+                            <option value="updated"  <?php echo ($sort_by=='updated') ?'selected':''; ?>>Recently Updated</option>
                         </select>
                     </div>
-                    
-                    <!-- Search Box -->
+
                     <div style="grid-column: span 2;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Search</label>
-                        <input 
-                            type="text" 
-                            name="search" 
-                            class="form-input" 
-                            placeholder="Search title, description, or requester..."
-                            value="<?php echo e($search); ?>"
-                            style="width: 100%;"
-                        >
+                        <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Search</label>
+                        <input type="text" name="search" class="form-input"
+                               placeholder="Search title, description, or requester..."
+                               value="<?php echo e($search); ?>" style="width:100%;">
                     </div>
-                    
-                    <!-- Buttons -->
-                    <div style="display: flex; gap: 0.5rem;">
+
+                    <div style="display:flex;gap:0.5rem;">
                         <button type="submit" class="btn btn-primary">🔍 Apply</button>
                         <a href="all-requests.php" class="btn btn-outline">🔄 Reset</a>
                     </div>
                 </form>
             </div>
 
-            <!-- Requests Table -->
+            <!-- Requests -->
             <div class="requests-section">
-                <h2 class="section-title">
-                    Requests List
-                </h2>
-                
+                <h2 class="section-title">Requests List</h2>
+
                 <?php if (count($requests) > 0): ?>
-                    <div style="overflow-x: auto;">
+
+                    <!-- ===== جدول للكمبيوتر ===== -->
+                    <div class="admin-mobile-hide" style="overflow-x:auto;">
                         <table class="requests-table">
                             <thead>
                                 <tr>
@@ -289,61 +258,40 @@ $priorities = getAllPriorities($conn);
                             </thead>
                             <tbody>
                                 <?php foreach ($requests as $req): ?>
-                                    <tr style="<?php echo ($req['PriorityID'] >= 3 && $req['StatusID'] < 5) ? 'background: #fef2f2;' : ''; ?>">
+                                    <tr style="<?php echo ($req['PriorityID'] >= 3 && $req['StatusID'] < 5) ? 'background:#fef2f2;' : ''; ?>">
                                         <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                        
-                                        <!-- Title -->
                                         <td class="request-title">
                                             <?php echo e($req['Title']); ?>
-                                            <?php if ($req['PriorityID'] == 4): ?>
-                                                <span style="color: #ef4444;">🚨</span>
-                                            <?php endif; ?>
+                                            <?php if ($req['PriorityID'] == 4): ?><span style="color:#ef4444;">🚨</span><?php endif; ?>
                                         </td>
-                                        
-                                        <!-- Requester -->
                                         <td>
-                                            <strong><?php echo e($req['RequesterName']); ?></strong>
-                                            <br>
-                                            <small style="color: #64748b;"><?php echo e($req['RequesterRole']); ?></small>
+                                            <strong><?php echo e($req['RequesterName']); ?></strong><br>
+                                            <small style="color:#64748b;"><?php echo e($req['RequesterRole']); ?></small>
                                         </td>
-                                        
-                                        <!-- Location -->
                                         <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
-                                        
-                                        <!-- Category -->
                                         <td><?php echo e($req['CategoryName']); ?></td>
-                                        
-                                        <!-- Priority -->
                                         <td>
                                             <span class="priority-badge <?php echo getPriorityBadgeClass($req['PriorityLevel']); ?>">
                                                 <?php echo e($req['PriorityLevel']); ?>
                                             </span>
                                         </td>
-                                        
-                                        <!-- Status -->
                                         <td>
                                             <span class="status-badge <?php echo getStatusBadgeClass($req['StatusName']); ?>">
                                                 <?php echo e($req['StatusName']); ?>
                                             </span>
                                         </td>
-                                        
-                                        <!-- Technician -->
                                         <td>
                                             <?php if ($req['TechnicianName']): ?>
-                                                <span style="color: #10b981;">✅ <?php echo e($req['TechnicianName']); ?></span>
+                                                <span style="color:#10b981;">✅ <?php echo e($req['TechnicianName']); ?></span>
                                             <?php else: ?>
-                                                <span style="color: #94a3b8;">⚠️ Unassigned</span>
+                                                <span style="color:#94a3b8;">⚠️ Unassigned</span>
                                             <?php endif; ?>
                                         </td>
-                                        
-                                        <!-- Submitted Date -->
                                         <td><?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?></td>
-                                        
-                                        <!-- Actions -->
                                         <td>
-                                            <a href="request-details.php?id=<?php echo $req['RequestID']; ?>" 
-                                               class="btn btn-primary" 
-                                               style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                            <a href="request-details.php?id=<?php echo $req['RequestID']; ?>"
+                                               class="btn btn-primary"
+                                               style="padding:0.5rem 1rem;font-size:0.875rem;">
                                                 ⚙️ Manage
                                             </a>
                                         </td>
@@ -352,21 +300,73 @@ $priorities = getAllPriorities($conn);
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- ===== كاردز للجوال ===== -->
+                    <div class="admin-requests-cards">
+                        <?php foreach ($requests as $req): ?>
+                            <div class="request-card-mobile <?php echo getPriorityBorderClass($req['PriorityLevel']); ?>">
+
+                                <!-- Header -->
+                                <div class="rcm-header">
+                                    <div>
+                                        <div class="rcm-id">
+                                            #<?php echo $req['RequestID']; ?>
+                                            <?php if ($req['PriorityID'] == 4): ?>🚨<?php endif; ?>
+                                        </div>
+                                        <div class="rcm-title"><?php echo e($req['Title']); ?></div>
+                                        <div style="font-size:0.8rem;color:#64748b;margin-top:0.25rem;">
+                                            👤 <?php echo e($req['RequesterName']); ?>
+                                            <span style="color:#94a3b8;">(<?php echo e($req['RequesterRole']); ?>)</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- معلومات -->
+                                <div class="rcm-meta">
+                                    <span class="rcm-meta-item">📍 <?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></span>
+                                    <span class="rcm-meta-item">🔧 <?php echo e($req['CategoryName']); ?></span>
+                                    <span class="rcm-meta-item">
+                                        👨‍🔧 <?php echo $req['TechnicianName'] ? e($req['TechnicianName']) : '⚠️ Unassigned'; ?>
+                                    </span>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="rcm-footer">
+                                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                                        <span class="status-badge <?php echo getStatusBadgeClass($req['StatusName']); ?>">
+                                            <?php echo e($req['StatusName']); ?>
+                                        </span>
+                                        <span class="priority-badge <?php echo getPriorityBadgeClass($req['PriorityLevel']); ?>">
+                                            <?php echo e($req['PriorityLevel']); ?>
+                                        </span>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.25rem;">
+                                        <span class="rcm-date">📅 <?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?></span>
+                                        <a href="request-details.php?id=<?php echo $req['RequestID']; ?>"
+                                        class="btn btn-primary"
+                                        style="padding:0.4rem 0.9rem;font-size:0.8rem;">
+                                            ⚙️ Manage
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
                 <?php else: ?>
                     <div class="no-requests">
                         <div class="no-requests-icon">🔍</div>
                         <h3>No requests found</h3>
                         <?php if ($status_filter != 'all' || $priority_filter != 'all' || $category_filter != 'all' || !empty($search)): ?>
-                            <p>No requests match your current filters.</p>
-                            <br>
+                            <p>No requests match your current filters.</p><br>
                             <a href="all-requests.php" class="btn btn-secondary">Clear All Filters</a>
                         <?php else: ?>
-                            <p>No maintenance requests have been submitted to the system yet.</p>
+                            <p>No maintenance requests have been submitted yet.</p>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
-            
+
         </div>
     </div>
 </body>

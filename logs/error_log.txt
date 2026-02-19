@@ -99,3 +99,69 @@ USER:     UserID: 1, Name: System Administrator, Role: Admin
 TRACE:
 #0 {main}
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 19:20:32
+------------------------------------------------------------
+MESSAGE:  Undefined variable $old_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     121
+URL:      POST /FixPoint/admin/request-details.php?id=5
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 19:20:32
+------------------------------------------------------------
+MESSAGE:  Undefined variable $new_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     121
+URL:      POST /FixPoint/admin/request-details.php?id=5
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 19:20:32
+------------------------------------------------------------
+MESSAGE:  Undefined variable $new_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     139
+URL:      POST /FixPoint/admin/request-details.php?id=5
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 20:04:49
+------------------------------------------------------------
+MESSAGE:  Undefined variable $old_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     121
+URL:      POST /FixPoint/admin/request-details.php?id=6
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 20:04:49
+------------------------------------------------------------
+MESSAGE:  Undefined variable $new_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     121
+URL:      POST /FixPoint/admin/request-details.php?id=6
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-02-18 20:04:49
+------------------------------------------------------------
+MESSAGE:  Undefined variable $new_status_name
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     139
+URL:      POST /FixPoint/admin/request-details.php?id=6
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------

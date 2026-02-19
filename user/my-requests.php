@@ -1,19 +1,16 @@
 <?php
 /**
  * FixPoint - My Requests
- * View all maintenance requests submitted by the user
  */
 
 session_start();
 require_once '../config/session-security.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Redirect if not a regular user (Student or Faculty)
 if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['role_id'] != 4)) {
     header("Location: ../index.php");
     exit();
@@ -24,11 +21,9 @@ require_once '../config/helpers.php';
 
 $user_id = $_SESSION['user_id'];
 
-// Get filter parameters
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Build query based on filters
 $sql = "SELECT 
             mr.RequestID,
             mr.Title,
@@ -50,12 +45,10 @@ $sql = "SELECT
         JOIN status s ON mr.StatusID = s.StatusID
         WHERE mr.UserID = ?";
 
-// Add status filter
 if ($status_filter != 'all') {
     $sql .= " AND s.StatusName = '" . $conn->real_escape_string($status_filter) . "'";
 }
 
-// Add search filter
 if (!empty($search)) {
     $sql .= " AND (mr.Title LIKE '%" . $conn->real_escape_string($search) . "%' 
               OR mr.Description LIKE '%" . $conn->real_escape_string($search) . "%')";
@@ -68,9 +61,18 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get statistics
 $stats = getUserRequestStats($conn, $user_id);
 
+// دالة لون الكارد حسب الأولوية
+function getPriorityBorderClass($priority) {
+    $classes = [
+        'Critical' => 'priority-critical-border',
+        'High'     => 'priority-high-border',
+        'Medium'   => 'priority-medium-border',
+        'Low'      => 'priority-low-border',
+    ];
+    return $classes[$priority] ?? '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,7 +84,6 @@ $stats = getUserRequestStats($conn, $user_id);
     <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="nav">
@@ -104,14 +105,13 @@ $stats = getUserRequestStats($conn, $user_id);
 
     <div class="dashboard">
         <div class="dashboard-container">
-            
-            <!-- Page Header -->
+
             <div class="dashboard-header">
                 <h1 class="welcome-text">My Requests 📋</h1>
                 <p class="user-info">View and track all your maintenance requests</p>
             </div>
 
-            <!-- Quick Stats -->
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">📊 Total</div>
@@ -131,39 +131,28 @@ $stats = getUserRequestStats($conn, $user_id);
                 </div>
             </div>
 
-            <!-- Filters Section -->
+            <!-- Filters -->
             <div class="requests-section" style="margin-bottom: 2rem;">
                 <h2 class="section-title">Filter & Search</h2>
-                
                 <form method="GET" action="" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
-                    <!-- Status Filter -->
                     <div style="flex: 1; min-width: 200px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Filter by Status</label>
                         <select name="status" class="form-input" onchange="this.form.submit()" style="width: 100%;">
-                            <option value="all" <?php echo ($status_filter == 'all') ? 'selected' : ''; ?>>All Status</option>
-                            <option value="Pending" <?php echo ($status_filter == 'Pending') ? 'selected' : ''; ?>>Pending</option>
-                            <option value="Reviewed" <?php echo ($status_filter == 'Reviewed') ? 'selected' : ''; ?>>Reviewed</option>
-                            <option value="Assigned" <?php echo ($status_filter == 'Assigned') ? 'selected' : ''; ?>>Assigned</option>
-                            <option value="In Progress" <?php echo ($status_filter == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                            <option value="Completed" <?php echo ($status_filter == 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                            <option value="Cancelled" <?php echo ($status_filter == 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
+                            <option value="all"        <?php echo ($status_filter == 'all')         ? 'selected' : ''; ?>>All Status</option>
+                            <option value="Pending"    <?php echo ($status_filter == 'Pending')     ? 'selected' : ''; ?>>Pending</option>
+                            <option value="Reviewed"   <?php echo ($status_filter == 'Reviewed')    ? 'selected' : ''; ?>>Reviewed</option>
+                            <option value="Assigned"   <?php echo ($status_filter == 'Assigned')    ? 'selected' : ''; ?>>Assigned</option>
+                            <option value="In Progress"<?php echo ($status_filter == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
+                            <option value="Completed"  <?php echo ($status_filter == 'Completed')   ? 'selected' : ''; ?>>Completed</option>
+                            <option value="Cancelled"  <?php echo ($status_filter == 'Cancelled')   ? 'selected' : ''; ?>>Cancelled</option>
                         </select>
                     </div>
-                    
-                    <!-- Search Box -->
                     <div style="flex: 2; min-width: 300px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Search</label>
-                        <input 
-                            type="text" 
-                            name="search" 
-                            class="form-input" 
-                            placeholder="Search by title or description..."
-                            value="<?php echo e($search); ?>"
-                            style="width: 100%;"
-                        >
+                        <input type="text" name="search" class="form-input"
+                               placeholder="Search by title or description..."
+                               value="<?php echo e($search); ?>" style="width: 100%;">
                     </div>
-                    
-                    <!-- Buttons -->
                     <div style="display: flex; gap: 0.5rem;">
                         <button type="submit" class="btn btn-primary">🔍 Search</button>
                         <a href="my-requests.php" class="btn btn-outline">🔄 Reset</a>
@@ -171,17 +160,19 @@ $stats = getUserRequestStats($conn, $user_id);
                 </form>
             </div>
 
-            <!-- Requests Table -->
+            <!-- Requests -->
             <div class="requests-section">
                 <h2 class="section-title">
-                    All Requests 
+                    All Requests
                     <span style="color: #64748b; font-size: 1rem; font-weight: 400;">
                         (<?php echo count($requests); ?> results)
                     </span>
                 </h2>
-                
+
                 <?php if (count($requests) > 0): ?>
-                    <div style="overflow-x: auto;">
+
+                    <!-- ===== جدول للكمبيوتر ===== -->
+                    <div class="mobile-hide" style="overflow-x: auto;">
                         <table class="requests-table">
                             <thead>
                                 <tr>
@@ -201,60 +192,39 @@ $stats = getUserRequestStats($conn, $user_id);
                                 <?php foreach ($requests as $req): ?>
                                     <tr>
                                         <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                        
-                                        <!-- Photo -->
                                         <td>
                                             <?php if ($req['PhotoPath']): ?>
-                                                <img src="<?php echo e($req['PhotoPath']); ?>" 
-                                                     alt="Request photo" 
-                                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 0.25rem;">
+                                                <img src="<?php echo e($req['PhotoPath']); ?>"
+                                                     style="width:50px;height:50px;object-fit:cover;border-radius:0.25rem;">
                                             <?php else: ?>
-                                                <span style="color: #94a3b8;">📷 No photo</span>
+                                                <span style="color:#94a3b8;">📷 No photo</span>
                                             <?php endif; ?>
                                         </td>
-                                        
-                                        <!-- Title -->
                                         <td class="request-title"><?php echo e($req['Title']); ?></td>
-                                        
-                                        <!-- Location -->
                                         <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
-                                        
-                                        <!-- Category -->
                                         <td><?php echo e($req['CategoryName']); ?></td>
-                                        
-                                        <!-- Priority -->
                                         <td>
                                             <span class="priority-badge <?php echo getPriorityBadgeClass($req['PriorityLevel']); ?>">
                                                 <?php echo e($req['PriorityLevel']); ?>
                                             </span>
                                         </td>
-                                        
-                                        <!-- Status -->
                                         <td>
                                             <span class="status-badge <?php echo getStatusBadgeClass($req['StatusName']); ?>">
                                                 <?php echo e($req['StatusName']); ?>
                                             </span>
                                         </td>
-                                        
-                                        <!-- Submitted Date -->
                                         <td><?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?></td>
-                                        
-                                        <!-- Last Update -->
                                         <td>
-                                            <?php 
-                                            if ($req['CompletedAt']) {
-                                                echo formatDate($req['CompletedAt'], 'M d, Y');
-                                            } else {
-                                                echo formatDate($req['UpdatedAt'], 'M d, Y');
-                                            }
+                                            <?php
+                                            echo $req['CompletedAt']
+                                                ? formatDate($req['CompletedAt'], 'M d, Y')
+                                                : formatDate($req['UpdatedAt'], 'M d, Y');
                                             ?>
                                         </td>
-                                        
-                                        <!-- Actions -->
                                         <td>
-                                            <a href="request-details.php?id=<?php echo $req['RequestID']; ?>" 
-                                               class="btn btn-primary" 
-                                               style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                            <a href="request-details.php?id=<?php echo $req['RequestID']; ?>"
+                                               class="btn btn-primary"
+                                               style="padding:0.5rem 1rem;font-size:0.875rem;">
                                                 👁️ View
                                             </a>
                                         </td>
@@ -263,6 +233,56 @@ $stats = getUserRequestStats($conn, $user_id);
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- ===== كاردز للجوال ===== -->
+                    <div class="requests-cards">
+                        <?php foreach ($requests as $req): ?>
+                            <div class="request-card-mobile <?php echo getPriorityBorderClass($req['PriorityLevel']); ?>">
+                                
+                                <!-- Header: ID + صورة -->
+                                <div class="rcm-header">
+                                    <div>
+                                        <div class="rcm-id">#<?php echo $req['RequestID']; ?></div>
+                                        <div class="rcm-title"><?php echo e($req['Title']); ?></div>
+                                    </div>
+                                    <?php if ($req['PhotoPath']): ?>
+                                        <img src="<?php echo e($req['PhotoPath']); ?>" class="rcm-photo" alt="photo">
+                                    <?php else: ?>
+                                        <div class="rcm-photo-placeholder">📷</div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- معلومات -->
+                                <div class="rcm-meta">
+                                    <span class="rcm-meta-item">📍 <?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></span>
+                                    <span class="rcm-meta-item">🔧 <?php echo e($req['CategoryName']); ?></span>
+                                </div>
+
+                                <!-- Footer: Status + Priority + زر -->
+                                <div class="rcm-footer">
+                                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                                        <span class="status-badge <?php echo getStatusBadgeClass($req['StatusName']); ?>">
+                                            <?php echo e($req['StatusName']); ?>
+                                        </span>
+                                        <span class="priority-badge <?php echo getPriorityBadgeClass($req['PriorityLevel']); ?>">
+                                            <?php echo e($req['PriorityLevel']); ?>
+                                        </span>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.25rem;">
+                                        <span class="rcm-date">
+                                            📅 <?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?>
+                                        </span>
+                                        <a href="request-details.php?id=<?php echo $req['RequestID']; ?>"
+                                           class="btn btn-primary"
+                                           style="padding:0.4rem 0.9rem;font-size:0.8rem;">
+                                            👁️ View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
                 <?php else: ?>
                     <div class="no-requests">
                         <div class="no-requests-icon">🔍</div>
@@ -279,7 +299,7 @@ $stats = getUserRequestStats($conn, $user_id);
                     </div>
                 <?php endif; ?>
             </div>
-            
+
         </div>
     </div>
 </body>
