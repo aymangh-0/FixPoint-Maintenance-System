@@ -268,7 +268,7 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <p><strong>Step-by-step:</strong></p>
                     <ol>
                         <li>Click "Get Started" or "Register" button</li>
-                        <li>Enter your Student ID (SXXXXXXXXX) or Faculty ID</li>
+                        <li>Enter your User ID (SXXXXXXXXX) or Faculty ID</li>
                         <li>Fill in your name and SEU email address</li>
                         <li>Create a strong password (8+ characters, uppercase, lowercase, number, special character)</li>
                         <li>Click "Register"</li>
@@ -286,7 +286,7 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                 <div class="faq-answer">
                     <p>FixPoint has three main user roles:</p>
                     <ul>
-                        <li><strong>Students/Faculty:</strong> Can submit maintenance requests, track status, and provide feedback</li>
+                        <li><strong>Users/Faculty:</strong> Can submit maintenance requests, track status, and provide feedback</li>
                         <li><strong>Technicians:</strong> Can view assigned tasks, update progress, and mark requests as complete</li>
                         <li><strong>Admins:</strong> Can manage all requests, assign technicians, manage users, and view reports</li>
                     </ul>
@@ -336,7 +336,7 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <span class="faq-toggle">▼</span>
                 </div>
                 <div class="faq-answer">
-                    <p><strong>Students:</strong></p>
+                    <p><strong>Users:</strong></p>
                     <ul>
                         <li>2 requests per week</li>
                         <li>8 requests per month</li>

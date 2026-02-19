@@ -176,7 +176,7 @@ $urgent_requests = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
                 <div class="stat-card" style="border-left-color: #8b5cf6;">
                     <div class="stat-label">👥 Total Users</div>
                     <div class="stat-value"><?php echo $stats['users']; ?></div>
-                    <div class="stat-info">Students & Faculty</div>
+                    <div class="stat-info">Users & Faculty</div>
                 </div>
 
                 <div class="stat-card" style="border-left-color: #06b6d4;">

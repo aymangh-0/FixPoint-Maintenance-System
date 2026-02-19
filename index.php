@@ -115,7 +115,7 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h3 class="step-title">Create Account</h3>
-                        <p class="step-description">Register with your university email in less than a minute</p>
+                        <p class="step-description">Register with your email in less than a minute</p>
                     </div>
                 </div>
                 
@@ -151,7 +151,7 @@
         <div class="container">
             <div class="cta-content">
                 <h2 class="cta-title">Ready to Get Started?</h2>
-                <p class="cta-description">Join hundreds of students and faculty using FixPoint to keep our campus in top condition</p>
+                <p class="cta-description">Join hundreds of users and faculty using FixPoint to keep our campus in top condition</p>
                 <a href="auth/register.php" class="btn btn-primary btn-large">Create Free Account</a>
             </div>
         </div>

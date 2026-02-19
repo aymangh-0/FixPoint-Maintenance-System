@@ -162,7 +162,7 @@ function fetchUsersByRole($conn, $base_sql, $role_id, $search_condition) {
 
 $admins      = fetchUsersByRole($conn, $base_sql, 1, $search_condition);
 $technicians = fetchUsersByRole($conn, $base_sql, 2, $search_condition);
-$students    = fetchUsersByRole($conn, $base_sql, 3, $search_condition);
+$users    = fetchUsersByRole($conn, $base_sql, 3, $search_condition);
 $faculty     = fetchUsersByRole($conn, $base_sql, 4, $search_condition);
 
 // Stats
@@ -323,7 +323,6 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                 <nav class="nav-links">
                     <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <a href="all-requests.php" class="nav-link">All Requests</a>
-                    <a href="users.php" class="nav-link" style="color:#2563eb; font-weight:600;">Users</a>
                     <a href="reports.php" class="nav-link">Reports</a>
                     <a href="backup.php" class="nav-link">Backup</a>
                     <a href="locations.php" class="nav-link">Locations</a>
@@ -366,8 +365,8 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                     <div class="stat-value"><?php echo $stats['Technician'] ?? 0; ?></div>
                 </div>
                 <div class="stat-card" style="border-left-color:#10b981;">
-                    <div class="stat-label">👨‍🎓 Students</div>
-                    <div class="stat-value"><?php echo $stats['Student'] ?? 0; ?></div>
+                    <div class="stat-label">👤 Users</div>
+                    <div class="stat-value"><?php echo $stats['User'] ?? 0; ?></div>
                 </div>
                 <div class="stat-card" style="border-left-color:#3b82f6;">
                     <div class="stat-label">👨‍🏫 Faculty</div>
@@ -410,14 +409,14 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                 <?php renderUsersTable($technicians, $admin_id, false); ?>
             </div>
 
-            <!-- Students -->
+            <!-- Users -->
             <div class="group-section">
                 <div class="group-header">
                     <span style="font-size:1.3rem;">👨‍🎓</span>
-                    <h2>Students</h2>
-                    <span class="group-count"><?php echo count($students); ?></span>
+                    <h2>Users</h2>
+                    <span class="group-count"><?php echo count($users); ?></span>
                 </div>
-                <?php renderUsersTable($students, $admin_id, true); ?>
+                <?php renderUsersTable($users, $admin_id, true); ?>
             </div>
 
             <!-- Faculty -->
@@ -481,7 +480,7 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                 <ul style="margin:0.5rem 0 0 1.5rem; font-size:0.875rem;">
                     <li><strong>Admin:</strong> Full system access</li>
                     <li><strong>Technician:</strong> Can view and work on assigned requests</li>
-                    <li><strong>Student:</strong> Can submit requests (2/week, 8/month)</li>
+                    <li><strong>User:</strong> Can submit requests (2/week, 8/month)</li>
                     <li><strong>Faculty:</strong> Can submit requests (5/week, 20/month)</li>
                 </ul>
             </div>
@@ -492,7 +491,7 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                     <select id="role_id" name="role_id" class="form-input" required>
                         <option value="1">👨‍💼 Admin</option>
                         <option value="2">👨‍🔧 Technician</option>
-                        <option value="3">👨‍🎓 Student (2/week, 8/month)</option>
+                        <option value="3">👨‍🎓 User (2/week, 8/month)</option>
                         <option value="4">👨‍🏫 Faculty (5/week, 20/month)</option>
                     </select>
                 </div>

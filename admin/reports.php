@@ -334,7 +334,7 @@ $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
                 <div class="stat-card" style="border-left-color: #8b5cf6;">
                     <div class="stat-label">👥 Total Users</div>
                     <div class="stat-value"><?php echo $stats['total_users']; ?></div>
-                    <div class="stat-info">Students & Faculty</div>
+                    <div class="stat-info">Users & Faculty</div>
                 </div>
                 <div class="stat-card" style="border-left-color: #f59e0b;">
                     <div class="stat-label">👨‍🔧 Technicians</div>
