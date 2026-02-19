@@ -66,8 +66,8 @@ if ($category_filter != 'all') {
 }
 if (!empty($search)) {
     $sql .= " AND (mr.Title LIKE '%" . $conn->real_escape_string($search) . "%' 
-              OR mr.Description LIKE '%" . $conn->real_escape_string($search) . "%'
-              OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%')";
+            OR mr.Description LIKE '%" . $conn->real_escape_string($search) . "%'
+            OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%')";
 }
 
 switch ($sort_by) {
@@ -222,8 +222,8 @@ function getPriorityBorderClass($priority) {
                     <div style="grid-column: span 2;">
                         <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Search</label>
                         <input type="text" name="search" class="form-input"
-                               placeholder="Search title, description, or requester..."
-                               value="<?php echo e($search); ?>" style="width:100%;">
+                            placeholder="Search title, description, or requester..."
+                            value="<?php echo e($search); ?>" style="width:100%;">
                     </div>
 
                     <div style="display:flex;gap:0.5rem;">
@@ -290,8 +290,8 @@ function getPriorityBorderClass($priority) {
                                         <td><?php echo formatDate($req['SubmittedAt'], 'M d, Y'); ?></td>
                                         <td>
                                             <a href="request-details.php?id=<?php echo $req['RequestID']; ?>"
-                                               class="btn btn-primary"
-                                               style="padding:0.5rem 1rem;font-size:0.875rem;">
+                                            class="btn btn-primary"
+                                            style="padding:0.5rem 1rem;font-size:0.875rem;">
                                                 ⚙️ Manage
                                             </a>
                                         </td>

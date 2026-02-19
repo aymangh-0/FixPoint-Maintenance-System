@@ -51,8 +51,8 @@ if ($rating_filter > 0) {
 // Apply search
 if (!empty($search)) {
     $sql .= " AND (mr.Title LIKE '%" . $conn->real_escape_string($search) . "%' 
-              OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%'
-              OR f.Comment LIKE '%" . $conn->real_escape_string($search) . "%')";
+            OR u.Name LIKE '%" . $conn->real_escape_string($search) . "%'
+            OR f.Comment LIKE '%" . $conn->real_escape_string($search) . "%')";
 }
 
 $sql .= " ORDER BY f.SubmittedAt DESC";
@@ -256,8 +256,8 @@ $stats['1_star'] = $rating_counts[1];
                                 <!-- Actions -->
                                 <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
                                     <a href="request-details.php?id=<?php echo $fb['RequestID']; ?>" 
-                                       class="btn btn-secondary" 
-                                       style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    class="btn btn-secondary" 
+                                    style="padding: 0.5rem 1rem; font-size: 0.875rem;">
                                         📋 View Request
                                     </a>
                                 </div>
