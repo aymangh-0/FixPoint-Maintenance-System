@@ -27,7 +27,6 @@ require_once '../config/helpers.php';
 $user_id = $_SESSION['user_id'];
 $error = '';
 $success = '';
-$warning = '';
 $duplicate_data = null;
 
 // Check request limits
@@ -45,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $location_id = (int)$_POST['location_id'];
     $category_id = (int)$_POST['category_id'];
     $priority_id = (int)$_POST['priority_id'];
-    $confirm_duplicate = isset($_POST['confirm_duplicate']) ? $_POST['confirm_duplicate'] : 'no';
     
     // Validate inputs
     if (empty($title)) {
@@ -80,16 +78,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif (!$limit_info['can_submit']) {
         $error = $limit_info['message'];
     }
-    // Check for duplicate
+    // Check for duplicate — BLOCK completely if found
     else {
         $duplicate = checkDuplicateRequest($conn, $location_id, $category_id);
         
-        if ($duplicate !== null && $confirm_duplicate != 'yes') {
-            // Duplicate found - show warning
-            $warning = "A similar request already exists at this location for this category.";
+        if ($duplicate !== null) {
+            // Duplicate found — block submission entirely
             $duplicate_data = $duplicate;
+            $error = "Cannot submit request. An active request already exists at this location for this category (Request #" . $duplicate['RequestID'] . " — Status: " . $duplicate['StatusName'] . "). Please wait for it to be resolved.";
         } else {
-            // No duplicate OR user confirmed - proceed with submission
+            // No duplicate — proceed with submission
             
             // Insert request
             $insert_sql = "INSERT INTO maintenancerequest 
@@ -221,10 +219,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                 <?php endif; ?>
                 
-                <!-- Error Messages -->
+                <!-- Error / Duplicate Block Message -->
                 <?php if ($error): ?>
                     <div class="alert alert-error">
                         ❌ <?php echo e($error); ?>
+                        <?php if ($duplicate_data): ?>
+                            <br><br>
+                            <strong>Existing Request Details:</strong><br>
+                            🔢 Request #<?php echo $duplicate_data['RequestID']; ?><br>
+                            📋 <?php echo e($duplicate_data['Title']); ?><br>
+                            🔄 Status: <strong><?php echo e($duplicate_data['StatusName']); ?></strong><br>
+                            👤 Reported by: <?php echo e($duplicate_data['RequesterName']); ?><br>
+                            📅 Date: <?php echo formatDate($duplicate_data['SubmittedAt']); ?>
+                            <br><br>
+                            <a href="view-request.php?id=<?php echo $duplicate_data['RequestID']; ?>" 
+                               style="color: #1d4ed8; text-decoration: underline;">
+                                👁️ View existing request &rarr;
+                            </a>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 
@@ -236,31 +248,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                 <?php endif; ?>
                 
-                <!-- Duplicate Warning -->
-                <?php if ($warning && $duplicate_data): ?>
-                    <div class="alert alert-warning">
-                        ⚠️ <strong><?php echo e($warning); ?></strong>
-                        <br><br>
-                        <strong>Existing Request #<?php echo $duplicate_data['RequestID']; ?>:</strong> 
-                        <?php echo e($duplicate_data['Title']); ?>
-                        <br>
-                        <strong>Status:</strong> <?php echo e($duplicate_data['StatusName']); ?>
-                        <br>
-                        <strong>Reported by:</strong> <?php echo e($duplicate_data['RequesterName']); ?>
-                        <br>
-                        <strong>Date:</strong> <?php echo formatDate($duplicate_data['SubmittedAt']); ?>
-                        <br><br>
-                        <em>Do you still want to submit this request?</em>
-                    </div>
-                <?php endif; ?>
-                
                 <!-- Request Form -->
                 <form method="POST" action="" enctype="multipart/form-data" <?php echo (!$limit_info['can_submit']) ? 'style="pointer-events:none;opacity:0.6;"' : ''; ?>>
-                    
-                    <!-- Hidden field for duplicate confirmation -->
-                    <?php if ($warning && $duplicate_data): ?>
-                        <input type="hidden" name="confirm_duplicate" value="yes">
-                    <?php endif; ?>
                     
                     <!-- Location Selection -->
                     <div class="form-group">
@@ -374,18 +363,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <!-- Submit Button -->
                     <button type="submit" class="btn-submit" <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
-                        <?php if ($warning && $duplicate_data): ?>
-                            ✅ Yes, Submit Anyway
-                        <?php else: ?>
-                            📤 Submit Request
-                        <?php endif; ?>
+                        📤 Submit Request
                     </button>
                     
-                    <?php if ($warning && $duplicate_data): ?>
-                        <a href="submit-request.php" class="btn-submit" style="background: #64748b; margin-top: 1rem;">
-                            ❌ No, Cancel
-                        </a>
-                    <?php endif; ?>
                 </form>
                 
             </div>

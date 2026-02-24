@@ -224,7 +224,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <nav class="nav-links">
                     <a href="index.php" class="nav-link">Home</a>
                     <a href="help-center.php" class="nav-link">Help Center</a>
-                    <a href="contact.php" class="nav-link">Contact Us</a>
                     <?php if ($is_logged_in): ?>
                         <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
                         <?php if ($user_role == 1): ?>

@@ -200,7 +200,6 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                 </div>
                 <nav class="nav-links">
                     <a href="index.php" class="nav-link">Home</a>
-                    <a href="help-center.php" class="nav-link">Help Center</a>
                     <a href="contact.php" class="nav-link">Contact Us</a>
                     <?php if ($is_logged_in): ?>
                         <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
