@@ -165,3 +165,50 @@ URL:      POST /FixPoint/admin/request-details.php?id=6
 IP:       ::1
 USER:     UserID: 1, Name: System Administrator, Role: Admin
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [FATAL SHUTDOWN ERROR] - 2026-02-24 04:18:41
+------------------------------------------------------------
+MESSAGE:  Cannot redeclare timeAgo() (previously declared in C:\xampp\htdocs\fixpoint\includes\notification-bell.php:464)
+FILE:     C:\xampp\htdocs\fixpoint\includes\notification-bell.php
+LINE:     464
+URL:      GET /FixPoint/admin/dashboard.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [FATAL SHUTDOWN ERROR] - 2026-02-24 04:18:54
+------------------------------------------------------------
+MESSAGE:  Cannot redeclare timeAgo() (previously declared in C:\xampp\htdocs\fixpoint\includes\notification-bell.php:464)
+FILE:     C:\xampp\htdocs\fixpoint\includes\notification-bell.php
+LINE:     464
+URL:      GET /FixPoint/admin/dashboard.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [FATAL SHUTDOWN ERROR] - 2026-02-24 04:19:14
+------------------------------------------------------------
+MESSAGE:  Cannot redeclare timeAgo() (previously declared in C:\xampp\htdocs\fixpoint\includes\notification-bell.php:464)
+FILE:     C:\xampp\htdocs\fixpoint\includes\notification-bell.php
+LINE:     464
+URL:      GET /FixPoint/admin/dashboard.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-02-24 04:22:31
+------------------------------------------------------------
+MESSAGE:  Call to undefined function timeAgo()
+FILE:     C:\xampp\htdocs\fixpoint\includes\notification-bell.php
+LINE:     313
+URL:      GET /FixPoint/admin/dashboard.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 C:\xampp\htdocs\fixpoint\admin\dashboard.php(93): include_once()
+#1 {main}
+------------------------------------------------------------
