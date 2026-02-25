@@ -104,6 +104,11 @@ function getNotifIcon($message) {
     if (strpos($message, 'Error') !== false || strpos($message, '⚠️') !== false) return '⚠️';
     return '🔔';
 }
+
+$current_page = 'notifications';
+
+// Determine sidebar based on role
+$_sidebar_role = $_SESSION['role_id'] ?? 0;
 ?>
 
 <!DOCTYPE html>
@@ -280,25 +285,75 @@ function getNotifIcon($message) {
             .notif-card-actions { width: 100%; justify-content: flex-end; }
         }
     </style>
+    <link rel="stylesheet" href="assets/css/sidebar.css">
 </head>
-<body>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <span class="logo-icon">🔧</span>
-                    <span class="logo-text">FixPoint</span>
+<body class="has-sidebar">
+    <!-- Dynamic Sidebar based on role -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon">🔧</span>
+                <div>
+                    <span class="sidebar-logo-text">FixPoint</span>
+                    <span class="sidebar-logo-sub">SEU</span>
                 </div>
-                <nav class="nav-links">
-                    <a href="<?php echo $dashboard_path; ?>" class="nav-link">Dashboard</a>
-                    <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
-                    <a href="auth/logout.php" class="btn btn-outline">Logout</a>
-                </nav>
             </div>
+            <button class="sidebar-close" id="sidebarClose">✕</button>
         </div>
-    </header>
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">👤</div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
+                <span class="sidebar-user-role">
+                    <?php
+                    if ($_sidebar_role == 1) echo 'Administrator';
+                    elseif ($_sidebar_role == 2) echo 'Technician';
+                    else echo 'User';
+                    ?>
+                </span>
+            </div>
+            <?php include 'includes/notification-bell.php'; ?>
+        </div>
+        <nav class="sidebar-nav">
+            <?php if ($_sidebar_role == 1): ?>
+                <!-- Admin nav -->
+                <div class="sidebar-section-label">Main</div>
+                <a href="admin/dashboard.php" class="sidebar-link"><span class="sidebar-icon">📊</span><span>Dashboard</span></a>
+                <a href="admin/all-requests.php" class="sidebar-link"><span class="sidebar-icon">📋</span><span>All Requests</span></a>
+                <a href="admin/users.php" class="sidebar-link"><span class="sidebar-icon">👥</span><span>Manage Users</span></a>
+                <div class="sidebar-section-label">Management</div>
+                <a href="admin/locations.php" class="sidebar-link"><span class="sidebar-icon">📍</span><span>Locations</span></a>
+                <a href="admin/reports.php" class="sidebar-link"><span class="sidebar-icon">📈</span><span>Reports</span></a>
+                <a href="admin/all-feedback.php" class="sidebar-link"><span class="sidebar-icon">⭐</span><span>Feedback</span></a>
+                <a href="admin/audit-logs.php" class="sidebar-link"><span class="sidebar-icon">🔍</span><span>Audit Logs</span></a>
+                <a href="admin/backup.php" class="sidebar-link"><span class="sidebar-icon">💾</span><span>Backup</span></a>
+            <?php elseif ($_sidebar_role == 2): ?>
+                <!-- Technician nav -->
+                <div class="sidebar-section-label">My Work</div>
+                <a href="technician/dashboard.php" class="sidebar-link"><span class="sidebar-icon">🏠</span><span>Dashboard</span></a>
+                <a href="technician/my-tasks.php" class="sidebar-link"><span class="sidebar-icon">🔧</span><span>My Tasks</span></a>
+            <?php else: ?>
+                <!-- User nav -->
+                <div class="sidebar-section-label">My Account</div>
+                <a href="user/dashboard.php" class="sidebar-link"><span class="sidebar-icon">🏠</span><span>Dashboard</span></a>
+                <a href="user/submit-request.php" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Submit Request</span></a>
+                <a href="user/my-requests.php" class="sidebar-link"><span class="sidebar-icon">📋</span><span>My Requests</span></a>
+            <?php endif; ?>
+            <div class="sidebar-divider"></div>
+            <a href="auth/logout.php" class="sidebar-link sidebar-logout">
+                <span class="sidebar-icon">🚪</span><span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <button class="hamburger" id="hamburgerBtn">☰</button>
+            <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
+            <div class="topbar-notif"><?php include 'includes/notification-bell.php'; ?></div>
+        </div>
+
+
 
     <div class="dashboard">
         <div class="dashboard-container">
@@ -477,6 +532,31 @@ function getNotifIcon($message) {
         }
     }
     </script>
+    </div><!-- end main-content -->
 
+    <script>
+        const sidebar   = document.getElementById('sidebar');
+        const overlay   = document.getElementById('sidebarOverlay');
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('show');    document.body.style.overflow='hidden'; }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
+
+        document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
+        document.getElementById('sidebarClose')?.addEventListener('click', closeSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+        if (notifBell && notifDropdown) {
+            notifBell.addEventListener('click', function() {
+                if (notifDropdown.classList.contains('show')) {
+                    const rect = notifBell.getBoundingClientRect();
+                    let top = rect.bottom + 8;
+                    if (top + 440 > window.innerHeight) top = Math.max(8, rect.top - 448);
+                    notifDropdown.style.top = top + 'px';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

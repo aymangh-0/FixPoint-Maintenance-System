@@ -267,6 +267,8 @@ $backups = getBackupList($backup_dir);
 // Don't render HTML for CLI
 if ($is_cli) exit(0);
 
+
+$current_page = 'backup';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -276,28 +278,69 @@ if ($is_cli) exit(0);
     <title>Database Backup - Admin</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <span class="logo-icon">🔧</span>
-                    <span class="logo-text">FixPoint</span>
-                    <span class="logo-subtitle">Admin</span>
+<body class="has-sidebar">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon">🔧</span>
+                <div>
+                    <span class="sidebar-logo-text">FixPoint</span>
+                    <span class="sidebar-logo-sub">SEU Admin</span>
                 </div>
-                <nav class="nav-links">
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="all-requests.php" class="nav-link">All Requests</a>
-                    <a href="locations.php" class="nav-link">Locations</a>
-                    <a href="audit-logs.php" class="nav-link">Audit Logs</a>
-                    <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
-                    <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
-                </nav>
             </div>
+            <button class="sidebar-close" id="sidebarClose">✕</button>
         </div>
-    </header>
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">👤</div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
+                <span class="sidebar-user-role">Administrator</span>
+            </div>
+            <?php include '../includes/notification-bell.php'; ?>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Main</div>
+            <a href="dashboard.php" class="sidebar-link <?php echo $current_page === 'dashboard' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="all-requests.php" class="sidebar-link <?php echo $current_page === 'all-requests' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📋</span><span>All Requests</span>
+            </a>
+            <a href="users.php" class="sidebar-link <?php echo $current_page === 'users' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">👥</span><span>Manage Users</span>
+            </a>
+            <div class="sidebar-section-label">Management</div>
+            <a href="locations.php" class="sidebar-link <?php echo $current_page === 'locations' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📍</span><span>Locations</span>
+            </a>
+            <a href="reports.php" class="sidebar-link <?php echo $current_page === 'reports' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📈</span><span>Reports</span>
+            </a>
+            <a href="all-feedback.php" class="sidebar-link <?php echo $current_page === 'all-feedback' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">⭐</span><span>Feedback</span>
+            </a>
+            <a href="audit-logs.php" class="sidebar-link <?php echo $current_page === 'audit-logs' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">🔍</span><span>Audit Logs</span>
+            </a>
+            <a href="backup.php" class="sidebar-link <?php echo $current_page === 'backup' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">💾</span><span>Backup</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
+                <span class="sidebar-icon">🚪</span><span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <button class="hamburger" id="hamburgerBtn">☰</button>
+            <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
+            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+        </div>
+
 
     <div class="dashboard">
         <div class="dashboard-container">
@@ -433,5 +476,31 @@ if ($is_cli) exit(0);
             
         </div>
     </div>
+    </div><!-- end main-content -->
+
+    <script>
+        const sidebar   = document.getElementById('sidebar');
+        const overlay   = document.getElementById('sidebarOverlay');
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('show');    document.body.style.overflow='hidden'; }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
+
+        document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
+        document.getElementById('sidebarClose')?.addEventListener('click', closeSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+        if (notifBell && notifDropdown) {
+            notifBell.addEventListener('click', function() {
+                if (notifDropdown.classList.contains('show')) {
+                    const rect = notifBell.getBoundingClientRect();
+                    let top = rect.bottom + 8;
+                    if (top + 440 > window.innerHeight) top = Math.max(8, rect.top - 448);
+                    notifDropdown.style.top = top + 'px';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

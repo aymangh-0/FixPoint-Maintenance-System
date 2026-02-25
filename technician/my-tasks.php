@@ -91,6 +91,8 @@ $stats_stmt->bind_param("i", $tech_id);
 $stats_stmt->execute();
 $stats = $stats_stmt->get_result()->fetch_assoc();
 $stats_stmt->close();
+
+$current_page = 'my-tasks';
 ?>
 
 <!DOCTYPE html>
@@ -224,27 +226,50 @@ $stats_stmt->close();
             .task-footer { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
         }
     </style>
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <span class="logo-icon">🔧</span>
-                    <span class="logo-text">FixPoint</span>
-                    <span class="logo-subtitle">Technician</span>
+<body class="has-sidebar">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon">🔧</span>
+                <div>
+                    <span class="sidebar-logo-text">FixPoint</span>
+                    <span class="sidebar-logo-sub">SEU</span>
                 </div>
-                <nav class="nav-links">
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="my-tasks.php" class="nav-link" style="color: #2563eb; font-weight: 600;">My Tasks</a>
-                    <?php include '../includes/notification-bell.php'; ?>
-                    <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
-                    <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
-                </nav>
             </div>
+            <button class="sidebar-close" id="sidebarClose">✕</button>
         </div>
-    </header>
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">👤</div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
+                <span class="sidebar-user-role">Technician</span>
+            </div>
+            <?php include '../includes/notification-bell.php'; ?>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">My Work</div>
+            <a href="dashboard.php" class="sidebar-link <?php echo $current_page === 'dashboard' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">🏠</span><span>Dashboard</span>
+            </a>
+            <a href="my-tasks.php" class="sidebar-link <?php echo $current_page === 'my-tasks' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">🔧</span><span>My Tasks</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
+                <span class="sidebar-icon">🚪</span><span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <button class="hamburger" id="hamburgerBtn">☰</button>
+            <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
+            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+        </div>
+
 
     <div class="dashboard">
         <div class="dashboard-container">
@@ -364,5 +389,31 @@ $stats_stmt->close();
 
         </div>
     </div>
+    </div><!-- end main-content -->
+
+    <script>
+        const sidebar   = document.getElementById('sidebar');
+        const overlay   = document.getElementById('sidebarOverlay');
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('show');    document.body.style.overflow='hidden'; }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
+
+        document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
+        document.getElementById('sidebarClose')?.addEventListener('click', closeSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+        if (notifBell && notifDropdown) {
+            notifBell.addEventListener('click', function() {
+                if (notifDropdown.classList.contains('show')) {
+                    const rect = notifBell.getBoundingClientRect();
+                    let top = rect.bottom + 8;
+                    if (top + 440 > window.innerHeight) top = Math.max(8, rect.top - 448);
+                    notifDropdown.style.top = top + 'px';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

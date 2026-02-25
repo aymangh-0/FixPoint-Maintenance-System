@@ -1,7 +1,7 @@
 <?php
 /**
- * FixPoint - Admin Request Details
- * View and manage maintenance requests - assign technicians, update status
+ * FixPoint - Request Details (User View)
+ * View detailed information about a specific maintenance request
  */
 
 session_start();
@@ -13,8 +13,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Redirect if not admin
-if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+// Redirect if not a regular user (Student or Faculty)
+if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['role_id'] != 4)) {
     header("Location: ../index.php");
     exit();
 }
@@ -22,129 +22,8 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
 require_once '../config/database.php';
 require_once '../config/helpers.php';
 
-$admin_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 $request_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$success = '';
-$error = '';
-
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    
-    // Assign Technician
-    if (isset($_POST['assign_technician'])) {
-        $technician_id = (int)$_POST['technician_id'];
-        
-        if ($technician_id > 0) {
-            // Check if already assigned
-            $check_sql = "SELECT AssignmentID FROM assignment WHERE RequestID = ? AND TechnicianID = ?";
-            $check_stmt = $conn->prepare($check_sql);
-            $check_stmt->bind_param("ii", $request_id, $technician_id);
-            $check_stmt->execute();
-            $check_result = $check_stmt->get_result();
-            
-            if ($check_result->num_rows == 0) {
-                // Insert assignment
-                $assign_sql = "INSERT INTO assignment (RequestID, TechnicianID, AdminID) VALUES (?, ?, ?)";
-                $assign_stmt = $conn->prepare($assign_sql);
-                $assign_stmt->bind_param("iii", $request_id, $technician_id, $admin_id);
-                
-                if ($assign_stmt->execute()) {
-                    // Update request status to "Assigned" (StatusID = 3)
-                    $update_sql = "UPDATE maintenancerequest SET StatusID = 3 WHERE RequestID = ?";
-                    $update_stmt = $conn->prepare($update_sql);
-                    $update_stmt->bind_param("i", $request_id);
-                    $update_stmt->execute();
-                    
-                    // Log status change
-                    logStatusChange($conn, $request_id, 1, 3, $admin_id);
-                    
-                    // Get requester and technician info for notifications
-                    $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";
-                    $req_stmt = $conn->prepare($req_sql);
-                    $req_stmt->bind_param("i", $request_id);
-                    $req_stmt->execute();
-                    $requester_id = $req_stmt->get_result()->fetch_assoc()['UserID'];
-                    
-                    // Notify requester
-                    createNotification($conn, $requester_id, "Your request #$request_id has been assigned to a technician", $request_id);
-                    
-                    // Notify technician
-                    createNotification($conn, $technician_id, "New maintenance request #$request_id has been assigned to you", $request_id);
-                    require_once '../config/audit-logger.php';
-                    logTechnicianAssignment($conn, $admin_id, $request_id, $technician_id);
-                    
-                    // Send email notifications
-                    require_once '../config/email-service.php';
-                    emailTechnicianAssigned($conn, $request_id, $technician_id);
-                    emailStatusUpdate($conn, $request_id, $requester_id, 'Assigned');
-                    $success = "Technician assigned successfully!";
-                } else {
-                    $error = "Failed to assign technician.";
-                }
-            } else {
-                $error = "This technician is already assigned to this request.";
-            }
-        } else {
-            $error = "Please select a technician.";
-        }
-    }
-    
-    // Update Status
-    if (isset($_POST['update_status'])) {
-        $new_status_id = (int)$_POST['status_id'];
-        
-        // Get current status
-        $current_sql = "SELECT StatusID FROM maintenancerequest WHERE RequestID = ?";
-        $current_stmt = $conn->prepare($current_sql);
-        $current_stmt->bind_param("i", $request_id);
-        $current_stmt->execute();
-        $old_status_id = $current_stmt->get_result()->fetch_assoc()['StatusID'];
-        
-        if ($new_status_id != $old_status_id) {
-            // Update status
-            $update_sql = "UPDATE maintenancerequest SET StatusID = ? WHERE RequestID = ?";
-            $update_stmt = $conn->prepare($update_sql);
-            $update_stmt->bind_param("ii", $new_status_id, $request_id);
-            
-            if ($update_stmt->execute()) {
-                // If marking as completed, set CompletedAt
-                if ($new_status_id == 5) {
-                    $complete_sql = "UPDATE maintenancerequest SET CompletedAt = NOW() WHERE RequestID = ?";
-                    $complete_stmt = $conn->prepare($complete_sql);
-                    $complete_stmt->bind_param("i", $request_id);
-                    $complete_stmt->execute();
-                }
-                
-                // Log status change
-                logStatusChange($conn, $request_id, $old_status_id, $new_status_id, $admin_id);
-                require_once '../config/audit-logger.php';
-                logStatusChangeAudit($conn, $admin_id, $request_id, $old_status_name, $new_status_name);
-                
-                // Notify requester
-                $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";
-                $req_stmt = $conn->prepare($req_sql);
-                $req_stmt->bind_param("i", $request_id);
-                $req_stmt->execute();
-                $requester_id = $req_stmt->get_result()->fetch_assoc()['UserID'];
-                
-                $status_name_sql = "SELECT StatusName FROM status WHERE StatusID = ?";
-                $status_stmt = $conn->prepare($status_name_sql);
-                $status_stmt->bind_param("i", $new_status_id);
-                $status_stmt->execute();
-                $status_name = $status_stmt->get_result()->fetch_assoc()['StatusName'];
-                
-                createNotification($conn, $requester_id, "Your request #$request_id status changed to: $status_name", $request_id);
-
-                require_once '../config/email-service.php';
-                emailStatusUpdate($conn, $request_id, $requester_id, $new_status_name);
-                
-                $success = "Status updated successfully!";
-            } else {
-                $error = "Failed to update status.";
-            }
-        }
-    }
-}
 
 // Get request details
 $sql = "SELECT 
@@ -155,11 +34,9 @@ $sql = "SELECT
             mr.UpdatedAt,
             mr.CompletedAt,
             mr.UserID,
-            mr.StatusID,
             u.Name as RequesterName,
             u.Email as RequesterEmail,
             u.Phone as RequesterPhone,
-            r.RoleName as RequesterRole,
             l.BuildingName,
             l.FloorNumber,
             l.RoomNumber,
@@ -171,20 +48,19 @@ $sql = "SELECT
             s.Description as StatusDescription
         FROM maintenancerequest mr
         JOIN user u ON mr.UserID = u.UserID
-        JOIN role r ON u.RoleID = r.RoleID
         JOIN location l ON mr.LocationID = l.LocationID
         JOIN category c ON mr.CategoryID = c.CategoryID
         JOIN priority p ON mr.PriorityID = p.PriorityID
         JOIN status s ON mr.StatusID = s.StatusID
-        WHERE mr.RequestID = ?";
+        WHERE mr.RequestID = ? AND mr.UserID = ?";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $request_id);
+$stmt->bind_param("ii", $request_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows == 0) {
-    header("Location: all-requests.php");
+    header("Location: my-requests.php");
     exit();
 }
 
@@ -192,7 +68,6 @@ $request = $result->fetch_assoc();
 
 // Get assigned technician (if any)
 $tech_sql = "SELECT 
-                u.UserID,
                 u.Name as TechName,
                 u.Email as TechEmail,
                 u.Phone as TechPhone,
@@ -211,12 +86,6 @@ $tech_stmt->execute();
 $tech_result = $tech_stmt->get_result();
 $technician = $tech_result->num_rows > 0 ? $tech_result->fetch_assoc() : null;
 
-// Get all technicians for dropdown
-$technicians = getAllTechnicians($conn);
-
-// Get all statuses for dropdown
-$statuses = getAllStatuses($conn);
-
 // Get photos
 $photo_sql = "SELECT PhotoID, PhotoPath, UploadedAt FROM requestphoto WHERE RequestID = ?";
 $photo_stmt = $conn->prepare($photo_sql);
@@ -229,13 +98,11 @@ $history_sql = "SELECT
                     sh.ChangedAt,
                     s_old.StatusName as OldStatus,
                     s_new.StatusName as NewStatus,
-                    u.Name as ChangedByName,
-                    r.RoleName as ChangedByRole
+                    u.Name as ChangedByName
                 FROM statushistory sh
                 LEFT JOIN status s_old ON sh.OldStatusID = s_old.StatusID
                 JOIN status s_new ON sh.NewStatusID = s_new.StatusID
                 JOIN user u ON sh.ChangedBy = u.UserID
-                JOIN role r ON u.RoleID = r.RoleID
                 WHERE sh.RequestID = ?
                 ORDER BY sh.ChangedAt DESC";
 
@@ -244,27 +111,25 @@ $history_stmt->bind_param("i", $request_id);
 $history_stmt->execute();
 $history = $history_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Get feedback if exists
-$feedback_sql = "SELECT f.Rating, f.Comment, f.SubmittedAt, u.Name as UserName 
-                 FROM feedback f
-                 JOIN user u ON f.UserID = u.UserID
-                 WHERE f.RequestID = ?";
+// Check if feedback already submitted
+$feedback_sql = "SELECT FeedbackID, Rating, Comment, SubmittedAt FROM feedback WHERE RequestID = ? AND UserID = ?";
 $feedback_stmt = $conn->prepare($feedback_sql);
-$feedback_stmt->bind_param("i", $request_id);
+$feedback_stmt->bind_param("ii", $request_id, $user_id);
 $feedback_stmt->execute();
 $feedback_result = $feedback_stmt->get_result();
 $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : null;
 
+
+$current_page = 'all-requests';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Request #<?php echo $request_id; ?> - Admin</title>
+    <title>Request #<?php echo $request_id; ?> - FixPoint</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
-    <link rel="stylesheet" href="../assets/css/auth.css">
     <style>
         .detail-card {
             background: white;
@@ -305,26 +170,6 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
         
         .detail-value {
             color: #1e293b;
-        }
-        
-        .admin-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-        
-        .action-box {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border: 2px solid #e2e8f0;
-        }
-        
-        .action-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 1rem;
         }
         
         .photos-grid {
@@ -414,10 +259,6 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
         }
         
         @media (max-width: 768px) {
-            .admin-actions {
-                grid-template-columns: 1fr;
-            }
-            
             .detail-row {
                 grid-template-columns: 1fr;
                 gap: 0.5rem;
@@ -430,51 +271,77 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
             }
         }
     </style>
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <span class="logo-icon">🔧</span>
-                    <span class="logo-text">FixPoint</span>
-                    <span class="logo-subtitle">Admin</span>
+<body class="has-sidebar">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="sidebar-logo-icon">🔧</span>
+                <div>
+                    <span class="sidebar-logo-text">FixPoint</span>
+                    <span class="sidebar-logo-sub">SEU Admin</span>
                 </div>
-                <nav class="nav-links">
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
-                    <a href="all-requests.php" class="nav-link">All Requests</a>
-                    <a href="backup.php" class="nav-link">Backup</a>
-                    <a href="locations.php" class="nav-link">Locations</a>
-                    <a href="audit-logs.php" class="nav-link">Audit Logs</a>
-                    <?php include '../includes/notification-bell.php'; ?>
-                    <span style="color: #64748b;">👤 <?php echo e($_SESSION['name']); ?></span>
-                    <a href="../auth/logout.php" class="btn btn-outline">Logout</a>
-                </nav>
             </div>
+            <button class="sidebar-close" id="sidebarClose">✕</button>
         </div>
-    </header>
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">👤</div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
+                <span class="sidebar-user-role">Administrator</span>
+            </div>
+            <?php include '../includes/notification-bell.php'; ?>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Main</div>
+            <a href="dashboard.php" class="sidebar-link <?php echo $current_page === 'dashboard' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="all-requests.php" class="sidebar-link <?php echo $current_page === 'all-requests' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📋</span><span>All Requests</span>
+            </a>
+            <a href="users.php" class="sidebar-link <?php echo $current_page === 'users' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">👥</span><span>Manage Users</span>
+            </a>
+            <div class="sidebar-section-label">Management</div>
+            <a href="locations.php" class="sidebar-link <?php echo $current_page === 'locations' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📍</span><span>Locations</span>
+            </a>
+            <a href="reports.php" class="sidebar-link <?php echo $current_page === 'reports' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">📈</span><span>Reports</span>
+            </a>
+            <a href="all-feedback.php" class="sidebar-link <?php echo $current_page === 'all-feedback' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">⭐</span><span>Feedback</span>
+            </a>
+            <a href="audit-logs.php" class="sidebar-link <?php echo $current_page === 'audit-logs' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">🔍</span><span>Audit Logs</span>
+            </a>
+            <a href="backup.php" class="sidebar-link <?php echo $current_page === 'backup' ? 'active' : ''; ?>">
+                <span class="sidebar-icon">💾</span><span>Backup</span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
+                <span class="sidebar-icon">🚪</span><span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <button class="hamburger" id="hamburgerBtn">☰</button>
+            <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
+            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+        </div>
+
 
     <div class="dashboard">
         <div class="dashboard-container">
             
             <!-- Back Button -->
             <div style="margin-bottom: 1rem;">
-                <a href="all-requests.php" class="btn btn-outline">← Back to All Requests</a>
+                <a href="my-requests.php" class="btn btn-outline">← Back to My Requests</a>
             </div>
-
-            <!-- Success/Error Messages -->
-            <?php if ($success): ?>
-                <div class="alert alert-success">
-                    ✅ <?php echo e($success); ?>
-                </div>
-            <?php endif; ?>
-            
-            <?php if ($error): ?>
-                <div class="alert alert-error">
-                    ❌ <?php echo e($error); ?>
-                </div>
-            <?php endif; ?>
 
             <!-- Request Header -->
             <div class="detail-card">
@@ -492,18 +359,6 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                               style="font-size: 1rem; padding: 0.5rem 1rem;">
                             <?php echo e($request['StatusName']); ?>
                         </span>
-                    </div>
-                </div>
-
-                <div class="detail-row">
-                    <div class="detail-label">👤 Requester</div>
-                    <div class="detail-value">
-                        <strong><?php echo e($request['RequesterName']); ?></strong> (<?php echo e($request['RequesterRole']); ?>)
-                        <br>
-                        📧 <?php echo e($request['RequesterEmail']); ?>
-                        <?php if ($request['RequesterPhone']): ?>
-                            <br>📞 <?php echo e($request['RequesterPhone']); ?>
-                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -544,68 +399,7 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                 <?php endif; ?>
             </div>
 
-            <!-- Admin Actions -->
-            <div class="detail-card">
-                <h2 class="section-title">⚙️ Admin Actions</h2>
-                
-                <div class="admin-actions">
-                    <!-- Assign Technician -->
-                    <div class="action-box">
-                        <h3 class="action-title">👨‍🔧 Assign Technician</h3>
-                        
-                        <?php if ($technician): ?>
-                            <div style="background: #d1fae5; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-                                <strong>✅ Currently Assigned:</strong>
-                                <br><?php echo e($technician['TechName']); ?>
-                                <br><small style="color: #065f46;">Assigned on <?php echo formatDate($technician['AssignedAt'], 'M d, Y'); ?></small>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <form method="POST" action="">
-                            <div class="form-group">
-                                <label for="technician_id" class="form-label">Select Technician</label>
-                                <select name="technician_id" id="technician_id" class="form-input" required>
-                                    <option value="">-- Choose Technician --</option>
-                                    <?php foreach ($technicians as $tech): ?>
-                                        <option value="<?php echo $tech['UserID']; ?>">
-                                            <?php echo e($tech['Name']); ?> (<?php echo e($tech['Email']); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            
-                            <button type="submit" name="assign_technician" class="btn-submit">
-                                Assign Technician
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Update Status -->
-                    <div class="action-box">
-                        <h3 class="action-title">📊 Update Status</h3>
-                        
-                        <form method="POST" action="">
-                            <div class="form-group">
-                                <label for="status_id" class="form-label">Change Status</label>
-                                <select name="status_id" id="status_id" class="form-input" required>
-                                    <?php foreach ($statuses as $status): ?>
-                                        <option value="<?php echo $status['StatusID']; ?>"
-                                            <?php echo ($status['StatusID'] == $request['StatusID']) ? 'selected' : ''; ?>>
-                                            <?php echo e($status['StatusName']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            
-                            <button type="submit" name="update_status" class="btn-submit">
-                                Update Status
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Assigned Technician Details -->
+            <!-- Assigned Technician -->
             <?php if ($technician): ?>
             <div class="detail-card">
                 <h2 class="section-title">👨‍🔧 Assigned Technician</h2>
@@ -648,48 +442,6 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
             </div>
             <?php endif; ?>
 
-            <!-- User Feedback -->
-            <?php if ($feedback): ?>
-            <div class="detail-card">
-                <h2 class="section-title">⭐ User Feedback</h2>
-                
-                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 0.75rem;">
-                    <div class="detail-row">
-                        <div class="detail-label">Submitted By</div>
-                        <div class="detail-value"><strong><?php echo e($feedback['UserName']); ?></strong></div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Rating</div>
-                        <div class="detail-value">
-                            <div style="color: #fbbf24; font-size: 1.5rem;">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <?php echo $i <= $feedback['Rating'] ? '⭐' : '☆'; ?>
-                                <?php endfor; ?>
-                            </div>
-                            <span style="color: #64748b;"><?php echo $feedback['Rating']; ?> out of 5 stars</span>
-                        </div>
-                    </div>
-                    
-                    <?php if ($feedback['Comment']): ?>
-                    <div class="detail-row">
-                        <div class="detail-label">Comment</div>
-                        <div class="detail-value">
-                            <div style="background: white; padding: 1rem; border-radius: 0.5rem; white-space: pre-line;">
-                                <?php echo e($feedback['Comment']); ?>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Submitted On</div>
-                        <div class="detail-value"><?php echo formatDate($feedback['SubmittedAt'], 'M d, Y - H:i'); ?></div>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-
             <!-- Photos -->
             <?php if (count($photos) > 0): ?>
             <div class="detail-card">
@@ -708,6 +460,51 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                 <p style="color: #64748b; font-size: 0.875rem; margin-top: 1rem;">
                     💡 Click on any photo to view it in full size
                 </p>
+            </div>
+            <?php endif; ?>
+
+            <!-- Feedback Section -->
+            <?php if ($request['StatusName'] == 'Completed'): ?>
+            <div class="detail-card">
+                <h2 class="section-title">⭐ Your Feedback</h2>
+                
+                <?php if ($feedback): ?>
+                    <!-- Display Submitted Feedback -->
+                    <div style="background: #d1fae5; padding: 1.5rem; border-radius: 0.75rem; border: 2px solid #a7f3d0;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <strong style="color: #065f46;">Your Rating:</strong>
+                            <div style="color: #fbbf24; font-size: 1.5rem;">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?php echo $i <= $feedback['Rating'] ? '⭐' : '☆'; ?>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        
+                        <?php if ($feedback['Comment']): ?>
+                        <div style="background: white; padding: 1rem; border-radius: 0.5rem;">
+                            <strong style="color: #1e293b;">Your Comment:</strong>
+                            <p style="color: #64748b; margin-top: 0.5rem; white-space: pre-line;">
+                                <?php echo e($feedback['Comment']); ?>
+                            </p>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div style="color: #065f46; font-size: 0.875rem; margin-top: 1rem;">
+                            ✅ Feedback submitted on <?php echo formatDate($feedback['SubmittedAt'], 'M d, Y - H:i'); ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <!-- Feedback Not Submitted -->
+                    <div style="background: #fef3c7; padding: 1.5rem; border-radius: 0.75rem; border: 2px solid #fde68a; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+                        <p style="color: #92400e; margin-bottom: 1.5rem;">
+                            This request has been completed. We'd love to hear your feedback!
+                        </p>
+                        <a href="submit-feedback.php?id=<?php echo $request['RequestID']; ?>" class="btn btn-primary btn-large">
+                            ⭐ Submit Feedback
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 
@@ -741,7 +538,7 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
                                     <?php endif; ?>
                                 </div>
                                 <div class="timeline-user">
-                                    by <?php echo e($item['ChangedByName']); ?> (<?php echo e($item['ChangedByRole']); ?>)
+                                    by <?php echo e($item['ChangedByName']); ?>
                                 </div>
                             </div>
                         </div>
@@ -752,5 +549,31 @@ $feedback = $feedback_result->num_rows > 0 ? $feedback_result->fetch_assoc() : n
 
         </div>
     </div>
+    </div><!-- end main-content -->
+
+    <script>
+        const sidebar   = document.getElementById('sidebar');
+        const overlay   = document.getElementById('sidebarOverlay');
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
+
+        function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('show');    document.body.style.overflow='hidden'; }
+        function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
+
+        document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
+        document.getElementById('sidebarClose')?.addEventListener('click', closeSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
+
+        if (notifBell && notifDropdown) {
+            notifBell.addEventListener('click', function() {
+                if (notifDropdown.classList.contains('show')) {
+                    const rect = notifBell.getBoundingClientRect();
+                    let top = rect.bottom + 8;
+                    if (top + 440 > window.innerHeight) top = Math.max(8, rect.top - 448);
+                    notifDropdown.style.top = top + 'px';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
