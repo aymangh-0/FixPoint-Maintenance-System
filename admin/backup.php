@@ -222,10 +222,11 @@ function checkAutoBackup($conn, $backup_dir, $db_name, $threshold) {
             ];
         }
     }
+    // fallback: always return valid array
     return [
         'triggered'   => false,
-        'audit_count' => $audit_count,
-        'login_count' => $login_count,
+        'audit_count' => $audit_count ?? 0,
+        'login_count' => $login_count ?? 0,
     ];
 }
 
