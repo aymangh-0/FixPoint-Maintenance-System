@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 1) {
     exit();
 }
 
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Get date range from GET params
 $date_from = isset($_GET['from']) ? $_GET['from'] : '2024-01-01';

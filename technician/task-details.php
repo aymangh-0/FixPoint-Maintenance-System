@@ -5,7 +5,7 @@
  */
 
 session_start();
-require_once '../config/session-security.php';
+require_once __DIR__ . '/../config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -19,8 +19,8 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 2) {
     exit();
 }
 
-require_once '../config/database.php';
-require_once '../config/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 $tech_id = $_SESSION['user_id'];
 $request_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($update_stmt->execute()) {
             // Log status change
             logStatusChange($conn, $request_id, 3, 4, $tech_id);
-            require_once '../config/audit-logger.php';
+            require_once __DIR__ . '/../config/audit-logger.php';
             logStatusChangeAudit($conn, $tech_id, $request_id, 'Assigned', 'In Progress');
 
             
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             createNotification($conn, $requester_id, "Your request #$request_id is now being worked on by a technician", $request_id);
 
             // Send email notification
-            require_once '../config/email-service.php';
+            require_once __DIR__ . '/../config/email-service.php';
             emailStatusUpdate($conn, $request_id, $requester_id, 'In Progress');
             
             $success = "Work started! Status updated to 'In Progress'.";
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($update_stmt->execute()) {
             // Log status change with notes
             logStatusChange($conn, $request_id, 4, 5, $tech_id);
-            require_once '../config/audit-logger.php';
+            require_once __DIR__ . '/../config/audit-logger.php';
             logStatusChangeAudit($conn, $tech_id, $request_id, 'Assigned', 'In Progress');
 
             
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             createNotification($conn, $requester_id, "Your request #$request_id has been completed! Please review and provide feedback.", $request_id);
 
             // Send email notification
-            require_once '../config/email-service.php';
+            require_once __DIR__ . '/../config/email-service.php';
             emailRequestCompleted($conn, $request_id);
             
             $success = "Task marked as complete! The requester has been notified.";
@@ -387,7 +387,7 @@ $current_page = 'my-tasks';
                 <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
                 <span class="sidebar-user-role">Technician</span>
             </div>
-            <?php include '../includes/notification-bell.php'; ?>
+            <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">My Work</div>
@@ -408,7 +408,7 @@ $current_page = 'my-tasks';
         <div class="topbar">
             <button class="hamburger" id="hamburgerBtn">☰</button>
             <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
-            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+            <div class="topbar-notif"><?php include __DIR__ . '/../includes/notification-bell.php'; ?></div>
         </div>
 
 

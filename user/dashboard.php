@@ -5,7 +5,7 @@
  */
 
 session_start();
-require_once '../config/session-security.php';
+require_once __DIR__ . '/../config/session-security.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -19,8 +19,8 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['rol
     exit();
 }
 
-require_once '../config/database.php';
-require_once '../config/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 // Get user information
 $user_id = $_SESSION['user_id'];
@@ -120,7 +120,7 @@ $current_page = 'dashboard';
                 <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
                 <span class="sidebar-user-role">User</span>
             </div>
-            <?php include '../includes/notification-bell.php'; ?>
+            <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">My Account</div>
@@ -144,7 +144,7 @@ $current_page = 'dashboard';
         <div class="topbar">
             <button class="hamburger" id="hamburgerBtn">☰</button>
             <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
-            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+            <div class="topbar-notif"><?php include __DIR__ . '/../includes/notification-bell.php'; ?></div>
         </div>
 
 

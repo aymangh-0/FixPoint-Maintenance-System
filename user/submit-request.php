@@ -5,7 +5,7 @@
  */
 
 session_start();
-require_once '../config/session-security.php';
+require_once __DIR__ . '/../config/session-security.php';
 
 
 // Redirect if not logged in
@@ -20,8 +20,8 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['rol
     exit();
 }
 
-require_once '../config/database.php';
-require_once '../config/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 
 $user_id = $_SESSION['user_id'];
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             if ($stmt->execute()) {
                 $request_id = $stmt->insert_id;
-                require_once '../config/audit-logger.php';
+                require_once __DIR__ . '/../config/audit-logger.php';
                 logRequestSubmission($conn, $user_id, $request_id);
                 
                 // Handle photo upload (required)
@@ -148,11 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     );
                 }
 
-                require_once '../config/email-service.php';
+                require_once __DIR__ . '/../config/email-service.php';
                 emailNewRequest($conn, $request_id, $title, $description, $_SESSION['name'], '', '', '');
                 
                 // Auto-assign technician
-                require_once '../config/auto-assign.php';
+                require_once __DIR__ . '/../config/auto-assign.php';
                 $assign_result = autoAssignTechnician($conn, $request_id);
                 if ($assign_result['assigned']) {
                     $success = "Request submitted and auto-assigned to " . $assign_result['technician_name'] . "! Request ID: #$request_id";
@@ -199,7 +199,7 @@ $current_page = 'submit-request';
                 <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
                 <span class="sidebar-user-role">User</span>
             </div>
-            <?php include '../includes/notification-bell.php'; ?>
+            <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">My Account</div>
@@ -223,7 +223,7 @@ $current_page = 'submit-request';
         <div class="topbar">
             <button class="hamburger" id="hamburgerBtn">☰</button>
             <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
-            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+            <div class="topbar-notif"><?php include __DIR__ . '/../includes/notification-bell.php'; ?></div>
         </div>
 
 

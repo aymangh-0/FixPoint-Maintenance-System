@@ -27,8 +27,8 @@ if (isset($_SESSION['user_id'])) {
 }
 
 // Include database connection
-require_once '../config/database.php';
-require_once '../config/audit-logger.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/audit-logger.php';
 
 // Initialize variables
 $error = '';

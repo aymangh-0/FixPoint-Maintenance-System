@@ -5,7 +5,7 @@
  */
 
 session_start();
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 $step = 'verify'; // verify → reset → done
 $error = '';
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['reset'])) {
             if ($stmt->execute()) {
                 // Log the action
                 if (file_exists('../config/audit-logger.php')) {
-                    require_once '../config/audit-logger.php';
+                    require_once __DIR__ . '/../config/audit-logger.php';
                     logAuditAction($conn, $_SESSION['reset_user_id'], 'PASSWORD_RESET', 'user', $_SESSION['reset_user_id'], null, 'Password reset via forgot password');
                 }
                 

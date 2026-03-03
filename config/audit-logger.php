@@ -4,7 +4,7 @@
  * Logs every login attempt, request update, and administrative action
  * 
  * USAGE: Include in files that need logging
- * require_once '../config/audit-logger.php';  (for subfolders)
+ * require_once __DIR__ . '/../config/audit-logger.php';  (for subfolders)
  * require_once 'config/audit-logger.php';     (for root)
  */
 

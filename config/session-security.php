@@ -4,7 +4,7 @@
  * Handles session timeout (15 minutes) and session security
  * 
  * USAGE: Include this file AFTER session_start() in every page
- * require_once '../config/session-security.php';  (for files in subfolders)
+ * require_once __DIR__ . '/../config/session-security.php';  (for files in subfolders)
  * require_once 'config/session-security.php';     (for files in root)
  */
 

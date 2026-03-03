@@ -27,8 +27,8 @@ if (!$is_cli) {
     }
 }
 
-require_once '../config/database.php';
-require_once '../config/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 // ============================================
 // BACKUP CONFIGURATION
@@ -330,7 +330,7 @@ $current_page = 'backup';
                 <span class="sidebar-user-name"><?php echo e($_SESSION['name']); ?></span>
                 <span class="sidebar-user-role">Administrator</span>
             </div>
-            <?php include '../includes/notification-bell.php'; ?>
+            <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">Main</div>
@@ -370,7 +370,7 @@ $current_page = 'backup';
         <div class="topbar">
             <button class="hamburger" id="hamburgerBtn">☰</button>
             <div class="topbar-logo"><span>🔧</span><span>FixPoint</span></div>
-            <div class="topbar-notif"><?php include '../includes/notification-bell.php'; ?></div>
+            <div class="topbar-notif"><?php include __DIR__ . '/../includes/notification-bell.php'; ?></div>
         </div>
 
 

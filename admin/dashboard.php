@@ -3,13 +3,13 @@
  * FixPoint - Admin Dashboard
  */
 session_start();
-require_once '../config/session-security.php';
+require_once __DIR__ . '/../config/session-security.php';
 
 if (!isset($_SESSION['user_id'])) { header("Location: ../auth/login.php"); exit(); }
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) { header("Location: ../index.php"); exit(); }
 
-require_once '../config/database.php';
-require_once '../config/helpers.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['name'];
@@ -90,7 +90,7 @@ $current_page = 'dashboard';
                 <span class="sidebar-user-name"><?php echo e($user_name); ?></span>
                 <span class="sidebar-user-role">Administrator</span>
             </div>
-            <?php include '../includes/notification-bell.php'; ?>
+            <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
         </div>
 
         <nav class="sidebar-nav">
@@ -145,7 +145,7 @@ $current_page = 'dashboard';
                 <span>🔧</span><span>FixPoint</span>
             </div>
             <div class="topbar-notif">
-                <?php include '../includes/notification-bell.php'; ?>
+                <?php include __DIR__ . '/../includes/notification-bell.php'; ?>
             </div>
         </div>
 
