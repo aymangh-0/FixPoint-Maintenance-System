@@ -37,6 +37,7 @@ require_once '../config/helpers.php';
 $backup_dir = __DIR__ . '/../backups/';
 $db_name = 'fixpoint';
 $max_backups = 30;  // Keep last 30 backups
+$auto_backup_threshold = 200; // Auto backup when audit/login logs reach this number
 
 // Create backup directory if not exists
 if (!file_exists($backup_dir)) {
@@ -199,6 +200,36 @@ function getTimeAgo($timestamp) {
     if ($diff < 604800) return floor($diff / 86400) . ' days ago';
     return floor($diff / 604800) . ' weeks ago';
 }
+
+// ============================================
+// AUTO BACKUP CHECK
+// ============================================
+
+function checkAutoBackup($conn, $backup_dir, $db_name, $threshold) {
+    $audit_count = $conn->query("SELECT COUNT(*) as c FROM auditlog")->fetch_assoc()['c'];
+    $login_count = $conn->query("SELECT COUNT(*) as c FROM loginlog")->fetch_assoc()['c'];
+    
+    if ($audit_count >= $threshold || $login_count >= $threshold) {
+        $result = createBackup($conn, $db_name, $backup_dir);
+        if ($result['success']) {
+            if ($audit_count >= $threshold) $conn->query("DELETE FROM auditlog");
+            if ($login_count >= $threshold) $conn->query("DELETE FROM loginlog");
+            return [
+                'triggered'   => true,
+                'backup_file' => $result['filename'],
+                'audit_count' => $conn->query("SELECT COUNT(*) as c FROM auditlog")->fetch_assoc()['c'],
+                'login_count' => $conn->query("SELECT COUNT(*) as c FROM loginlog")->fetch_assoc()['c'],
+            ];
+        }
+    }
+    return [
+        'triggered'   => false,
+        'audit_count' => $audit_count,
+        'login_count' => $login_count,
+    ];
+}
+
+$auto_status = checkAutoBackup($conn, $backup_dir, $db_name, $auto_backup_threshold);
 
 // ============================================
 // HANDLE ACTIONS
@@ -383,6 +414,56 @@ $current_page = 'backup';
                         echo formatFileSize($total_size);
                     ?></div>
                     <div class="stat-info">All backup files</div>
+                </div>
+            </div>
+
+            <!-- Auto Backup Status -->
+            <?php if ($auto_status['triggered']): ?>
+                <div style="padding:1rem 1.5rem;border-radius:0.5rem;margin-bottom:1.5rem;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;">
+                    ⚡ <strong>Auto Backup Triggered!</strong> Log count reached <?php echo $auto_backup_threshold; ?>. 
+                    Backup created: <code><?php echo e($auto_status['backup_file']); ?></code> and logs were cleared automatically.
+                </div>
+            <?php endif; ?>
+
+            <!-- Auto Backup Settings -->
+            <div class="requests-section" style="margin-bottom:2rem;">
+                <h2 class="section-title">⚙️ Auto Backup Settings</h2>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:center;">
+                        <div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">Trigger Threshold</div>
+                            <div style="font-size:1.1rem;font-weight:700;color:#1e293b;"><?php echo $auto_backup_threshold; ?> entries</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">📋 Audit Log</div>
+                            <?php 
+                            $pct = min(100, round($auto_status['audit_count'] / $auto_backup_threshold * 100));
+                            $color = $pct >= 80 ? '#ef4444' : ($pct >= 50 ? '#f59e0b' : '#10b981');
+                            ?>
+                            <div style="font-size:1rem;font-weight:600;color:<?php echo $color; ?>;">
+                                <?php echo $auto_status['audit_count']; ?> / <?php echo $auto_backup_threshold; ?>
+                            </div>
+                            <div style="background:#e2e8f0;border-radius:9999px;height:6px;width:160px;margin-top:4px;">
+                                <div style="background:<?php echo $color; ?>;height:6px;border-radius:9999px;width:<?php echo $pct; ?>%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">🔐 Login Log</div>
+                            <?php 
+                            $pct2 = min(100, round($auto_status['login_count'] / $auto_backup_threshold * 100));
+                            $color2 = $pct2 >= 80 ? '#ef4444' : ($pct2 >= 50 ? '#f59e0b' : '#10b981');
+                            ?>
+                            <div style="font-size:1rem;font-weight:600;color:<?php echo $color2; ?>;">
+                                <?php echo $auto_status['login_count']; ?> / <?php echo $auto_backup_threshold; ?>
+                            </div>
+                            <div style="background:#e2e8f0;border-radius:9999px;height:6px;width:160px;margin-top:4px;">
+                                <div style="background:<?php echo $color2; ?>;height:6px;border-radius:9999px;width:<?php echo $pct2; ?>%;"></div>
+                            </div>
+                        </div>
+                        <div style="color:#64748b;font-size:0.825rem;max-width:250px;">
+                            💡 When any log reaches <strong><?php echo $auto_backup_threshold; ?></strong> entries, a backup is created automatically and logs are cleared.
+                        </div>
+                    </div>
                 </div>
             </div>
 

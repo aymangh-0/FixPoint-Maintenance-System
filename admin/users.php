@@ -39,7 +39,7 @@ if (isset($_GET['error'])) {
         'limits_failed' => "Failed to update limits.",
         'role_failed'   => "Failed to update role.",
         'own_role'      => "You cannot change your own role!",
-        'invalid_limits'=> "Invalid limits. Weekly must be ≤ monthly.",
+        'invalid_limits'=> "Invalid limits. Weekly limit must be at least 1.",
         'invalid_role'  => "Invalid role selected.",
         default         => "An error occurred."
     };
@@ -49,11 +49,10 @@ if (isset($_GET['error'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_limits'])) {
     $user_id   = (int)$_POST['user_id'];
     $max_week  = (int)$_POST['max_week'];
-    $max_month = (int)$_POST['max_month'];
     
-    if ($max_week > 0 && $max_month > 0 && $max_week <= $max_month) {
-        $stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = ?, MaxRequestsPerMonth = ? WHERE UserID = ?");
-        $stmt->bind_param("iii", $max_week, $max_month, $user_id);
+    if ($max_week > 0) {
+        $stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = ? WHERE UserID = ?");
+        $stmt->bind_param("ii", $max_week, $user_id);
         if ($stmt->execute()) {
             header("Location: users.php?success=limits");
         } else {
@@ -65,32 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_limits'])) {
     exit();
 }
 
-// Handle Reset Limits
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['reset_limits'])) {
-    $user_id = (int)$_POST['user_id'];
-    
-    $role_stmt = $conn->prepare("SELECT RoleID FROM user WHERE UserID = ?");
-    $role_stmt->bind_param("i", $user_id);
-    $role_stmt->execute();
-    $role_data = $role_stmt->get_result()->fetch_assoc();
-    
-    if ($role_data) {
-        $default_week  = ($role_data['RoleID'] == 3) ? 2 : 5;
-        $default_month = ($role_data['RoleID'] == 3) ? 8 : 20;
-        $now = date('Y-m-d H:i:s');
-        
-        $stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = ?, MaxRequestsPerMonth = ?, LastResetAt = ? WHERE UserID = ?");
-        $stmt->bind_param("iisi", $default_week, $default_month, $now, $user_id);
-        if ($stmt->execute()) {
-            header("Location: users.php?success=reset");
-        } else {
-            header("Location: users.php?error=reset_failed");
-        }
-    } else {
-        header("Location: users.php?error=reset_failed");
-    }
-    exit();
-}
 
 // Handle Change Role
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_role'])) {
@@ -109,12 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_role'])) {
         if ($stmt->execute()) {
             if ($new_role_id == 3 || $new_role_id == 4) {
                 $default_week  = ($new_role_id == 3) ? 2 : 5;
-                $default_month = ($new_role_id == 3) ? 8 : 20;
-                $limit_stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = ?, MaxRequestsPerMonth = ? WHERE UserID = ?");
-                $limit_stmt->bind_param("iii", $default_week, $default_month, $user_id);
+                $limit_stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = ? WHERE UserID = ?");
+                $limit_stmt->bind_param("ii", $default_week, $user_id);
                 $limit_stmt->execute();
             } else {
-                $limit_stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = NULL, MaxRequestsPerMonth = NULL WHERE UserID = ?");
+                $limit_stmt = $conn->prepare("UPDATE user SET MaxRequestsPerWeek = NULL WHERE UserID = ?");
                 $limit_stmt->bind_param("i", $user_id);
                 $limit_stmt->execute();
             }
@@ -134,17 +106,12 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 // Base query
 $base_sql = "SELECT 
         u.UserID, u.Name, u.Email, u.Phone, u.CreatedAt,
-        u.MaxRequestsPerWeek, u.MaxRequestsPerMonth, u.LastResetAt,
+        u.MaxRequestsPerWeek, u.LastResetAt,
         r.RoleID, r.RoleName,
         COUNT(DISTINCT mr.RequestID) as TotalRequests,
         COUNT(DISTINCT CASE 
             WHEN mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 7 DAY))
-            AND mr.SubmittedAt >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            THEN mr.RequestID END) as RequestsThisWeek,
-        COUNT(DISTINCT CASE 
-            WHEN mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 30 DAY))
-            AND mr.SubmittedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-            THEN mr.RequestID END) as RequestsThisMonth
+            THEN mr.RequestID END) as RequestsThisWeek
     FROM user u
     JOIN role r ON u.RoleID = r.RoleID
     LEFT JOIN maintenancerequest mr ON u.UserID = mr.UserID";
@@ -157,7 +124,9 @@ if (!empty($search)) {
 
 function fetchUsersByRole($conn, $base_sql, $role_id, $search_condition) {
     $sql = $base_sql . " WHERE r.RoleID = $role_id" . $search_condition . " GROUP BY u.UserID ORDER BY u.CreatedAt DESC";
-    return $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+    $result = $conn->query($sql);
+    if (!$result) { die("SQL Error: " . $conn->error . "<br><pre>" . $sql . "</pre>"); }
+    return $result->fetch_all(MYSQLI_ASSOC);
 }
 
 $admins      = fetchUsersByRole($conn, $base_sql, 1, $search_condition);
@@ -189,8 +158,7 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                     <th>Phone</th>
                     <th>Total</th>
                     <th>This Week</th>
-                    <th>This Month</th>
-                    <?php if ($show_limits): ?><th>Limits (W/M)</th><?php endif; ?>
+                                        <?php if ($show_limits): ?><th>Limits (W/M)</th><?php endif; ?>
                     <th>Joined</th>
                     <th>Actions</th>
                 </tr>
@@ -210,17 +178,11 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                             ?>
                             <span style="color:<?php echo $week_color; ?>; font-weight:600;"><?php echo $user['RequestsThisWeek']; ?></span>
                         </td>
-                        <td>
-                            <?php
-                            $month_pct = $user['MaxRequestsPerMonth'] > 0 ? ($user['RequestsThisMonth'] / $user['MaxRequestsPerMonth']) * 100 : 0;
-                            $month_color = $month_pct >= 80 ? '#ef4444' : ($month_pct >= 50 ? '#f59e0b' : '#10b981');
-                            ?>
-                            <span style="color:<?php echo $month_color; ?>; font-weight:600;"><?php echo $user['RequestsThisMonth']; ?></span>
-                        </td>
+
                         <?php if ($show_limits): ?>
                             <td>
                                 <?php if ($user['MaxRequestsPerWeek']): ?>
-                                    <strong><?php echo $user['MaxRequestsPerWeek']; ?></strong> / <strong><?php echo $user['MaxRequestsPerMonth']; ?></strong>
+                                    <strong><?php echo $user['MaxRequestsPerWeek']; ?></strong> 
                                 <?php else: ?>
                                     <span style="color:#94a3b8;">∞ / ∞</span>
                                 <?php endif; ?>
@@ -237,16 +199,10 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                                         👤 Role
                                     </button>
                                     <?php if ($show_limits): ?>
-                                        <button onclick="openLimitModal(<?php echo $user['UserID']; ?>, '<?php echo e($user['Name']); ?>', <?php echo $user['MaxRequestsPerWeek']; ?>, <?php echo $user['MaxRequestsPerMonth']; ?>)"
+                                        <button onclick="openLimitModal(<?php echo $user['UserID']; ?>, '<?php echo e($user['Name']); ?>', <?php echo $user['MaxRequestsPerWeek']; ?>)"
                                             class="btn btn-primary" style="padding:0.4rem 0.75rem; font-size:0.8rem;">
                                             ⚙️ Limits
-                                        </button>
-                                        <form method="POST" action="" style="display:inline;" onsubmit="return confirm('Reset <?php echo e($user['Name']); ?> to default limits?')">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['UserID']; ?>">
-                                            <button type="submit" name="reset_limits"
-                                                style="padding:0.4rem 0.75rem; font-size:0.8rem; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:0.375rem; cursor:pointer;">
-                                                🔄 Reset
-                                            </button>
+                                        
                                         </form>
                                     <?php endif; ?>
                                 <?php endif; ?>
@@ -493,11 +449,6 @@ $current_page = 'users';
                     <input type="number" id="max_week" name="max_week" class="form-input" min="1" max="100" required>
                     <small style="color:#64748b;">Requests allowed per 7-day period</small>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Maximum Requests Per Month</label>
-                    <input type="number" id="max_month" name="max_month" class="form-input" min="1" max="200" required>
-                    <small style="color:#64748b;">Requests allowed per 30-day period</small>
-                </div>
                 <button type="submit" name="update_limits" class="btn-submit">💾 Save Limits</button>
             </form>
         </div>
@@ -521,8 +472,8 @@ $current_page = 'users';
                 <ul style="margin:0.5rem 0 0 1.5rem; font-size:0.875rem;">
                     <li><strong>Admin:</strong> Full system access</li>
                     <li><strong>Technician:</strong> Can view and work on assigned requests</li>
-                    <li><strong>User:</strong> Can submit requests (2/week, 8/month)</li>
-                    <li><strong>Faculty:</strong> Can submit requests (5/week, 20/month)</li>
+                    <li><strong>User:</strong> Can submit requests (2/week)</li>
+                    <li><strong>Faculty:</strong> Can submit requests (5/week)</li>
                 </ul>
             </div>
             <form method="POST" action="">
@@ -532,8 +483,8 @@ $current_page = 'users';
                     <select id="role_id" name="role_id" class="form-input" required>
                         <option value="1">👨‍💼 Admin</option>
                         <option value="2">👨‍🔧 Technician</option>
-                        <option value="3">👨‍🎓 User (2/week, 8/month)</option>
-                        <option value="4">👨‍🏫 Faculty (5/week, 20/month)</option>
+                        <option value="3">👨‍🎓 User (2/week)</option>
+                        <option value="4">👨‍🏫 Faculty (5/week)</option>
                     </select>
                 </div>
                 <button type="submit" name="change_role" class="btn-submit">💾 Change Role</button>
@@ -542,11 +493,11 @@ $current_page = 'users';
     </div>
 
     <script>
-        function openLimitModal(userId, userName, maxWeek, maxMonth) {
+        function openLimitModal(userId, userName, maxWeek) {
             document.getElementById('modal-user-id').value = userId;
             document.getElementById('modal-user-name').textContent = userName;
             document.getElementById('max_week').value = maxWeek || 2;
-            document.getElementById('max_month').value = maxMonth || 8;
+            
             document.getElementById('limitModal').style.display = 'block';
         }
         function closeLimitModal() { document.getElementById('limitModal').style.display = 'none'; }

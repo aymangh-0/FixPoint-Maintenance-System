@@ -125,6 +125,37 @@ $failed_logins = $conn->query("SELECT COUNT(*) as c FROM loginlog WHERE Status =
 $today_actions = $conn->query("SELECT COUNT(*) as c FROM auditlog WHERE DATE(PerformedAt) = CURDATE()")->fetch_assoc()['c'];
 
 // Action icon helper
+
+// ============================================
+// DELETE HANDLER
+// ============================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['delete_all'])) {
+        $del_tab = $_POST['del_tab'];
+        if ($del_tab === 'audit') {
+            $conn->query("DELETE FROM auditlog");
+        } elseif ($del_tab === 'login') {
+            $conn->query("DELETE FROM loginlog");
+        }
+        header("Location: audit-logs.php?tab=$del_tab&success=deleted");
+        exit();
+    }
+    if (isset($_POST['delete_selected']) && !empty($_POST['selected_ids'])) {
+        $del_tab = $_POST['del_tab'];
+        $ids = array_map('intval', $_POST['selected_ids']);
+        $ids_str = implode(',', $ids);
+        if ($del_tab === 'audit') {
+            $conn->query("DELETE FROM auditlog WHERE AuditID IN ($ids_str)");
+        } elseif ($del_tab === 'login') {
+            $conn->query("DELETE FROM loginlog WHERE LogID IN ($ids_str)");
+        }
+        header("Location: audit-logs.php?tab=$del_tab&success=deleted");
+        exit();
+    }
+}
+
+$delete_success = isset($_GET['success']) && $_GET['success'] === 'deleted';
+
 function getActionIcon($action) {
     $icons = [
         'SUBMIT_REQUEST' => '📝',
@@ -256,6 +287,17 @@ $current_page = 'audit-logs';
             border-radius: 0.375rem;
             font-size: 0.85rem;
         }
+        .log-card { position: relative; }
+        .log-checkbox { margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+        .delete-bar { 
+            display: flex; align-items: center; gap: 0.75rem; 
+            background: #fff5f5; border: 1px solid #fca5a5; 
+            border-radius: 0.5rem; padding: 0.75rem 1rem; 
+            margin-bottom: 1rem; flex-wrap: wrap;
+        }
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 0.4rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem; font-weight: 600; }
+        .btn-danger:hover { background: #dc2626; }
+        .select-count { font-size: 0.875rem; color: #991b1b; font-weight: 600; }
         .filter-group input:focus, .filter-group select:focus {
             outline: none;
             border-color: #2563eb;
@@ -417,11 +459,22 @@ $current_page = 'audit-logs';
             <!-- ============================================ -->
             <?php if ($tab === 'audit'): ?>
                 <?php if (count($audit_logs) > 0): ?>
-                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 1rem;">
-                        Showing <?php echo count($audit_logs); ?> entries (max 200)
-                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="del_tab" value="audit">
+                        <div class="delete-bar">
+                            <label style="font-size:0.875rem;color:#1e293b;display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                                <input type="checkbox" id="selectAll" style="width:16px;height:16px;"> Select All
+                            </label>
+                            <span id="selectCount" style="display:none;font-size:0.875rem;color:#991b1b;font-weight:600;"></span>
+                            <button type="submit" name="delete_selected" class="btn-danger" onclick="return confirm('Delete selected?')">🗑️ Delete Selected</button>
+
+                        </div>
+                        <div style="color:#64748b;font-size:0.85rem;margin-bottom:1rem;">
+                            Showing <?php echo count($audit_logs); ?> entries (max 200)
+                        </div>
                     <?php foreach ($audit_logs as $log): ?>
-                        <div class="log-card">
+                        <div class="log-card" style="display:flex;align-items:flex-start;gap:0.75rem;">
+                            <input type="checkbox" name="selected_ids[]" value="<?php echo $log['AuditID']; ?>" class="log-checkbox item-cb" style="margin-top:0.25rem;">
                             <div class="log-icon" style="background: <?php echo getActionColor($log['Action']); ?>;">
                                 <?php echo getActionIcon($log['Action']); ?>
                             </div>
@@ -452,6 +505,7 @@ $current_page = 'audit-logs';
                             </div>
                         </div>
                     <?php endforeach; ?>
+                    </form>
                 <?php else: ?>
                     <div class="no-requests">
                         <div class="no-requests-icon">📋</div>
@@ -465,11 +519,22 @@ $current_page = 'audit-logs';
             <!-- ============================================ -->
             <?php else: ?>
                 <?php if (count($login_logs) > 0): ?>
-                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 1rem;">
-                        Showing <?php echo count($login_logs); ?> entries (max 200)
-                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="del_tab" value="login">
+                        <div class="delete-bar">
+                            <label style="font-size:0.875rem;color:#1e293b;display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+                                <input type="checkbox" id="selectAllLogin" style="width:16px;height:16px;"> Select All
+                            </label>
+                            <span id="selectCountLogin" style="display:none;font-size:0.875rem;color:#991b1b;font-weight:600;"></span>
+                            <button type="submit" name="delete_selected" class="btn-danger" onclick="return confirm('Delete selected?')">🗑️ Delete Selected</button>
+
+                        </div>
+                        <div style="color:#64748b;font-size:0.85rem;margin-bottom:1rem;">
+                            Showing <?php echo count($login_logs); ?> entries (max 200)
+                        </div>
                     <?php foreach ($login_logs as $log): ?>
-                        <div class="log-card">
+                        <div class="log-card" style="display:flex;align-items:flex-start;gap:0.75rem;">
+                            <input type="checkbox" name="selected_ids[]" value="<?php echo $log['LogID']; ?>" class="log-checkbox login-cb" style="margin-top:0.25rem;">
                             <div class="log-icon" style="background: <?php echo $log['Status'] === 'Success' ? '#d1fae5' : '#fee2e2'; ?>;">
                                 <?php echo $log['Status'] === 'Success' ? '✅' : '❌'; ?>
                             </div>
@@ -498,6 +563,7 @@ $current_page = 'audit-logs';
                             </div>
                         </div>
                     <?php endforeach; ?>
+                    </form>
                 <?php else: ?>
                     <div class="no-requests">
                         <div class="no-requests-icon">🔐</div>
@@ -533,6 +599,33 @@ $current_page = 'audit-logs';
                     notifDropdown.style.top = top + 'px';
                 }
             });
+        }
+
+        // Select all - audit
+        const sa = document.getElementById('selectAll');
+        const sc = document.getElementById('selectCount');
+        if (sa) {
+            sa.addEventListener('change', function() {
+                document.querySelectorAll('.item-cb').forEach(cb => cb.checked = this.checked);
+                updateCount('.item-cb', sc);
+            });
+            document.querySelectorAll('.item-cb').forEach(cb => cb.addEventListener('change', () => updateCount('.item-cb', sc)));
+        }
+
+        // Select all - login
+        const sal = document.getElementById('selectAllLogin');
+        const scl = document.getElementById('selectCountLogin');
+        if (sal) {
+            sal.addEventListener('change', function() {
+                document.querySelectorAll('.login-cb').forEach(cb => cb.checked = this.checked);
+                updateCount('.login-cb', scl);
+            });
+            document.querySelectorAll('.login-cb').forEach(cb => cb.addEventListener('change', () => updateCount('.login-cb', scl)));
+        }
+
+        function updateCount(sel, el) {
+            const n = document.querySelectorAll(sel + ':checked').length;
+            if (el) { el.style.display = n ? 'inline' : 'none'; el.textContent = n + ' selected'; }
         }
     </script>
 </body>

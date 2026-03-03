@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($duplicate !== null) {
             // Duplicate found — block submission entirely
             $duplicate_data = $duplicate;
-            $error = "Cannot submit request. An active request already exists at this location for this category (Request #" . $duplicate['RequestID'] . " — Status: " . $duplicate['StatusName'] . "). Please wait for it to be resolved.";
+            $error = "Cannot submit request. An active request already exists at this location for this category. Please wait for it to be resolved.";
         } else {
             // No duplicate — proceed with submission
             
@@ -256,15 +256,11 @@ $current_page = 'submit-request';
                             <br><br>
                             <strong>Existing Request Details:</strong><br>
                             🔢 Request #<?php echo $duplicate_data['RequestID']; ?><br>
-                            📋 <?php echo e($duplicate_data['Title']); ?><br>
-                            🔄 Status: <strong><?php echo e($duplicate_data['StatusName']); ?></strong><br>
-                            👤 Reported by: <?php echo e($duplicate_data['RequesterName']); ?><br>
+
+
                             📅 Date: <?php echo formatDate($duplicate_data['SubmittedAt']); ?>
                             <br><br>
-                            <a href="view-request.php?id=<?php echo $duplicate_data['RequestID']; ?>" 
-                               style="color: #1d4ed8; text-decoration: underline;">
-                                👁️ View existing request &rarr;
-                            </a>
+
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
@@ -341,6 +337,13 @@ $current_page = 'submit-request';
                             <?php endforeach; ?>
                         </select>
                         <small style="color: #64748b; font-size: 0.875rem;">How urgent is this issue?</small>
+                        <div style="margin-top:0.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:0.75rem 1rem;font-size:0.8rem;color:#64748b;line-height:1.9;">
+                            <strong style="color:#1e293b;">Priority Guide:</strong><br>
+                            🟢 <strong>Low</strong> &mdash; e.g. burnt-out light bulb, minor paint damage, broken blinds, loose door handle.<br>
+                            🟡 <strong>Medium</strong> &mdash; e.g. faulty power outlet, slow drain, flickering lights, broken chair.<br>
+                            🔴 <strong>High</strong> &mdash; e.g. AC failure, water leak, elevator malfunction, internet outage.<br>
+                            🚨 <strong>Critical</strong> &mdash; e.g. electrical hazard, broken door lock, gas leak, ceiling collapse.
+                        </div>
                     </div>
                     
                     <!-- Title -->

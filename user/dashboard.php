@@ -29,6 +29,39 @@ $user_email = $_SESSION['email'];
 
 // Get user request limits and stats
 $limit_info = checkRequestLimits($conn, $user_id);
+
+// Get next reset time
+$reset_label = '';
+$reset_sql = "SELECT u.LastResetAt, MIN(mr.SubmittedAt) as OldestRequest
+              FROM user u
+              LEFT JOIN maintenancerequest mr ON mr.UserID = u.UserID
+                  AND mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 7 DAY))
+              WHERE u.UserID = ?
+              GROUP BY u.UserID";
+$reset_stmt = $conn->prepare($reset_sql);
+$reset_stmt->bind_param("i", $user_id);
+$reset_stmt->execute();
+$reset_row = $reset_stmt->get_result()->fetch_assoc();
+
+// Base: oldest request after last reset, fallback to LastResetAt itself
+$base_date = $reset_row['OldestRequest'] ?? $reset_row['LastResetAt'] ?? null;
+
+if ($base_date) {
+    $reset_ts = strtotime($base_date) + 7 * 24 * 3600;
+    $diff = $reset_ts - time();
+    $reset_date_str = date("M d, Y", $reset_ts) . " at " . date("h:i A", $reset_ts);
+    if ($diff > 0) {
+        $days  = floor($diff / 86400);
+        $hours = floor(($diff % 86400) / 3600);
+        $mins  = floor(($diff % 3600) / 60);
+        if ($days > 0)      $countdown = "{$days}d {$hours}h";
+        elseif ($hours > 0) $countdown = "{$hours}h {$mins}m";
+        else                $countdown = "{$mins} min";
+        $reset_label = "Resets on {$reset_date_str}";
+    } else {
+        $reset_label = "Limit has reset!";
+    }
+}
 $stats = getUserRequestStats($conn, $user_id);
 
 // Get user's recent requests (last 10)
@@ -130,14 +163,23 @@ $current_page = 'dashboard';
             <?php if (!$limit_info['can_submit']): ?>
                 <div class="limit-alert danger">
                     ⚠️ <strong>Request Limit Reached:</strong> <?php echo e($limit_info['message']); ?>
+                    <?php if ($reset_label): ?>
+                        <div style="margin-top:0.4rem; font-size:0.85rem;">🕐 <?php echo e($reset_label); ?></div>
+                    <?php endif; ?>
                 </div>
-            <?php elseif ($limit_info['week_remaining'] <= 1 || $limit_info['month_remaining'] <= 2): ?>
+            <?php elseif ($limit_info['week_remaining'] <= 1): ?>
                 <div class="limit-alert">
                     💡 <strong>Reminder:</strong> <?php echo e($limit_info['message']); ?>
+                    <?php if ($reset_label): ?>
+                        <div style="margin-top:0.4rem; font-size:0.85rem;">🕐 <?php echo e($reset_label); ?></div>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="limit-alert success">
                     ✅ <?php echo e($limit_info['message']); ?>
+                    <?php if ($reset_label): ?>
+                        <div style="margin-top:0.25rem; font-size:0.8rem; opacity:0.75;">🔄 <?php echo e($reset_label); ?></div>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 

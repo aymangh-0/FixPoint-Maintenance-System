@@ -212,3 +212,1330 @@ TRACE:
 #0 C:\xampp\htdocs\fixpoint\admin\dashboard.php(93): include_once()
 #1 {main}
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:25:09
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     68
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:26:15
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     68
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:26:19
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     68
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:27:48
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     72
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:29:56
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     68
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-02 23:32:15
+------------------------------------------------------------
+MESSAGE:  Call to undefined function logAudit()
+FILE:     C:\xampp\htdocs\fixpoint\admin\request-details.php
+LINE:     73
+URL:      POST /FixPoint/admin/request-details.php?id=7
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-03 00:21:28
+------------------------------------------------------------
+MESSAGE:  Call to a member function fetch_all() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\users.php
+LINE:     128
+URL:      GET /FixPoint/admin/users.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 C:\xampp\htdocs\fixpoint\admin\users.php(131): fetchUsersByRole(Object(mysqli), 'SELECT \r\n      ...', 1, '')
+#1 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-03 00:22:37
+------------------------------------------------------------
+MESSAGE:  Call to a member function fetch_all() on bool
+FILE:     C:\xampp\htdocs\fixpoint\admin\users.php
+LINE:     128
+URL:      GET /FixPoint/admin/users.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+TRACE:
+#0 C:\xampp\htdocs\fixpoint\admin\users.php(131): fetchUsersByRole(Object(mysqli), 'SELECT \r\n      ...', 1, '')
+#1 {main}
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 00:28:08
+------------------------------------------------------------
+MESSAGE:  Undefined array key "month_remaining"
+FILE:     C:\xampp\htdocs\fixpoint\user\dashboard.php
+LINE:     165
+URL:      GET /FixPoint/user/dashboard.php
+IP:       ::1
+USER:     UserID: 7, Name: Yahya Khalid Makhashin, Role: User
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:04
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:33
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:31:39
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:01
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:02
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:19
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:34
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     391
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     410
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     414
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     423
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Undefined variable $auto_status
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-03-03 01:33:36
+------------------------------------------------------------
+MESSAGE:  Trying to access array offset on value of type null
+FILE:     C:\xampp\htdocs\fixpoint\admin\backup.php
+LINE:     427
+URL:      GET /FixPoint/admin/backup.php
+IP:       ::1
+USER:     UserID: 1, Name: System Administrator, Role: Admin
+------------------------------------------------------------

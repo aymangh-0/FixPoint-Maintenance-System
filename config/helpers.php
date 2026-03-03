@@ -45,18 +45,11 @@ function checkRequestLimits($conn, $user_id) {
     $sql = "SELECT 
                 u.UserID,
                 u.MaxRequestsPerWeek,
-                u.MaxRequestsPerMonth,
                 u.LastResetAt,
                 COUNT(CASE 
                     WHEN mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 7 DAY))
-                    AND mr.SubmittedAt >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                     THEN 1 
-                END) AS RequestsThisWeek,
-                COUNT(CASE 
-                    WHEN mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 30 DAY))
-                    AND mr.SubmittedAt >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-                    THEN 1 
-                END) AS RequestsThisMonth
+                END) AS RequestsThisWeek
             FROM user u
             LEFT JOIN maintenancerequest mr ON u.UserID = mr.UserID
             WHERE u.UserID = ?
@@ -69,46 +62,32 @@ function checkRequestLimits($conn, $user_id) {
     
     if ($result->num_rows === 0) {
         return [
-            'can_submit'      => false,
-            'week_count'      => 0,
-            'month_count'     => 0,
-            'limits'          => ['week' => 0, 'month' => 0],
-            'week_remaining'  => 0,
-            'month_remaining' => 0,
-            'message'         => 'User not found'
+            'can_submit'     => false,
+            'week_count'     => 0,
+            'week_remaining' => 0,
+            'message'        => 'User not found'
         ];
     }
     
     $data = $result->fetch_assoc();
     
-    $week_count  = (int)$data['RequestsThisWeek'];
-    $month_count = (int)$data['RequestsThisMonth'];
-    $week_limit  = (int)$data['MaxRequestsPerWeek'];
-    $month_limit = (int)$data['MaxRequestsPerMonth'];
+    $week_count = (int)$data['RequestsThisWeek'];
+    $week_limit = (int)$data['MaxRequestsPerWeek'];
     
-    $can_submit = ($week_count < $week_limit) && ($month_count < $month_limit);
+    $can_submit = $week_count < $week_limit;
     
-    $message = '';
     if (!$can_submit) {
-        if ($week_count >= $week_limit) {
-            $message = "You have reached your weekly limit of {$week_limit} requests. Please contact admin for assistance.";
-        } elseif ($month_count >= $month_limit) {
-            $message = "You have reached your monthly limit of {$month_limit} requests. Please contact admin for assistance.";
-        }
+        $message = "You have reached your weekly limit of {$week_limit} requests";
     } else {
-        $week_remaining  = $week_limit - $week_count;
-        $month_remaining = $month_limit - $month_count;
-        $message = "You can submit {$week_remaining} more request(s) this week and {$month_remaining} this month.";
+        $week_remaining = $week_limit - $week_count;
+        $message = "You can submit {$week_remaining} more request(s) this week.";
     }
     
     return [
-        'can_submit'      => $can_submit,
-        'week_count'      => $week_count,
-        'month_count'     => $month_count,
-        'limits'          => ['week' => $week_limit, 'month' => $month_limit],
-        'week_remaining'  => max(0, $week_limit - $week_count),
-        'month_remaining' => max(0, $month_limit - $month_count),
-        'message'         => $message
+        'can_submit'     => $can_submit,
+        'week_count'     => $week_count,
+        'week_remaining' => max(0, $week_limit - $week_count),
+        'message'        => $message
     ];
 }
 
