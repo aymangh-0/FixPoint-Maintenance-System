@@ -1539,3 +1539,16 @@ URL:      GET /FixPoint/admin/backup.php
 IP:       ::1
 USER:     UserID: 1, Name: System Administrator, Role: Admin
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [UNCAUGHT EXCEPTION] - 2026-03-03 19:19:56
+------------------------------------------------------------
+MESSAGE:  Call to a member function bind_param() on bool
+FILE:     C:\xampp\htdocs\fixpoint\auth\register.php
+LINE:     60
+URL:      POST /FixPoint/auth/register.php
+IP:       ::1
+USER:     Not logged in
+TRACE:
+#0 {main}
+------------------------------------------------------------

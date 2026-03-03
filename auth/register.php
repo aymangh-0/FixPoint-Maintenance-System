@@ -54,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Insert new user
             // RoleID = 3 (User), Default limits: 2/week, 8/month
-            $insert_sql = "INSERT INTO user (RoleID, Name, Email, Password, Phone, MaxRequestsPerWeek, MaxRequestsPerMonth) 
-                        VALUES (3, ?, ?, ?, ?, 2, 8)";
+            $insert_sql = "INSERT INTO user (RoleID, Name, Email, Password, Phone, MaxRequestsPerWeek) 
+                        VALUES (3, ?, ?, ?, ?, 2)";
             $insert_stmt = $conn->prepare($insert_sql);
             $insert_stmt->bind_param("ssss", $name, $email, $password_hash, $phone);
             
@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="demo-accounts">
                     <div class="demo-title">📋 Account Information</div>
                     <div class="demo-account">• All new accounts start with User role</div>
-                    <div class="demo-account">• Default limit: 2 requests per week, 8 per month</div>
+                    <div class="demo-account">• Default limit: 2 requests per week</div>
                     <div class="demo-account">• Admin can adjust your limits if needed</div>
                 </div>
             </div>
