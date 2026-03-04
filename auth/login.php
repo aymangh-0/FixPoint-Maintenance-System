@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="auth-header">
                     <div class="auth-logo">🔧</div>
                     <h1 class="auth-title">Welcome Back</h1>
-                    <p class="auth-subtitle">Login to access your FixPoint account</p>
+                    <p class="auth-subtitle">Log in to your FixPoint account</p>
                 </div>
                 
                 <?php if ($error): ?>
@@ -163,12 +163,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                     
                     <button type="submit" class="btn-submit">
-                        Login to Dashboard
+                        Log In
                     </button>
                 </form>
                 <div style="text-align: center; margin-top: 1rem;">
-                    <a href="forgot-password.php" style="color: #2563eb; text-decoration: none; font-size: 0.9rem;">
-                    🔑 Forgot your password?
+                    <a href="forgot-password.php" style="color: #64748b; text-decoration: none; font-size: 0.85rem;">
+                    Forgot your password?
                     </a>
                 </div>
                 <div class="auth-footer">

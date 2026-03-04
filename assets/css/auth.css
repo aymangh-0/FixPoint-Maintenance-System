@@ -1,6 +1,6 @@
 /* ============================================
    FixPoint - Authentication Pages Styles
-   For login.php, register.php, and other auth pages
+   Matches new dark landing page design
    ============================================ */
 
 /* Auth Container - Full page background */
@@ -9,63 +9,103 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #0F172A;
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle grid pattern */
+.auth-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+}
+
+/* Glow */
+.auth-container::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 /* Auth Card - White box in center */
 .auth-card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 450px;
+    border-radius: 1.25rem;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 20px 50px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2);
+    max-width: 440px;
     width: 100%;
-    padding: 3rem;
+    padding: 2.5rem 2.25rem;
+    position: relative;
+    z-index: 1;
 }
 
 /* Auth Header - Logo and title area */
 .auth-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
 
 .auth-logo {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
+    width: 52px;
+    height: 52px;
+    background: #EFF6FF;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
 }
 
 .auth-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
 }
 
 .auth-subtitle {
     color: #64748b;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 /* Form Elements */
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .form-label {
     display: block;
     font-weight: 600;
     color: #1e293b;
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
 }
 
 .form-input {
     width: 100%;
-    padding: 0.875rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0.625rem;
+    font-size: 0.925rem;
+    font-family: inherit;
+    color: #1e293b;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
 }
 
 .form-input:focus {
@@ -74,28 +114,33 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
 /* Alert Messages */
 .alert {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.625rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
 }
 
 .alert-error {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #fef2f2;
+    color: #b91c1c;
     border: 1px solid #fecaca;
 }
 
 .alert-success {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
 }
 
 .alert-warning {
-    background: #fef3c7;
+    background: #fffbeb;
     color: #92400e;
     border: 1px solid #fde68a;
 }
@@ -103,20 +148,23 @@
 /* Submit Button */
 .btn-submit {
     width: 100%;
-    padding: 1rem;
+    padding: 0.85rem;
     background: #2563eb;
     color: white;
     border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
+    border-radius: 0.625rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.2);
 }
 
 .btn-submit:hover {
-    background: #1e40af;
-    transform: translateY(-2px);
+    background: #1d4ed8;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+    transform: translateY(-1px);
 }
 
 .btn-submit:active {
@@ -127,14 +175,15 @@
 .auth-footer {
     text-align: center;
     margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f1f5f9;
 }
 
 .auth-link {
     color: #2563eb;
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.925rem;
 }
 
 .auth-link:hover {
@@ -143,39 +192,47 @@
 
 /* Back to Home Link */
 .back-link {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     margin-bottom: 1rem;
-    color: white;
+    color: rgba(255,255,255,0.6);
     text-decoration: none;
     font-weight: 500;
-    transition: opacity 0.3s;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+    position: relative;
+    z-index: 1;
 }
 
 .back-link:hover {
-    opacity: 0.8;
+    color: #fff;
 }
 
 /* Demo Accounts Box */
 .demo-accounts {
     background: #f8fafc;
-    padding: 1rem;
-    border-radius: 0.5rem;
+    border: 1px solid #f1f5f9;
+    padding: 1rem 1.25rem;
+    border-radius: 0.625rem;
     margin-top: 1.5rem;
-    font-size: 0.875rem;
+    font-size: 0.825rem;
 }
 
 .demo-title {
-    font-weight: 600;
+    font-weight: 700;
     color: #1e293b;
     margin-bottom: 0.5rem;
+    font-size: 0.85rem;
 }
 
 .demo-account {
     color: #64748b;
-    margin: 0.25rem 0;
+    margin: 0.3rem 0;
+    font-size: 0.8rem;
 }
 
-/* Password Strength Indicator (for register page) */
+/* Password Strength Indicator */
 .password-strength {
     margin-top: 0.5rem;
     height: 4px;
@@ -212,15 +269,18 @@
 }
 
 .form-checkbox input[type="checkbox"] {
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1rem;
+    height: 1rem;
     cursor: pointer;
+    accent-color: #2563eb;
 }
 
 .form-checkbox label {
     font-weight: normal;
     margin-bottom: 0;
     cursor: pointer;
+    font-size: 0.875rem;
+    color: #64748b;
 }
 
 /* Divider */
@@ -228,20 +288,20 @@
     display: flex;
     align-items: center;
     text-align: center;
-    margin: 1.5rem 0;
+    margin: 1.25rem 0;
 }
 
 .auth-divider::before,
 .auth-divider::after {
     content: '';
     flex: 1;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .auth-divider span {
-    padding: 0 1rem;
-    color: #64748b;
-    font-size: 0.875rem;
+    padding: 0 0.75rem;
+    color: #94a3b8;
+    font-size: 0.8rem;
 }
 
 /* Responsive Design */
@@ -252,13 +312,10 @@
     
     .auth-card {
         padding: 2rem 1.5rem;
+        border-radius: 1rem;
     }
     
     .auth-title {
-        font-size: 1.5rem;
-    }
-    
-    .auth-logo {
-        font-size: 2.5rem;
+        font-size: 1.35rem;
     }
 }

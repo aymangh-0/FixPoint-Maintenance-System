@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="auth-header">
                     <div class="auth-logo">🔧</div>
                     <h1 class="auth-title">Create Account</h1>
-                    <p class="auth-subtitle">Join FixPoint to start reporting maintenance issues</p>
+                    <p class="auth-subtitle">Join FixPoint to report maintenance issues</p>
                 </div>
                 
                 <?php if ($error): ?>

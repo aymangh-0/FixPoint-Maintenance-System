@@ -30,6 +30,27 @@ $error = '';
 // Handle status updates
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
+    // Change Priority
+    if (isset($_POST['change_priority'])) {
+        $new_priority_id = (int)$_POST['new_priority_id'];
+        
+        $old_p = $conn->prepare("SELECT PriorityID FROM maintenancerequest WHERE RequestID = ?");
+        $old_p->bind_param("i", $request_id);
+        $old_p->execute();
+        $old_priority_id = $old_p->get_result()->fetch_assoc()['PriorityID'];
+        
+        if ($new_priority_id !== $old_priority_id) {
+            $u = $conn->prepare("UPDATE maintenancerequest SET PriorityID = ?, UpdatedAt = NOW() WHERE RequestID = ?");
+            $u->bind_param("ii", $new_priority_id, $request_id);
+            $u->execute();
+            
+            require_once __DIR__ . '/../config/audit-logger.php';
+            logAuditAction($conn, $tech_id, 'PRIORITY_CHANGED', 'maintenancerequest', $request_id, "PriorityID: $old_priority_id", "PriorityID: $new_priority_id");
+        }
+        
+        $success = "Priority updated successfully.";
+    }
+    
     // Start Working
     if (isset($_POST['start_work'])) {
         // Update assignment StartedAt
@@ -171,6 +192,9 @@ if ($assignment_result->num_rows == 0) {
 }
 
 $assignment = $assignment_result->fetch_assoc();
+
+// All priorities (for change priority dropdown)
+$all_priorities = $conn->query("SELECT PriorityID, PriorityLevel FROM priority ORDER BY PriorityID")->fetch_all(MYSQLI_ASSOC);
 
 // Get photos
 $photo_sql = "SELECT PhotoID, PhotoPath, UploadedAt FROM requestphoto WHERE RequestID = ?";
@@ -365,6 +389,10 @@ $current_page = 'my-tasks';
                 align-items: flex-start;
                 gap: 1rem;
             }
+
+            .two-col-layout {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="../assets/css/sidebar.css">
@@ -433,187 +461,166 @@ $current_page = 'my-tasks';
                 </div>
             <?php endif; ?>
 
-            <!-- Task Header -->
-            <div class="detail-card">
-                <div class="detail-header">
-                    <div>
-                        <div class="detail-title">
-                            Task #<?php echo $request['RequestID']; ?>: <?php echo e($request['Title']); ?>
-                        </div>
-                        <div style="color: #64748b; margin-top: 0.5rem;">
-                            Assigned to you on <?php echo formatDate($assignment['AssignedAt'], 'M d, Y - H:i'); ?>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="status-badge <?php echo getStatusBadgeClass($request['StatusName']); ?>" 
-                              style="font-size: 1rem; padding: 0.5rem 1rem;">
-                            <?php echo e($request['StatusName']); ?>
-                        </span>
-                    </div>
-                </div>
+            <!-- 2-Column Layout like Admin -->
+            <div style="display:grid; grid-template-columns: 1fr 340px; gap:1.5rem; align-items:start;">
 
-                <div class="detail-row">
-                    <div class="detail-label">👤 Requester</div>
-                    <div class="detail-value">
-                        <strong><?php echo e($request['RequesterName']); ?></strong> (<?php echo e($request['RequesterRole']); ?>)
-                        <br>
-                        📧 <?php echo e($request['RequesterEmail']); ?>
-                        <?php if ($request['RequesterPhone']): ?>
-                            <br>📞 <?php echo e($request['RequesterPhone']); ?>
+                <!-- LEFT COLUMN: Info + Photos + History -->
+                <div>
+
+                    <!-- Task Info -->
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <div>
+                                <div class="detail-title">
+                                    Task #<?php echo $request['RequestID']; ?>: <?php echo e($request['Title']); ?>
+                                </div>
+                                <div style="color: #64748b; margin-top: 0.5rem;">
+                                    Assigned to you on <?php echo formatDate($assignment['AssignedAt'], 'M d, Y - H:i'); ?>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="status-badge <?php echo getStatusBadgeClass($request['StatusName']); ?>" 
+                                      style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                    <?php echo e($request['StatusName']); ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">👤 Requester</div>
+                            <div class="detail-value">
+                                <strong><?php echo e($request['RequesterName']); ?></strong> (<?php echo e($request['RequesterRole']); ?>)
+                                <br>📧 <?php echo e($request['RequesterEmail']); ?>
+                                <?php if ($request['RequesterPhone']): ?><br>📞 <?php echo e($request['RequesterPhone']); ?><?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">📍 Location</div>
+                            <div class="detail-value">
+                                <strong><?php echo e($request['BuildingName']); ?></strong> - Floor: <?php echo e($request['FloorNumber']); ?>, Room: <?php echo e($request['RoomNumber']); ?>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">📂 Category</div>
+                            <div class="detail-value"><?php echo e($request['CategoryName']); ?></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">⚡ Priority</div>
+                            <div class="detail-value">
+                                <span class="priority-badge <?php echo getPriorityBadgeClass($request['PriorityLevel']); ?>"><?php echo e($request['PriorityLevel']); ?></span>
+                                - <?php echo e($request['PriorityDescription']); ?>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">📝 Description</div>
+                            <div class="detail-value" style="white-space: pre-line;"><?php echo e($request['Description']); ?></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">📅 Submitted</div>
+                            <div class="detail-value"><?php echo formatDate($request['SubmittedAt'], 'M d, Y - H:i'); ?></div>
+                        </div>
+                        <?php if ($assignment['StartedAt']): ?>
+                        <div class="detail-row">
+                            <div class="detail-label">🔧 Started Work</div>
+                            <div class="detail-value"><?php echo formatDate($assignment['StartedAt'], 'M d, Y - H:i'); ?></div>
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($request['CompletedAt']): ?>
+                        <div class="detail-row">
+                            <div class="detail-label">✅ Completed</div>
+                            <div class="detail-value"><?php echo formatDate($request['CompletedAt'], 'M d, Y - H:i'); ?></div>
+                        </div>
                         <?php endif; ?>
                     </div>
-                </div>
 
-                <div class="detail-row">
-                    <div class="detail-label">📍 Location</div>
-                    <div class="detail-value">
-                        <strong><?php echo e($request['BuildingName']); ?></strong> - 
-                        Floor: <?php echo e($request['FloorNumber']); ?>, 
-                        Room: <?php echo e($request['RoomNumber']); ?>
+                    <!-- Photos -->
+                    <?php if (count($photos) > 0): ?>
+                    <div class="detail-card">
+                        <h2 class="section-title">📷 Photos (<?php echo count($photos); ?>)</h2>
+                        <div class="photos-grid">
+                            <?php foreach ($photos as $photo): ?>
+                                <div class="photo-item">
+                                    <img src="<?php echo e($photo['PhotoPath']); ?>" alt="Request photo" onclick="window.open('<?php echo e($photo['PhotoPath']); ?>', '_blank')">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <p style="color: #64748b; font-size: 0.875rem; margin-top: 1rem;">💡 Click on any photo to view it in full size</p>
                     </div>
-                </div>
-
-                <div class="detail-row">
-                    <div class="detail-label">📂 Category</div>
-                    <div class="detail-value"><?php echo e($request['CategoryName']); ?></div>
-                </div>
-
-                <div class="detail-row">
-                    <div class="detail-label">⚡ Priority</div>
-                    <div class="detail-value">
-                        <span class="priority-badge <?php echo getPriorityBadgeClass($request['PriorityLevel']); ?>">
-                            <?php echo e($request['PriorityLevel']); ?>
-                        </span>
-                        - <?php echo e($request['PriorityDescription']); ?>
-                    </div>
-                </div>
-
-                <div class="detail-row">
-                    <div class="detail-label">📝 Description</div>
-                    <div class="detail-value" style="white-space: pre-line;"><?php echo e($request['Description']); ?></div>
-                </div>
-
-                <div class="detail-row">
-                    <div class="detail-label">📅 Submitted</div>
-                    <div class="detail-value"><?php echo formatDate($request['SubmittedAt'], 'M d, Y - H:i'); ?></div>
-                </div>
-
-                <?php if ($assignment['StartedAt']): ?>
-                <div class="detail-row">
-                    <div class="detail-label">🔧 Started Work</div>
-                    <div class="detail-value"><?php echo formatDate($assignment['StartedAt'], 'M d, Y - H:i'); ?></div>
-                </div>
-                <?php endif; ?>
-
-                <?php if ($request['CompletedAt']): ?>
-                <div class="detail-row">
-                    <div class="detail-label">✅ Completed</div>
-                    <div class="detail-value"><?php echo formatDate($request['CompletedAt'], 'M d, Y - H:i'); ?></div>
-                </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Action Buttons -->
-            <?php if ($request['StatusID'] != 5 && $request['StatusID'] != 6): ?>
-            <div class="action-box">
-                <h3 class="action-title">🔧 Task Actions</h3>
-                
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <?php if (!$assignment['StartedAt']): ?>
-                        <!-- Start Work Button -->
-                        <form method="POST" action="" style="display: inline;">
-                            <button type="submit" name="start_work" class="btn btn-primary btn-large">
-                                ▶️ Start Working on This Task
-                            </button>
-                        </form>
-                    <?php elseif (!$assignment['CompletedAt'] && $request['StatusID'] == 4): ?>
-                        <!-- Mark Complete Button -->
-                        <form method="POST" action="" style="flex: 1;">
-                            <div class="form-group">
-                                <label for="completion_notes" class="form-label">Completion Notes (Optional)</label>
-                                <textarea 
-                                    id="completion_notes" 
-                                    name="completion_notes" 
-                                    class="form-input" 
-                                    rows="3"
-                                    placeholder="Add any notes about the work completed..."
-                                ></textarea>
-                            </div>
-                            <button type="submit" name="mark_complete" class="btn btn-success btn-large">
-                                ✅ Mark Task as Complete
-                            </button>
-                        </form>
                     <?php endif; ?>
-                </div>
-                
-                <?php if ($assignment['StartedAt'] && !$assignment['CompletedAt']): ?>
-                    <p style="color: #64748b; margin-top: 1rem; font-size: 0.875rem;">
-                        💡 <strong>Tip:</strong> Make sure all work is finished before marking as complete. 
-                        The requester will be notified immediately.
-                    </p>
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
 
-            <!-- Photos -->
-            <?php if (count($photos) > 0): ?>
-            <div class="detail-card">
-                <h2 class="section-title">📷 Photos (<?php echo count($photos); ?>)</h2>
-                
-                <div class="photos-grid">
-                    <?php foreach ($photos as $photo): ?>
-                        <div class="photo-item">
-                            <img src="<?php echo e($photo['PhotoPath']); ?>" 
-                                 alt="Request photo" 
-                                 onclick="window.open('<?php echo e($photo['PhotoPath']); ?>', '_blank')">
+                    <!-- Status History -->
+                    <?php if (count($history) > 0): ?>
+                    <div class="detail-card">
+                        <h2 class="section-title">📊 Task History</h2>
+                        <div class="timeline">
+                            <?php foreach ($history as $item): ?>
+                                <div class="timeline-item">
+                                    <div class="timeline-date"><?php echo formatDate($item['ChangedAt'], 'M d, Y - H:i A'); ?></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-status">
+                                            <?php if ($item['OldStatus']): ?>
+                                                <span class="status-badge <?php echo getStatusBadgeClass($item['OldStatus']); ?>"><?php echo e($item['OldStatus']); ?></span>
+                                                → <span class="status-badge <?php echo getStatusBadgeClass($item['NewStatus']); ?>"><?php echo e($item['NewStatus']); ?></span>
+                                            <?php else: ?>
+                                                Request submitted as <span class="status-badge <?php echo getStatusBadgeClass($item['NewStatus']); ?>"><?php echo e($item['NewStatus']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="timeline-user">by <?php echo e($item['ChangedByName']); ?> (<?php echo e($item['ChangedByRole']); ?>)</div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-                
-                <p style="color: #64748b; font-size: 0.875rem; margin-top: 1rem;">
-                    💡 Click on any photo to view it in full size
-                </p>
-            </div>
-            <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
 
-            <!-- Status History -->
-            <?php if (count($history) > 0): ?>
-            <div class="detail-card">
-                <h2 class="section-title">📊 Task History</h2>
-                
-                <div class="timeline">
-                    <?php foreach ($history as $item): ?>
-                        <div class="timeline-item">
-                            <div class="timeline-date">
-                                <?php echo formatDate($item['ChangedAt'], 'M d, Y - H:i A'); ?>
+                </div>
+
+                <!-- RIGHT COLUMN: Actions -->
+                <div>
+
+                    <!-- Change Priority -->
+                    <?php if ($request['StatusID'] != 5 && $request['StatusID'] != 6): ?>
+                    <div class="detail-card">
+                        <h2 style="font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:2px solid #f1f5f9;">🎯 Change Priority</h2>
+                        <form method="POST">
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:0.5rem; padding:1.25rem;">
+                                <select name="new_priority_id" required style="width:100%; padding:0.5rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.375rem; font-size:0.875rem; background:white; margin-bottom:0.75rem;">
+                                    <?php foreach ($all_priorities as $pr): ?>
+                                        <option value="<?php echo $pr['PriorityID']; ?>"
+                                            <?php echo ($pr['PriorityID'] == $request['PriorityID'] ?? 2) ? 'selected' : ''; ?>>
+                                            <?php echo e($pr['PriorityLevel']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" name="change_priority" style="padding:0.5rem 1.25rem; background:#2563eb; color:white; border:none; border-radius:0.375rem; font-size:0.85rem; font-weight:600; cursor:pointer;">Update</button>
                             </div>
-                            <div class="timeline-content">
-                                <div class="timeline-status">
-                                    <?php if ($item['OldStatus']): ?>
-                                        Status changed from 
-                                        <span class="status-badge <?php echo getStatusBadgeClass($item['OldStatus']); ?>">
-                                            <?php echo e($item['OldStatus']); ?>
-                                        </span>
-                                        to
-                                        <span class="status-badge <?php echo getStatusBadgeClass($item['NewStatus']); ?>">
-                                            <?php echo e($item['NewStatus']); ?>
-                                        </span>
-                                    <?php else: ?>
-                                        Request submitted with status 
-                                        <span class="status-badge <?php echo getStatusBadgeClass($item['NewStatus']); ?>">
-                                            <?php echo e($item['NewStatus']); ?>
-                                        </span>
-                                    <?php endif; ?>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Task Actions -->
+                    <?php if ($request['StatusID'] != 5 && $request['StatusID'] != 6): ?>
+                    <div class="detail-card">
+                        <h2 style="font-size:1rem; font-weight:700; color:#1e293b; margin-bottom:1.25rem; padding-bottom:0.75rem; border-bottom:2px solid #f1f5f9;">🔧 Task Actions</h2>
+                        <?php if (!$assignment['StartedAt']): ?>
+                            <form method="POST">
+                                <button type="submit" name="start_work" class="btn btn-primary" style="width:100%; padding:0.75rem; font-size:0.9rem;">▶️ Start Working</button>
+                            </form>
+                        <?php elseif (!$assignment['CompletedAt'] && $request['StatusID'] == 4): ?>
+                            <form method="POST">
+                                <div style="margin-bottom:0.75rem;">
+                                    <label style="font-size:0.825rem; font-weight:600; color:#1e293b; display:block; margin-bottom:0.35rem;">Notes <span style="color:#94a3b8; font-weight:400;">(optional)</span></label>
+                                    <textarea name="completion_notes" rows="3" placeholder="Notes about the work..." style="width:100%; padding:0.5rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.375rem; font-size:0.85rem; font-family:inherit; resize:vertical;"></textarea>
                                 </div>
-                                <div class="timeline-user">
-                                    by <?php echo e($item['ChangedByName']); ?> (<?php echo e($item['ChangedByRole']); ?>)
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                                <button type="submit" name="mark_complete" class="btn btn-success" style="width:100%; padding:0.75rem; font-size:0.9rem;">✅ Mark as Complete</button>
+                            </form>
+                            <p style="color:#64748b; margin-top:0.75rem; font-size:0.8rem;">💡 The requester will be notified immediately.</p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+
                 </div>
             </div>
-            <?php endif; ?>
 
         </div>
     </div>

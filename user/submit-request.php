@@ -1,20 +1,18 @@
 <?php
 /**
  * FixPoint - Submit Maintenance Request
- * Allows users to submit new maintenance requests with duplicate detection
+ * Simplified form: Location + Category + Title (optional) + Photo (required)
+ * Priority is set by technician/admin, not user
  */
 
 session_start();
 require_once __DIR__ . '/../config/session-security.php';
 
-
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Redirect if not a regular user (Student or Faculty)
 if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['role_id'] != 4)) {
     header("Location: ../index.php");
     exit();
@@ -23,73 +21,61 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] != 3 && $_SESSION['rol
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/helpers.php';
 
-
 $user_id = $_SESSION['user_id'];
 $error = '';
 $success = '';
 $duplicate_data = null;
 
-// Check request limits
 $limit_info = checkRequestLimits($conn, $user_id);
-
-// Get dropdown data
 $locations = getAllLocations($conn);
 $categories = getAllCategories($conn);
-$priorities = getAllPriorities($conn);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $title = trim($_POST['title']);
-    $description = trim($_POST['description']);
+    $title = trim($_POST['title'] ?? '');
     $location_id = (int)$_POST['location_id'];
     $category_id = (int)$_POST['category_id'];
-    $priority_id = (int)$_POST['priority_id'];
+    $other_category = trim($_POST['other_category'] ?? '');
     
-    // Validate inputs
-    if (empty($title)) {
-        $error = "Title is required";
-    } 
-    elseif (strlen($title) < 10) {
-        $error = "Title must be at least 10 characters long";
-    } 
-    elseif (strlen($title) > 200) {
-        $error = "Title must not exceed 200 characters";
-    } 
-    elseif (empty($description)) {
-        $error = "Description is required";
-    } 
-    elseif (strlen($description) < 20) {
-        $error = "Description must be at least 20 characters";
-    } 
-    elseif ($location_id == 0) {
+    // Default priority = 2 (Medium) — admin/technician will adjust
+    $priority_id = 2;
+    
+    // Build description from available info
+    $desc_parts = [];
+    if ($other_category) $desc_parts[] = "Category: " . $other_category;
+    if ($title) $desc_parts[] = $title;
+    $description = !empty($desc_parts) ? implode(' — ', $desc_parts) : 'No description provided';
+
+    if ($location_id == 0) {
         $error = "Please select a location";
     } 
     elseif ($category_id == 0) {
         $error = "Please select a category";
-    } 
-    elseif ($priority_id == 0) {
-        $error = "Please select a priority level";
     }
-    // Validate photo is uploaded
-    elseif (!isset($_FILES['photo']) || $_FILES['photo']['error'] != 0) {
-        $error = "Please upload a photo of the issue — it is required";
+    else {
+        // Check if selected category is "Other/Others" and requires specification
+        $cat_check = $conn->prepare("SELECT CategoryName FROM category WHERE CategoryID = ?");
+        $cat_check->bind_param("i", $category_id);
+        $cat_check->execute();
+        $cat_name = $cat_check->get_result()->fetch_assoc()['CategoryName'] ?? '';
+        $cat_lower = strtolower(trim($cat_name));
+        if (($cat_lower === 'other' || $cat_lower === 'others' || $cat_lower === 'أخرى') && empty($other_category)) {
+            $error = "Please specify the issue type";
+        }
     }
-    // Check request limits
-    elseif (!$limit_info['can_submit']) {
+    if (empty($error) && (!isset($_FILES['photo']) || $_FILES['photo']['error'] != 0)) {
+        $error = "Please upload a photo of the issue";
+    }
+    if (empty($error) && !$limit_info['can_submit']) {
         $error = $limit_info['message'];
     }
-    // Check for duplicate — BLOCK completely if found
-    else {
+    if (empty($error)) {
         $duplicate = checkDuplicateRequest($conn, $location_id, $category_id);
         
         if ($duplicate !== null) {
-            // Duplicate found — block submission entirely
             $duplicate_data = $duplicate;
-            $error = "Cannot submit request. An active request already exists at this location for this category. Please wait for it to be resolved.";
+            $error = "An active request already exists at this location for this category.";
         } else {
-            // No duplicate — proceed with submission
-            
-            // Insert request
             $insert_sql = "INSERT INTO maintenancerequest 
                         (UserID, LocationID, CategoryID, PriorityID, StatusID, Title, Description) 
                         VALUES (?, ?, ?, ?, 1, ?, ?)";
@@ -102,28 +88,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 require_once __DIR__ . '/../config/audit-logger.php';
                 logRequestSubmission($conn, $user_id, $request_id);
                 
-                // Handle photo upload (required)
+                // Handle photo upload
                 if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
                     $upload_dir = '../uploads/requests/';
-                    
-                    // Create directory if it doesn't exist
                     if (!file_exists($upload_dir)) {
                         mkdir($upload_dir, 0777, true);
                     }
                     
-                    // Validate file type
                     $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
                     $file_type = $_FILES['photo']['type'];
                     
                     if (in_array($file_type, $allowed_types)) {
-                        // Validate file size (max 20MB)
                         if ($_FILES['photo']['size'] <= 20 * 1024 * 1024) {
                             $file_extension = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
                             $new_filename = 'request_' . $request_id . '_' . time() . '.' . $file_extension;
                             $upload_path = $upload_dir . $new_filename;
                             
                             if (move_uploaded_file($_FILES['photo']['tmp_name'], $upload_path)) {
-                                // Save photo record
                                 $photo_sql = "INSERT INTO requestphoto (RequestID, PhotoPath) VALUES (?, ?)";
                                 $photo_stmt = $conn->prepare($photo_sql);
                                 $photo_stmt->bind_param("is", $request_id, $upload_path);
@@ -133,10 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 }
                 
-                // Log status change
                 logStatusChange($conn, $request_id, null, 1, $user_id);
                 
-                // Create notification for admins
+                // Notify admins
                 $admin_sql = "SELECT UserID FROM user WHERE RoleID = 1";
                 $admin_result = $conn->query($admin_sql);
                 while ($admin = $admin_result->fetch_assoc()) {
@@ -155,12 +135,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 require_once __DIR__ . '/../config/auto-assign.php';
                 $assign_result = autoAssignTechnician($conn, $request_id);
                 if ($assign_result['assigned']) {
-                    $success = "Request submitted and auto-assigned to " . $assign_result['technician_name'] . "! Request ID: #$request_id";
+                    $success = "Request submitted and assigned to " . $assign_result['technician_name'] . "! Request #$request_id";
                 } else {
-                    $success = "Request submitted successfully! Request ID: #$request_id (Waiting for admin to assign a technician)";
+                    $success = "Request submitted successfully! Request #$request_id";
                 }
                 
-                // Redirect after 2 seconds
                 header("refresh:2;url=dashboard.php");
             } else {
                 $error = "Failed to submit request. Please try again.";
@@ -180,9 +159,244 @@ $current_page = 'submit-request';
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/auth.css">
     <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <style>
+        /* ── Submit Request Page Styles ── */
+        .sr-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 60px);
+            padding: 40px 24px;
+            background: #f8fafc;
+        }
+
+        .sr-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+            width: 100%;
+            max-width: 600px;
+            padding: 36px 32px 32px;
+        }
+
+        .sr-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .sr-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .sr-header p {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        /* Alerts */
+        .sr-alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .sr-alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        .sr-alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+        }
+        .sr-alert-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+
+        /* Form grid: 2 columns for Location & Category */
+        .sr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .sr-field {
+            margin-bottom: 0;
+        }
+        .sr-field.full {
+            grid-column: 1 / -1;
+        }
+        .sr-field-single {
+            margin-bottom: 16px;
+        }
+
+        .sr-label {
+            display: block;
+            font-size: 0.825rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        .sr-label .req {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+        .sr-label .opt {
+            color: #94a3b8;
+            font-weight: 400;
+            font-size: 0.75rem;
+        }
+
+        .sr-select,
+        .sr-input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: #1e293b;
+            background: #fff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .sr-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .sr-select:focus,
+        .sr-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        /* Photo upload area */
+        .sr-upload {
+            margin-bottom: 24px;
+        }
+        .sr-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+        .sr-upload-area:hover {
+            border-color: #2563eb;
+            background: #f8faff;
+        }
+        .sr-upload-area.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+        .sr-upload-area.has-file {
+            border-color: #16a34a;
+            border-style: solid;
+            background: #f0fdf4;
+        }
+        .sr-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .sr-upload-text {
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+        .sr-upload-text strong {
+            color: #2563eb;
+        }
+        .sr-upload-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .sr-upload input[type="file"] {
+            display: none;
+        }
+        .sr-file-name {
+            font-size: 0.85rem;
+            color: #15803d;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* Preview */
+        .sr-preview {
+            margin-top: 12px;
+            display: none;
+        }
+        .sr-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Submit button */
+        .sr-submit {
+            width: 100%;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            background: #2563eb;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+        }
+        .sr-submit:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+            transform: translateY(-1px);
+        }
+        .sr-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .sr-limit-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .sr-limit-bar strong {
+            color: #1e293b;
+        }
+
+        @media (max-width: 640px) {
+            .sr-wrapper { padding: 20px 12px; }
+            .sr-card { padding: 28px 20px 24px; }
+            .sr-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body class="has-sidebar">
-        <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <span class="sidebar-logo-icon">🔧</span>
@@ -226,200 +440,214 @@ $current_page = 'submit-request';
             <div class="topbar-notif"><?php include __DIR__ . '/../includes/notification-bell.php'; ?></div>
         </div>
 
-
-    <div class="auth-container" style="background: #f8fafc;">
-        <div style="max-width: 800px; width: 100%; margin-top: 2rem;">
-            
-            <div class="auth-card">
-                <div class="auth-header">
-                    <div class="auth-logo">📝</div>
-                    <h1 class="auth-title">Submit Maintenance Request</h1>
-                    <p class="auth-subtitle">Report an issue and help us maintain our campus</p>
+        <div class="sr-wrapper">
+            <div class="sr-card">
+                <div class="sr-header">
+                    <h1>Submit Request</h1>
+                    <p>Tell us what needs fixing</p>
                 </div>
-                
-                <!-- Request Limit Info -->
+
+                <!-- Limit Info -->
                 <?php if (!$limit_info['can_submit']): ?>
-                    <div class="alert alert-error">
-                        ⚠️ <strong>Request Limit Reached:</strong> <?php echo e($limit_info['message']); ?>
+                    <div class="sr-alert sr-alert-error">
+                        ⚠️ <strong>Limit Reached:</strong> <?php echo e($limit_info['message']); ?>
                     </div>
                 <?php else: ?>
-                    <div class="alert alert-success">
-                        ✅ <?php echo e($limit_info['message']); ?>
+                    <div class="sr-limit-bar">
+                        <span>Weekly requests: <strong><?php echo $limit_info['week_count']; ?> / <?php echo ($limit_info['week_count'] + $limit_info['week_remaining']); ?></strong></span>
+                        <span><?php echo $limit_info['week_remaining']; ?> remaining</span>
                     </div>
                 <?php endif; ?>
-                
-                <!-- Error / Duplicate Block Message -->
+
+                <!-- Error -->
                 <?php if ($error): ?>
-                    <div class="alert alert-error">
-                        ❌ <?php echo e($error); ?>
+                    <div class="sr-alert sr-alert-error">
+                        <?php echo e($error); ?>
                         <?php if ($duplicate_data): ?>
-                            <br><br>
-                            <strong>Existing Request Details:</strong><br>
-                            🔢 Request #<?php echo $duplicate_data['RequestID']; ?><br>
-
-
-                            📅 Date: <?php echo formatDate($duplicate_data['SubmittedAt']); ?>
-                            <br><br>
-
+                            <br><small>Existing request #<?php echo $duplicate_data['RequestID']; ?> — <?php echo formatDate($duplicate_data['SubmittedAt']); ?></small>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
-                
-                <!-- Success Message -->
+
+                <!-- Success -->
                 <?php if ($success): ?>
-                    <div class="alert alert-success">
+                    <div class="sr-alert sr-alert-success">
                         ✅ <?php echo e($success); ?>
                         <br><small>Redirecting to dashboard...</small>
                     </div>
                 <?php endif; ?>
-                
-                <!-- Request Form -->
-                <form method="POST" action="" enctype="multipart/form-data" <?php echo (!$limit_info['can_submit']) ? 'style="pointer-events:none;opacity:0.6;"' : ''; ?>>
+
+                <!-- Form -->
+                <form method="POST" action="" enctype="multipart/form-data" <?php echo (!$limit_info['can_submit']) ? 'style="pointer-events:none;opacity:0.5;"' : ''; ?>>
                     
-                    <!-- Location Selection -->
-                    <div class="form-group">
-                        <label for="location_id" class="form-label">Location <span style="color: #ef4444;">*</span></label>
-                        <select 
-                            id="location_id" 
-                            name="location_id" 
-                            class="form-input" 
-                            required
-                            <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
-                        >
-                            <option value="">-- Select Location --</option>
-                            <?php foreach ($locations as $location): ?>
-                                <option value="<?php echo $location['LocationID']; ?>"
-                                    <?php echo (isset($_POST['location_id']) && $_POST['location_id'] == $location['LocationID']) ? 'selected' : ''; ?>>
-                                    <?php echo e($location['LocationName']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small style="color: #64748b; font-size: 0.875rem;">Select the building and room where the issue is located</small>
-                    </div>
-                    
-                    <!-- Category Selection -->
-                    <div class="form-group">
-                        <label for="category_id" class="form-label">Category <span style="color: #ef4444;">*</span></label>
-                        <select 
-                            id="category_id" 
-                            name="category_id" 
-                            class="form-input" 
-                            required
-                            <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
-                        >
-                            <option value="">-- Select Category --</option>
-                            <?php foreach ($categories as $category): ?>
-                                <option value="<?php echo $category['CategoryID']; ?>"
-                                    <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $category['CategoryID']) ? 'selected' : ''; ?>>
-                                    <?php echo e($category['CategoryName']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small style="color: #64748b; font-size: 0.875rem;">What type of issue is this?</small>
-                    </div>
-                    
-                    <!-- Priority Selection -->
-                    <div class="form-group">
-                        <label for="priority_id" class="form-label">Priority <span style="color: #ef4444;">*</span></label>
-                        <select 
-                            id="priority_id" 
-                            name="priority_id" 
-                            class="form-input" 
-                            required
-                            <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
-                        >
-                            <?php foreach ($priorities as $priority): ?>
-                                <option value="<?php echo $priority['PriorityID']; ?>"
-                                    <?php echo (!isset($_POST['priority_id']) && $priority['PriorityID'] == 2) ? 'selected' : ''; ?>
-                                    <?php echo (isset($_POST['priority_id']) && $_POST['priority_id'] == $priority['PriorityID']) ? 'selected' : ''; ?>>
-                                    <?php echo e($priority['PriorityLevel']); ?> - <?php echo e($priority['Description']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small style="color: #64748b; font-size: 0.875rem;">How urgent is this issue?</small>
-                        <div style="margin-top:0.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;padding:0.75rem 1rem;font-size:0.8rem;color:#64748b;line-height:1.9;">
-                            <strong style="color:#1e293b;">Priority Guide:</strong><br>
-                            🟢 <strong>Low</strong> &mdash; e.g. burnt-out light bulb, minor paint damage, broken blinds, loose door handle.<br>
-                            🟡 <strong>Medium</strong> &mdash; e.g. faulty power outlet, slow drain, flickering lights, broken chair.<br>
-                            🔴 <strong>High</strong> &mdash; e.g. AC failure, water leak, elevator malfunction, internet outage.<br>
-                            🚨 <strong>Critical</strong> &mdash; e.g. electrical hazard, broken door lock, gas leak, ceiling collapse.
+                    <!-- Row 1: Location + Category side by side -->
+                    <div class="sr-grid">
+                        <div class="sr-field">
+                            <label for="location_id" class="sr-label">Location <span class="req">*</span></label>
+                            <select id="location_id" name="location_id" class="sr-select" required <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
+                                <option value="">Select location</option>
+                                <?php foreach ($locations as $loc): ?>
+                                    <option value="<?php echo $loc['LocationID']; ?>"
+                                        <?php echo (isset($_POST['location_id']) && $_POST['location_id'] == $loc['LocationID']) ? 'selected' : ''; ?>>
+                                        <?php echo e($loc['LocationName']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="sr-field">
+                            <label for="category_id" class="sr-label">Category <span class="req">*</span></label>
+                            <select id="category_id" name="category_id" class="sr-select" required <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
+                                <option value="">Select category</option>
+                                <?php 
+                                // Sort: put "Other/Others" at the end
+                                $regular = [];
+                                $other = [];
+                                foreach ($categories as $cat) {
+                                    $catLower = strtolower(trim($cat['CategoryName']));
+                                    if ($catLower === 'other' || $catLower === 'others' || $catLower === 'أخرى') {
+                                        $other[] = $cat;
+                                    } else {
+                                        $regular[] = $cat;
+                                    }
+                                }
+                                foreach (array_merge($regular, $other) as $cat): ?>
+                                    <option value="<?php echo $cat['CategoryID']; ?>"
+                                        data-name="<?php echo e($cat['CategoryName']); ?>"
+                                        <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $cat['CategoryID']) ? 'selected' : ''; ?>>
+                                        <?php echo e($cat['CategoryName']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
-                    
-                    <!-- Title -->
-                    <div class="form-group">
-                        <label for="title" class="form-label">Title <span style="color: #ef4444;">*</span></label>
+
+                    <!-- Other Category (appears when "Other" is selected) -->
+                    <div class="sr-field-single" id="otherCategoryField" style="display:none;">
+                        <label for="other_category" class="sr-label">Please specify <span class="req">*</span></label>
+                        <input 
+                            type="text" 
+                            id="other_category" 
+                            name="other_category" 
+                            class="sr-input" 
+                            placeholder="Describe the type of issue"
+                            maxlength="200"
+                            value="<?php echo isset($_POST['other_category']) ? e($_POST['other_category']) : ''; ?>"
+                        >
+                    </div>
+
+                    <!-- Row 2: Description (optional) -->
+                    <div class="sr-field-single">
+                        <label for="title" class="sr-label">Description <span class="opt">(optional)</span></label>
                         <input 
                             type="text" 
                             id="title" 
                             name="title" 
-                            class="form-input" 
-                            placeholder="Brief description of the issue"
-                            required
+                            class="sr-input" 
+                            placeholder="e.g. Broken AC in Lab A"
                             maxlength="200"
                             value="<?php echo isset($_POST['title']) ? e($_POST['title']) : ''; ?>"
                             <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
                         >
-                        <small style="color: #64748b; font-size: 0.875rem;">Example: "Broken AC in Lab A" or "Leaking faucet in restroom"</small>
                     </div>
-                    
-                    <!-- Description -->
-                    <div class="form-group">
-                        <label for="description" class="form-label">Description <span style="color: #ef4444;">*</span></label>
-                        <textarea 
-                            id="description" 
-                            name="description" 
-                            class="form-input" 
-                            placeholder="Provide detailed information about the issue..."
-                            required
-                            rows="5"
-                            <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
-                        ><?php echo isset($_POST['description']) ? e($_POST['description']) : ''; ?></textarea>
-                        <small style="color: #64748b; font-size: 0.875rem;">Include as much detail as possible to help technicians understand the problem</small>
+
+                    <!-- Row 3: Photo Upload (required) -->
+                    <div class="sr-upload">
+                        <label class="sr-label">Photo <span class="req">*</span></label>
+                        <div class="sr-upload-area" id="uploadArea">
+                            <div class="sr-upload-icon">📷</div>
+                            <div class="sr-upload-text"><strong>Click to upload</strong> or drag photo here</div>
+                            <div class="sr-upload-hint">JPG, PNG, GIF — Max 20MB</div>
+                            <div class="sr-file-name" id="fileName"></div>
+                            <div class="sr-preview" id="preview"><img id="previewImg" src="" alt="Preview"></div>
+                            <input type="file" id="photo" name="photo" accept="image/jpeg,image/jpg,image/png,image/gif" required <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
+                        </div>
                     </div>
-                    
-                    <!-- Photo Upload (Required) -->
-                    <div class="form-group">
-                        <label for="photo" class="form-label">Upload Photo <span style="color: #ef4444;">*</span></label>
-                        <input 
-                            type="file" 
-                            id="photo" 
-                            name="photo" 
-                            class="form-input" 
-                            accept="image/jpeg,image/jpg,image/png,image/gif"
-                            required
-                            <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>
-                        >
-                        <small style="color: #64748b; font-size: 0.875rem;">📷 A photo of the issue is required (JPG, PNG, GIF - Max 20MB)</small>
-                    </div>
-                    
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn-submit" <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
-                        📤 Submit Request
+
+                    <!-- Submit -->
+                    <button type="submit" class="sr-submit" <?php echo (!$limit_info['can_submit']) ? 'disabled' : ''; ?>>
+                        Submit Request
                     </button>
-                    
                 </form>
-                
             </div>
         </div>
     </div>
-    <script src="../assets/js/submit-request-validation.js"></script>
-    </div><!-- end main-content -->
 
-    
     <script>
-        const sidebar   = document.getElementById('sidebar');
-        const overlay   = document.getElementById('sidebarOverlay');
-        const notifBell = document.getElementById('notifBell');
-        const notifDropdown = document.getElementById('notifDropdown');
-
-        function openSidebar()  { sidebar.classList.add('open');    overlay.classList.add('show');    document.body.style.overflow='hidden'; }
+        // Sidebar
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('show'); document.body.style.overflow='hidden'; }
         function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('show'); document.body.style.overflow=''; }
-
         document.getElementById('hamburgerBtn')?.addEventListener('click', openSidebar);
         document.getElementById('sidebarClose')?.addEventListener('click', closeSidebar);
         document.getElementById('sidebarOverlay')?.addEventListener('click', closeSidebar);
 
+        // Photo upload UX
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('photo');
+        const fileName = document.getElementById('fileName');
+        const preview = document.getElementById('preview');
+        const previewImg = document.getElementById('previewImg');
+
+        // Other category toggle
+        const categorySelect = document.getElementById('category_id');
+        const otherField = document.getElementById('otherCategoryField');
+        const otherInput = document.getElementById('other_category');
+
+        function checkOther() {
+            const selected = categorySelect.options[categorySelect.selectedIndex];
+            const name = (selected?.getAttribute('data-name') || '').toLowerCase().trim();
+            const isOther = name === 'other' || name === 'others' || name === 'أخرى';
+            
+            otherField.style.display = isOther ? 'block' : 'none';
+            otherInput.required = isOther;
+            if (!isOther) otherInput.value = '';
+        }
+
+        categorySelect.addEventListener('change', checkOther);
+        // Check on page load (for POST back)
+        checkOther();
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                showFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) showFile(fileInput.files[0]);
+        });
+
+        function showFile(file) {
+            fileName.textContent = '✓ ' + file.name;
+            uploadArea.classList.add('has-file');
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Notification bell
+        const notifBell = document.getElementById('notifBell');
+        const notifDropdown = document.getElementById('notifDropdown');
         if (notifBell && notifDropdown) {
             notifBell.addEventListener('click', function() {
                 if (notifDropdown.classList.contains('show')) {

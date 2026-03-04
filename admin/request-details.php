@@ -52,6 +52,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $c->execute();
         }
 
+        // Reset assignment dates if status is reverted to Pending (1) or Reviewed (2)
+        if ($new_status_id == 1 || $new_status_id == 2) {
+            $ra = $conn->prepare("UPDATE assignment SET StartedAt = NULL, CompletedAt = NULL WHERE RequestID = ?");
+            $ra->bind_param("i", $request_id);
+            $ra->execute();
+            // Also clear CompletedAt on the request
+            $rc = $conn->prepare("UPDATE maintenancerequest SET CompletedAt = NULL WHERE RequestID = ?");
+            $rc->bind_param("i", $request_id);
+            $rc->execute();
+        }
+
+        // Reset CompletedAt if status reverted to Assigned (3) or In Progress (4)
+        if ($new_status_id == 3 || $new_status_id == 4) {
+            $ra = $conn->prepare("UPDATE assignment SET CompletedAt = NULL WHERE RequestID = ?");
+            $ra->bind_param("i", $request_id);
+            $ra->execute();
+            $rc = $conn->prepare("UPDATE maintenancerequest SET CompletedAt = NULL WHERE RequestID = ?");
+            $rc->bind_param("i", $request_id);
+            $rc->execute();
+        }
+        // If reverted to Assigned (3), also reset StartedAt
+        if ($new_status_id == 3) {
+            $rs = $conn->prepare("UPDATE assignment SET StartedAt = NULL WHERE RequestID = ?");
+            $rs->bind_param("i", $request_id);
+            $rs->execute();
+        }
+
         // Status history
         $h = $conn->prepare("INSERT INTO statushistory (RequestID, OldStatusID, NewStatusID, ChangedBy, ChangedAt) VALUES (?, ?, ?, ?, NOW())");
         $h->bind_param("iiii", $request_id, $old_status_id, $new_status_id, $admin_id);
@@ -74,6 +101,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $success_msg = "✅ Status updated successfully.";
 
         header("Location: request-details.php?id=$request_id&success=status");
+        exit();
+    }
+
+    // ============================================================
+    // POST: Change Priority
+    // ============================================================
+    if ($_POST['action'] === 'change_priority') {
+        $new_priority_id = (int)$_POST['new_priority_id'];
+        $old_priority_id = 0;
+
+        // Get current priority
+        $p = $conn->prepare("SELECT PriorityID FROM maintenancerequest WHERE RequestID = ?");
+        $p->bind_param("i", $request_id);
+        $p->execute();
+        $old_priority_id = $p->get_result()->fetch_assoc()['PriorityID'];
+
+        if ($new_priority_id !== $old_priority_id) {
+            $u = $conn->prepare("UPDATE maintenancerequest SET PriorityID = ?, UpdatedAt = NOW() WHERE RequestID = ?");
+            $u->bind_param("ii", $new_priority_id, $request_id);
+            $u->execute();
+
+            // Get priority names for audit
+            $pn = $conn->prepare("SELECT PriorityLevel FROM priority WHERE PriorityID = ?");
+            $pn->bind_param("i", $new_priority_id);
+            $pn->execute();
+            $new_name = $pn->get_result()->fetch_assoc()['PriorityLevel'];
+
+            logAuditAction($conn, $admin_id, 'PRIORITY_CHANGED', 'maintenancerequest', $request_id, "PriorityID: $old_priority_id", "PriorityID: $new_priority_id");
+        }
+
+        header("Location: request-details.php?id=$request_id&success=priority");
         exit();
     }
 
@@ -170,6 +228,7 @@ if (isset($_GET['success'])) {
         'status'    => '✅ Status updated successfully.',
         'assigned'  => '✅ Technician assigned successfully.',
         'cancelled' => '✅ Request cancelled.',
+        'priority'  => '✅ Priority updated successfully.',
     ];
     $success_msg = $msgs[$_GET['success']] ?? '';
 }
@@ -224,6 +283,9 @@ $all_techs = $conn->query("SELECT UserID, Name, Email FROM user WHERE RoleID = 2
 
 // All statuses
 $all_statuses = $conn->query("SELECT StatusID, StatusName FROM status ORDER BY StatusID")->fetch_all(MYSQLI_ASSOC);
+
+// All priorities (for change priority dropdown)
+$all_priorities = $conn->query("SELECT PriorityID, PriorityLevel FROM priority ORDER BY PriorityID")->fetch_all(MYSQLI_ASSOC);
 
 // Photos
 $photo_stmt = $conn->prepare("SELECT PhotoID, PhotoPath, UploadedAt FROM requestphoto WHERE RequestID = ?");
@@ -619,6 +681,29 @@ $current_page = 'all-requests';
                                             <option value="<?php echo $st['StatusID']; ?>"
                                                 <?php echo ($st['StatusID'] == $request['StatusID']) ? 'selected' : ''; ?>>
                                                 <?php echo e($st['StatusName']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Change Priority -->
+                    <?php if ($request['StatusID'] != 5 && $request['StatusID'] != 6): ?>
+                    <div class="detail-card">
+                        <h2>🎯 Change Priority</h2>
+                        <form method="POST">
+                            <input type="hidden" name="action" value="change_priority">
+                            <div class="action-card" style="margin-bottom:0;">
+                                <div class="action-row">
+                                    <select name="new_priority_id" required>
+                                        <?php foreach ($all_priorities as $pr): ?>
+                                            <option value="<?php echo $pr['PriorityID']; ?>"
+                                                <?php echo ($pr['PriorityID'] == $request['PriorityID']) ? 'selected' : ''; ?>>
+                                                <?php echo e($pr['PriorityLevel']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
