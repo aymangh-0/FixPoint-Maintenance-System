@@ -24,17 +24,54 @@ require_once __DIR__ . '/../config/helpers.php';
 
 $admin_id = $_SESSION['user_id'];
 
-// Get date range filter
-$date_from = isset($_GET['from']) ? $_GET['from'] : '2024-01-01'; // First day of current month
-$date_to = isset($_GET['to']) ? $_GET['to'] . ' 23:59:59' : date('Y-m-d') . ' 23:59:59';
+// Get date range filter (fix: match form field names)
+$date_from = isset($_GET['date_from']) && $_GET['date_from'] !== '' ? $_GET['date_from'] : '2024-01-01';
+$date_to   = isset($_GET['date_to']) && $_GET['date_to'] !== '' ? $_GET['date_to'] . ' 23:59:59' : date('Y-m-d') . ' 23:59:59';
+$date_to_display = isset($_GET['date_to']) && $_GET['date_to'] !== '' ? $_GET['date_to'] : date('Y-m-d');
 
-// === OVERALL STATISTICS ===
+// Get additional filters
+$filter_priority = isset($_GET['priority']) && $_GET['priority'] !== '' ? (int)$_GET['priority'] : null;
+$filter_location = isset($_GET['location']) && $_GET['location'] !== '' ? (int)$_GET['location'] : null;
+$filter_technician = isset($_GET['technician']) && $_GET['technician'] !== '' ? (int)$_GET['technician'] : null;
+
+// Build dynamic WHERE clause for filtered queries
+$where_parts = ["mr.SubmittedAt BETWEEN ? AND ?"];
+$where_types = "ss";
+$where_params = [$date_from, $date_to];
+
+if ($filter_priority) {
+    $where_parts[] = "mr.PriorityID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_priority;
+}
+if ($filter_location) {
+    $where_parts[] = "mr.LocationID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_location;
+}
+if ($filter_technician) {
+    $where_parts[] = "a_filter.TechnicianID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_technician;
+}
+
+$where_clause = implode(' AND ', $where_parts);
+$tech_join = $filter_technician ? "LEFT JOIN assignment a_filter ON mr.RequestID = a_filter.RequestID" : "";
+
+// Fetch dropdown options for filters
+$priorities_list = $conn->query("SELECT PriorityID, PriorityLevel FROM priority ORDER BY PriorityID")->fetch_all(MYSQLI_ASSOC);
+$locations_list = $conn->query("SELECT DISTINCT LocationID, BuildingName FROM location ORDER BY BuildingName")->fetch_all(MYSQLI_ASSOC);
+$technicians_list = $conn->query("SELECT UserID, Name FROM user WHERE RoleID = 2 ORDER BY Name")->fetch_all(MYSQLI_ASSOC);
+
+// === OVERALL STATISTICS (filtered by date range + filters) ===
 $stats = [];
 
-// Total requests
-$sql = "SELECT COUNT(*) as total FROM maintenancerequest";
-$result = $conn->query($sql);
-$stats['total_requests'] = $result->fetch_assoc()['total'];
+// Total requests (filtered)
+$sql = "SELECT COUNT(*) as total FROM maintenancerequest mr $tech_join WHERE $where_clause";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($where_types, ...$where_params);
+$stmt->execute();
+$stats['total_requests'] = $stmt->get_result()->fetch_assoc()['total'];
 
 // Total users
 $sql = "SELECT COUNT(*) as total FROM user WHERE RoleID IN (3, 4)";
@@ -46,25 +83,30 @@ $sql = "SELECT COUNT(*) as total FROM user WHERE RoleID = 2";
 $result = $conn->query($sql);
 $stats['total_technicians'] = $result->fetch_assoc()['total'];
 
-// Completed requests
-$sql = "SELECT COUNT(*) as total FROM maintenancerequest WHERE StatusID = 5";
-$result = $conn->query($sql);
-$stats['completed'] = $result->fetch_assoc()['total'];
+// Completed requests (filtered)
+$sql = "SELECT COUNT(*) as total FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 5 AND $where_clause";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($where_types, ...$where_params);
+$stmt->execute();
+$stats['completed'] = $stmt->get_result()->fetch_assoc()['total'];
 
-// Pending requests
-$sql = "SELECT COUNT(*) as total FROM maintenancerequest WHERE StatusID = 1";
-$result = $conn->query($sql);
-$stats['pending'] = $result->fetch_assoc()['total'];
+// Pending requests (filtered)
+$sql = "SELECT COUNT(*) as total FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 1 AND $where_clause";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($where_types, ...$where_params);
+$stmt->execute();
+$stats['pending'] = $stmt->get_result()->fetch_assoc()['total'];
 
 // === REQUESTS BY STATUS ===
 $sql = "SELECT s.StatusName, COUNT(*) as Count 
         FROM maintenancerequest mr
         JOIN status s ON mr.StatusID = s.StatusID
-        WHERE mr.SubmittedAt BETWEEN ? AND ?
+        $tech_join
+        WHERE $where_clause
         GROUP BY s.StatusName
         ORDER BY Count DESC";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $by_status = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -72,11 +114,12 @@ $by_status = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $sql = "SELECT p.PriorityLevel, COUNT(*) as Count 
         FROM maintenancerequest mr
         JOIN priority p ON mr.PriorityID = p.PriorityID
-        WHERE mr.SubmittedAt BETWEEN ? AND ?
+        $tech_join
+        WHERE $where_clause
         GROUP BY p.PriorityLevel
         ORDER BY p.PriorityID DESC";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $by_priority = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -84,12 +127,13 @@ $by_priority = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $sql = "SELECT c.CategoryName, COUNT(*) as Count 
         FROM maintenancerequest mr
         JOIN category c ON mr.CategoryID = c.CategoryID
-        WHERE mr.SubmittedAt BETWEEN ? AND ?
+        $tech_join
+        WHERE $where_clause
         GROUP BY c.CategoryName
         ORDER BY Count DESC
         LIMIT 10";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $by_category = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -97,12 +141,13 @@ $by_category = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $sql = "SELECT l.BuildingName, COUNT(*) as Count 
         FROM maintenancerequest mr
         JOIN location l ON mr.LocationID = l.LocationID
-        WHERE mr.SubmittedAt BETWEEN ? AND ?
+        $tech_join
+        WHERE $where_clause
         GROUP BY l.BuildingName
         ORDER BY Count DESC
         LIMIT 10";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $by_location = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -111,12 +156,13 @@ $sql = "SELECT u.Name, u.Email, r.RoleName, COUNT(*) as RequestCount
         FROM maintenancerequest mr
         JOIN user u ON mr.UserID = u.UserID
         JOIN role r ON u.RoleID = r.RoleID
-        WHERE mr.SubmittedAt BETWEEN ? AND ?
+        $tech_join
+        WHERE $where_clause
         GROUP BY u.UserID
         ORDER BY RequestCount DESC
         LIMIT 10";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $top_requesters = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -146,13 +192,14 @@ $requests_timeline = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 
 // === AVERAGE COMPLETION TIME ===
 $sql = "SELECT 
-            ROUND(AVG(TIMESTAMPDIFF(HOUR, SubmittedAt, CompletedAt)), 1) as AvgHours
-        FROM maintenancerequest
-        WHERE StatusID = 5 
-        AND CompletedAt IS NOT NULL
-        AND SubmittedAt BETWEEN ? AND ?";
+            ROUND(AVG(TIMESTAMPDIFF(HOUR, mr.SubmittedAt, mr.CompletedAt)), 1) as AvgHours
+        FROM maintenancerequest mr
+        $tech_join
+        WHERE mr.StatusID = 5 
+        AND mr.CompletedAt IS NOT NULL
+        AND $where_clause";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $date_from, $date_to);
+$stmt->bind_param($where_types, ...$where_params);
 $stmt->execute();
 $avg_completion = $stmt->get_result()->fetch_assoc();
 $stats['avg_completion_hours'] = $avg_completion['AvgHours'] ?? 0;
@@ -283,6 +330,10 @@ $current_page = 'reports';
                 <span class="sidebar-icon">💾</span><span>Backup</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -306,18 +357,18 @@ $current_page = 'reports';
                 <p class="user-info">System statistics, trends, and performance metrics</p>
             </div>
 
-            <!-- Date Range Filter -->
+            <!-- Filters -->
             <div class="report-card">
-                <h2 class="section-title">📅 Date Range Filter</h2>
+                <h2 class="section-title">🔍 Filter Reports</h2>
                 
-                <form method="GET" action="" class="date-filters">
+                <form method="GET" action="" class="date-filters" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
                     <div>
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">From Date</label>
                         <input 
                             type="date" 
                             name="date_from" 
                             class="form-input"
-                            value="<?php echo $date_from; ?>"
+                            value="<?php echo htmlspecialchars($date_from); ?>"
                             max="<?php echo date('Y-m-d'); ?>"
                         >
                     </div>
@@ -328,19 +379,64 @@ $current_page = 'reports';
                             type="date" 
                             name="date_to" 
                             class="form-input"
-                            value="<?php echo $date_to; ?>"
+                            value="<?php echo htmlspecialchars($date_to_display); ?>"
                             max="<?php echo date('Y-m-d'); ?>"
                         >
                     </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Priority</label>
+                        <select name="priority" class="form-input">
+                            <option value="">All Priorities</option>
+                            <?php foreach ($priorities_list as $p): ?>
+                                <option value="<?php echo $p['PriorityID']; ?>" <?php echo $filter_priority == $p['PriorityID'] ? 'selected' : ''; ?>>
+                                    <?php echo e($p['PriorityLevel']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Building</label>
+                        <select name="location" class="form-input">
+                            <option value="">All Buildings</option>
+                            <?php foreach ($locations_list as $loc): ?>
+                                <option value="<?php echo $loc['LocationID']; ?>" <?php echo $filter_location == $loc['LocationID'] ? 'selected' : ''; ?>>
+                                    <?php echo e($loc['BuildingName']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Technician</label>
+                        <select name="technician" class="form-input">
+                            <option value="">All Technicians</option>
+                            <?php foreach ($technicians_list as $tech): ?>
+                                <option value="<?php echo $tech['UserID']; ?>" <?php echo $filter_technician == $tech['UserID'] ? 'selected' : ''; ?>>
+                                    <?php echo e($tech['Name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
                     <div style="display: flex; gap: 0.5rem;">
-                        <button type="submit" class="btn btn-primary">📊 Update Report</button>
+                        <button type="submit" class="btn btn-primary">📊 Apply</button>
                         <a href="reports.php" class="btn btn-outline">🔄 Reset</a>
                     </div>
                 </form>
                 
                 <p style="color: #64748b; margin-top: 1rem; font-size: 0.875rem;">
-                    Showing data from <strong><?php echo formatDate($date_from, 'M d, Y'); ?></strong> to <strong><?php echo formatDate($date_to, 'M d, Y'); ?></strong>
+                    Showing data from <strong><?php echo date('M d, Y', strtotime($date_from)); ?></strong> to <strong><?php echo date('M d, Y', strtotime($date_to_display)); ?></strong>
+                    <?php if ($filter_priority): ?>
+                        | Priority: <strong><?php foreach ($priorities_list as $p) { if ($p['PriorityID'] == $filter_priority) echo e($p['PriorityLevel']); } ?></strong>
+                    <?php endif; ?>
+                    <?php if ($filter_location): ?>
+                        | Building: <strong><?php foreach ($locations_list as $loc) { if ($loc['LocationID'] == $filter_location) echo e($loc['BuildingName']); } ?></strong>
+                    <?php endif; ?>
+                    <?php if ($filter_technician): ?>
+                        | Technician: <strong><?php foreach ($technicians_list as $tech) { if ($tech['UserID'] == $filter_technician) echo e($tech['Name']); } ?></strong>
+                    <?php endif; ?>
                 </p>
             </div>
 
@@ -349,7 +445,7 @@ $current_page = 'reports';
                 <div class="stat-card">
                     <div class="stat-label">📊 Total Requests</div>
                     <div class="stat-value"><?php echo $stats['total_requests']; ?></div>
-                    <div class="stat-info">All time</div>
+                    <div class="stat-info">In selected range</div>
                 </div>
                 <div class="stat-card success">
                     <div class="stat-label">✅ Completed</div>
@@ -552,14 +648,23 @@ $current_page = 'reports';
                 <p style="color: #64748b; margin-bottom: 1.5rem;">
                     Export reports and statistics for further analysis
                 </p>
+                <?php
+                $export_params = http_build_query(array_filter([
+                    'date_from' => $date_from,
+                    'date_to' => $date_to_display,
+                    'priority' => $filter_priority,
+                    'location' => $filter_location,
+                    'technician' => $filter_technician,
+                ]));
+                ?>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button onclick="window.print()" class="btn btn-primary">
                         🖨️ Print Report
                     </button>
-                    <a href="export-csv.php?from=<?php echo $date_from; ?>&to=<?php echo $date_to; ?>" class="btn btn-secondary">
+                    <a href="export-csv.php?<?php echo $export_params; ?>" class="btn btn-secondary">
                         📊 Export to CSV
                     </a>
-                    <a href="export-pdf.php?from=<?php echo $date_from; ?>&to=<?php echo $date_to; ?>" target="_blank" class="btn btn-secondary">
+                    <a href="export-pdf.php?<?php echo $export_params; ?>" target="_blank" class="btn btn-secondary">
                         📄 Export to PDF
                     </a>
                 </div>

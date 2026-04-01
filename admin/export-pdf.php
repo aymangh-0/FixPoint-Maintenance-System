@@ -15,51 +15,99 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 1) {
 
 require_once __DIR__ . '/../config/database.php';
 
-// Get date range
-$date_from = isset($_GET['from']) ? $_GET['from'] : '2024-01-01';
-$date_to = isset($_GET['to']) ? $_GET['to'] . ' 23:59:59' : date('Y-m-d') . ' 23:59:59';
+// Get date range (match parameter names from reports.php form)
+$date_from = isset($_GET['date_from']) && $_GET['date_from'] !== '' ? $_GET['date_from'] : '2024-01-01';
+$date_to = isset($_GET['date_to']) && $_GET['date_to'] !== '' ? $_GET['date_to'] . ' 23:59:59' : date('Y-m-d') . ' 23:59:59';
+$date_to_display = isset($_GET['date_to']) && $_GET['date_to'] !== '' ? $_GET['date_to'] : date('Y-m-d');
 
-// === FETCH ALL DATA ===
+// Get additional filters (same as reports.php)
+$filter_priority = isset($_GET['priority']) && $_GET['priority'] !== '' ? (int)$_GET['priority'] : null;
+$filter_location = isset($_GET['location']) && $_GET['location'] !== '' ? (int)$_GET['location'] : null;
+$filter_technician = isset($_GET['technician']) && $_GET['technician'] !== '' ? (int)$_GET['technician'] : null;
+
+// Build dynamic WHERE clause
+$where_parts = ["mr.SubmittedAt BETWEEN ? AND ?"];
+$where_types = "ss";
+$where_params = [$date_from, $date_to];
+
+if ($filter_priority) {
+    $where_parts[] = "mr.PriorityID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_priority;
+}
+if ($filter_location) {
+    $where_parts[] = "mr.LocationID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_location;
+}
+if ($filter_technician) {
+    $where_parts[] = "a_filter.TechnicianID = ?";
+    $where_types .= "i";
+    $where_params[] = $filter_technician;
+}
+
+$where_clause = implode(' AND ', $where_parts);
+$tech_join = $filter_technician ? "LEFT JOIN assignment a_filter ON mr.RequestID = a_filter.RequestID" : "";
+
+// Get filter labels for report header
+$filter_labels = [];
+if ($filter_priority) {
+    $r = $conn->prepare("SELECT PriorityLevel FROM priority WHERE PriorityID = ?");
+    $r->bind_param("i", $filter_priority); $r->execute();
+    $filter_labels[] = "Priority: " . $r->get_result()->fetch_assoc()['PriorityLevel'];
+}
+if ($filter_location) {
+    $r = $conn->prepare("SELECT BuildingName FROM location WHERE LocationID = ?");
+    $r->bind_param("i", $filter_location); $r->execute();
+    $filter_labels[] = "Building: " . $r->get_result()->fetch_assoc()['BuildingName'];
+}
+if ($filter_technician) {
+    $r = $conn->prepare("SELECT Name FROM user WHERE UserID = ?");
+    $r->bind_param("i", $filter_technician); $r->execute();
+    $filter_labels[] = "Technician: " . $r->get_result()->fetch_assoc()['Name'];
+}
+
+// === FETCH ALL DATA (with filters) ===
 
 // Summary
-$sql = "SELECT COUNT(*) as Total FROM maintenancerequest WHERE SubmittedAt BETWEEN ? AND ?";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT COUNT(*) as Total FROM maintenancerequest mr $tech_join WHERE $where_clause";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $total = $stmt->get_result()->fetch_assoc()['Total'];
 
-$sql = "SELECT COUNT(*) as c FROM maintenancerequest WHERE StatusID = 5 AND SubmittedAt BETWEEN ? AND ?";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT COUNT(*) as c FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 5 AND $where_clause";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $completed = $stmt->get_result()->fetch_assoc()['c'];
 
-$sql = "SELECT COUNT(*) as c FROM maintenancerequest WHERE StatusID = 1 AND SubmittedAt BETWEEN ? AND ?";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT COUNT(*) as c FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 1 AND $where_clause";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $pending = $stmt->get_result()->fetch_assoc()['c'];
 
-$sql = "SELECT COUNT(*) as c FROM maintenancerequest WHERE StatusID = 4 AND SubmittedAt BETWEEN ? AND ?";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT COUNT(*) as c FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 4 AND $where_clause";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $in_progress = $stmt->get_result()->fetch_assoc()['c'];
 
-$sql = "SELECT ROUND(AVG(TIMESTAMPDIFF(HOUR, SubmittedAt, CompletedAt)), 1) as h FROM maintenancerequest WHERE StatusID = 5 AND CompletedAt IS NOT NULL AND SubmittedAt BETWEEN ? AND ?";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT ROUND(AVG(TIMESTAMPDIFF(HOUR, mr.SubmittedAt, mr.CompletedAt)), 1) as h FROM maintenancerequest mr $tech_join WHERE mr.StatusID = 5 AND mr.CompletedAt IS NOT NULL AND $where_clause";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $avg_hours = $stmt->get_result()->fetch_assoc()['h'] ?? 'N/A';
 
 // By Status
-$sql = "SELECT s.StatusName, COUNT(*) as Count FROM maintenancerequest mr JOIN status s ON mr.StatusID = s.StatusID WHERE mr.SubmittedAt BETWEEN ? AND ? GROUP BY s.StatusName ORDER BY Count DESC";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT s.StatusName, COUNT(*) as Count FROM maintenancerequest mr JOIN status s ON mr.StatusID = s.StatusID $tech_join WHERE $where_clause GROUP BY s.StatusName ORDER BY Count DESC";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $by_status = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // By Priority
-$sql = "SELECT p.PriorityLevel, COUNT(*) as Count FROM maintenancerequest mr JOIN priority p ON mr.PriorityID = p.PriorityID WHERE mr.SubmittedAt BETWEEN ? AND ? GROUP BY p.PriorityLevel ORDER BY p.PriorityID DESC";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT p.PriorityLevel, COUNT(*) as Count FROM maintenancerequest mr JOIN priority p ON mr.PriorityID = p.PriorityID $tech_join WHERE $where_clause GROUP BY p.PriorityLevel ORDER BY p.PriorityID DESC";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $by_priority = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // By Category
-$sql = "SELECT c.CategoryName, COUNT(*) as Count FROM maintenancerequest mr JOIN category c ON mr.CategoryID = c.CategoryID WHERE mr.SubmittedAt BETWEEN ? AND ? GROUP BY c.CategoryName ORDER BY Count DESC LIMIT 10";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT c.CategoryName, COUNT(*) as Count FROM maintenancerequest mr JOIN category c ON mr.CategoryID = c.CategoryID $tech_join WHERE $where_clause GROUP BY c.CategoryName ORDER BY Count DESC LIMIT 10";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $by_category = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // By Location
-$sql = "SELECT l.BuildingName, COUNT(*) as Count FROM maintenancerequest mr JOIN location l ON mr.LocationID = l.LocationID WHERE mr.SubmittedAt BETWEEN ? AND ? GROUP BY l.BuildingName ORDER BY Count DESC LIMIT 10";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT l.BuildingName, COUNT(*) as Count FROM maintenancerequest mr JOIN location l ON mr.LocationID = l.LocationID $tech_join WHERE $where_clause GROUP BY l.BuildingName ORDER BY Count DESC LIMIT 10";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $by_location = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Technician Performance
@@ -67,8 +115,8 @@ $sql = "SELECT u.Name, COUNT(DISTINCT a.RequestID) as Assigned, COUNT(DISTINCT C
 $tech_performance = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
 
 // All Requests
-$sql = "SELECT mr.RequestID, mr.Title, s.StatusName, p.PriorityLevel, c.CategoryName, CONCAT(l.BuildingName, ' - ', l.FloorNumber, ' - ', l.RoomNumber) as Location, u.Name as Requester, mr.SubmittedAt, mr.CompletedAt FROM maintenancerequest mr JOIN status s ON mr.StatusID = s.StatusID JOIN priority p ON mr.PriorityID = p.PriorityID JOIN category c ON mr.CategoryID = c.CategoryID JOIN location l ON mr.LocationID = l.LocationID JOIN user u ON mr.UserID = u.UserID WHERE mr.SubmittedAt BETWEEN ? AND ? ORDER BY mr.SubmittedAt DESC";
-$stmt = $conn->prepare($sql); $stmt->bind_param("ss", $date_from, $date_to); $stmt->execute();
+$sql = "SELECT mr.RequestID, mr.Title, s.StatusName, p.PriorityLevel, c.CategoryName, CONCAT(l.BuildingName, ' - ', l.FloorNumber, ' - ', l.RoomNumber) as Location, u.Name as Requester, mr.SubmittedAt, mr.CompletedAt FROM maintenancerequest mr JOIN status s ON mr.StatusID = s.StatusID JOIN priority p ON mr.PriorityID = p.PriorityID JOIN category c ON mr.CategoryID = c.CategoryID JOIN location l ON mr.LocationID = l.LocationID JOIN user u ON mr.UserID = u.UserID $tech_join WHERE $where_clause ORDER BY mr.SubmittedAt DESC";
+$stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $all_requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 $completion_rate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
@@ -77,7 +125,7 @@ $completion_rate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FixPoint Report - <?php echo $date_from; ?> to <?php echo $date_to; ?></title>
+    <title>FixPoint Report - <?php echo $date_from; ?> to <?php echo $date_to_display; ?></title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -224,8 +272,13 @@ $completion_rate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
             <h1 class="report-title">FixPoint Maintenance Report</h1>
             <p class="report-subtitle">
                 Saudi Electronic University · 
-                <?php echo date('M d, Y', strtotime($date_from)); ?> — <?php echo date('M d, Y', strtotime($date_to)); ?>
+                <?php echo date('M d, Y', strtotime($date_from)); ?> — <?php echo date('M d, Y', strtotime($date_to_display)); ?>
             </p>
+            <?php if (!empty($filter_labels)): ?>
+                <p class="report-subtitle" style="margin-top: 0.25rem;">
+                    Filters: <?php echo htmlspecialchars(implode(' | ', $filter_labels)); ?>
+                </p>
+            <?php endif; ?>
             <p class="report-subtitle">Generated: <?php echo date('M d, Y H:i'); ?> by <?php echo htmlspecialchars($_SESSION['name']); ?></p>
         </div>
 

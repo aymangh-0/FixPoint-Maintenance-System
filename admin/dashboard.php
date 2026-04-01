@@ -123,7 +123,10 @@ $current_page = 'dashboard';
             <a href="backup.php" class="sidebar-link <?php echo $current_page === 'backup' ? 'active' : ''; ?>">
                 <span class="sidebar-icon">💾</span><span>Backup</span>
             </a>
-
+<div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
             <div class="sidebar-divider"></div>
 
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
@@ -156,6 +159,16 @@ $current_page = 'dashboard';
                 <p class="user-info">System overview and management panel | <strong>Administrator</strong></p>
             </div>
 
+            <!-- Styles for Quick Actions -->
+            <style>
+                .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+                @media (max-width: 768px) {
+                    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+                }
+            </style>
+
+            <!-- 1. Stats Grid (top - overview first) -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">📊 Total Requests</div>
@@ -189,31 +202,19 @@ $current_page = 'dashboard';
                 </div>
             </div>
 
-            <div class="quick-actions">
-                <h2 class="quick-actions-title">Quick Actions</h2>
-                <div class="action-buttons">
-                    <a href="all-requests.php?status=Pending" class="btn btn-primary btn-large">
-                        📋 Review Pending (<?php echo $stats['pending']; ?>)
-                    </a>
-                    <a href="all-requests.php" class="btn btn-secondary btn-large">🔍 All Requests</a>
-                    <a href="users.php" class="btn btn-secondary btn-large">👥 Manage Users</a>
-                    <a href="reports.php" class="btn btn-secondary btn-large">📊 Reports</a>
-                </div>
-            </div>
-
+            <!-- 3. Urgent Requests -->
             <?php if (count($urgent_requests) > 0): ?>
             <div class="requests-section" style="border-left: 4px solid #ef4444;">
                 <h2 class="section-title" style="color: #ef4444;">🚨 Urgent/High Priority Requests</h2>
                 <div style="overflow-x: auto;">
                     <table class="requests-table">
                         <thead>
-                            <tr><th>ID</th><th>Title</th><th>Requester</th><th>Location</th><th>Category</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
+                            <tr><th>ID</th><th>Requester</th><th>Location</th><th>Category</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach ($urgent_requests as $req): ?>
                             <tr style="background: #fef2f2;">
                                 <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                <td class="request-title"><?php echo e($req['Title']); ?></td>
                                 <td><?php echo e($req['RequesterName']); ?></td>
                                 <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
                                 <td><?php echo e($req['CategoryName']); ?></td>
@@ -234,13 +235,12 @@ $current_page = 'dashboard';
                 <div style="overflow-x: auto;">
                     <table class="requests-table">
                         <thead>
-                            <tr><th>ID</th><th>Title</th><th>Requester</th><th>Location</th><th>Category</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
+                            <tr><th>ID</th><th>Requester</th><th>Location</th><th>Category</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             <?php foreach ($recent_requests as $req): ?>
                             <tr>
                                 <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                <td class="request-title"><?php echo e($req['Title']); ?></td>
                                 <td><?php echo e($req['RequesterName']); ?></td>
                                 <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
                                 <td><?php echo e($req['CategoryName']); ?></td>

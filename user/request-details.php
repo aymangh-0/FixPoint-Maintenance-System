@@ -66,6 +66,115 @@ if ($result->num_rows == 0) {
 
 $request = $result->fetch_assoc();
 
+// Check if request is editable (within 10 minutes of submission AND still Pending or Assigned)
+// Use database time to avoid timezone mismatch between PHP and MySQL
+$time_sql = "SELECT TIMESTAMPDIFF(SECOND, ?, NOW()) as diff";
+$time_stmt = $conn->prepare($time_sql);
+$time_stmt->bind_param("s", $request['SubmittedAt']);
+$time_stmt->execute();
+$time_diff = $time_stmt->get_result()->fetch_assoc()['diff'];
+$edit_window = 10 * 60; // 10 minutes in seconds
+$editable_statuses = ['Pending', 'Reviewed', 'Assigned'];
+$can_edit = ($time_diff < $edit_window) && in_array($request['StatusName'], $editable_statuses);
+$remaining_seconds = max(0, $edit_window - $time_diff);
+
+// Fetch locations and categories for edit form
+$locations = [];
+$categories = [];
+if ($can_edit) {
+    $loc_sql = "SELECT LocationID, BuildingName, FloorNumber, RoomNumber FROM location ORDER BY BuildingName, FloorNumber, RoomNumber";
+    $locations = $conn->query($loc_sql)->fetch_all(MYSQLI_ASSOC);
+    
+    $cat_sql = "SELECT CategoryID, CategoryName FROM category ORDER BY CASE WHEN LOWER(CategoryName) IN ('other','others','أخرى') THEN 1 ELSE 0 END, CategoryName";
+    $categories = $conn->query($cat_sql)->fetch_all(MYSQLI_ASSOC);
+}
+
+// Handle edit form submission
+$edit_success = '';
+$edit_error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_request']) && $can_edit) {
+    $new_location_id = (int)$_POST['location_id'];
+    $new_category_id = (int)$_POST['category_id'];
+    $new_other_category = trim($_POST['other_category'] ?? '');
+    $new_description = trim($_POST['description'] ?? '');
+    
+    // Validate
+    if ($new_location_id == 0) {
+        $edit_error = "Please select a location.";
+    } elseif ($new_category_id == 0) {
+        $edit_error = "Please select a category.";
+    } else {
+        // Check if "Other" category needs specification
+        $cat_check = $conn->prepare("SELECT CategoryName FROM category WHERE CategoryID = ?");
+        $cat_check->bind_param("i", $new_category_id);
+        $cat_check->execute();
+        $cat_name = $cat_check->get_result()->fetch_assoc()['CategoryName'] ?? '';
+        $cat_lower = strtolower(trim($cat_name));
+        if (($cat_lower === 'other' || $cat_lower === 'others' || $cat_lower === 'أخرى') && empty($new_other_category)) {
+            $edit_error = "Please specify the issue type.";
+        }
+    }
+    
+    if (empty($edit_error)) {
+        // Build description
+        $desc_parts = [];
+        if ($new_other_category) $desc_parts[] = "Category: " . $new_other_category;
+        if ($new_description) $desc_parts[] = $new_description;
+        $final_desc = !empty($desc_parts) ? implode(' — ', $desc_parts) : 'No description provided';
+        
+        // Update the request
+        $update_sql = "UPDATE maintenancerequest SET LocationID = ?, CategoryID = ?, Description = ?, UpdatedAt = NOW() WHERE RequestID = ? AND UserID = ?";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bind_param("iisii", $new_location_id, $new_category_id, $final_desc, $request_id, $user_id);
+        
+        if ($update_stmt->execute()) {
+            // Handle new photo upload (optional — replaces existing)
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === 0) {
+                $allowed = ['image/jpeg', 'image/png', 'image/gif'];
+                $max_size = 20 * 1024 * 1024;
+                if (in_array($_FILES['photo']['type'], $allowed) && $_FILES['photo']['size'] <= $max_size) {
+                    $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+                    $filename = 'request_' . $request_id . '_edit_' . time() . '.' . $ext;
+                    $upload_dir = __DIR__ . '/../uploads/requests/';
+                    if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+                    $filepath = $upload_dir . $filename;
+                    if (move_uploaded_file($_FILES['photo']['tmp_name'], $filepath)) {
+                        $photo_path = '../uploads/requests/' . $filename;
+                        $photo_sql = "INSERT INTO requestphoto (RequestID, PhotoPath, UploadedAt) VALUES (?, ?, NOW())";
+                        $photo_stmt = $conn->prepare($photo_sql);
+                        $photo_stmt->bind_param("is", $request_id, $photo_path);
+                        $photo_stmt->execute();
+                    }
+                }
+            }
+            
+            $edit_success = "Request updated successfully.";
+            // Refresh page to show updated data
+            header("Location: request-details.php?id=" . $request_id . "&edited=1");
+            exit();
+        } else {
+            $edit_error = "Failed to update request. Please try again.";
+        }
+    }
+}
+
+// Check for edit success message from redirect
+if (isset($_GET['edited']) && $_GET['edited'] == 1) {
+    $edit_success = "Request updated successfully.";
+    // Re-fetch request data after edit
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $request_id, $user_id);
+    $stmt->execute();
+    $request = $stmt->get_result()->fetch_assoc();
+    // Recalculate edit window using database time
+    $time_stmt = $conn->prepare("SELECT TIMESTAMPDIFF(SECOND, ?, NOW()) as diff");
+    $time_stmt->bind_param("s", $request['SubmittedAt']);
+    $time_stmt->execute();
+    $time_diff = $time_stmt->get_result()->fetch_assoc()['diff'];
+    $can_edit = ($time_diff < $edit_window) && in_array($request['StatusName'], $editable_statuses);
+    $remaining_seconds = max(0, $edit_window - $time_diff);
+}
+
 // Get assigned technician (if any)
 $tech_sql = "SELECT 
                 u.Name as TechName,
@@ -305,6 +414,11 @@ $current_page = 'my-requests';
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+<a href="../auth/logout.php" class="sidebar-link sidebar-logout"></a>
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -383,7 +497,91 @@ $current_page = 'my-requests';
                 <?php endif; ?>
             </div>
 
-            <!-- Assigned Technician -->
+            <!-- Edit Success/Error Messages -->
+            <?php if ($edit_success): ?>
+                <div style="background: #d1fae5; border: 2px solid #a7f3d0; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; color: #065f46; font-weight: 600;">
+                    ✅ <?php echo $edit_success; ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($edit_error): ?>
+                <div style="background: #fee2e2; border: 2px solid #fecaca; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; color: #991b1b; font-weight: 600;">
+                    ❌ <?php echo $edit_error; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Edit Request Section (within 10 minutes) -->
+            <?php if ($can_edit): ?>
+            <div class="detail-card" style="border: 2px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2 class="section-title" style="margin-bottom: 0;">✏️ Edit Request</h2>
+                    <div style="background: #eff6ff; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.85rem; color: #1d4ed8; font-weight: 600;">
+                        ⏱️ <span id="edit-countdown"><?php echo floor($remaining_seconds / 60) . ':' . str_pad($remaining_seconds % 60, 2, '0', STR_PAD_LEFT); ?></span> remaining
+                    </div>
+                </div>
+                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                    You can edit this request within 10 minutes of submission while it has not been started by a technician.
+                </p>
+
+                <form method="POST" action="" enctype="multipart/form-data" id="editForm">
+                    <input type="hidden" name="edit_request" value="1">
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">📍 Location *</label>
+                            <select name="location_id" class="form-input" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                                <option value="">Select Location</option>
+                                <?php foreach ($locations as $loc): ?>
+                                    <option value="<?php echo $loc['LocationID']; ?>" 
+                                        <?php echo ($loc['BuildingName'] == $request['BuildingName'] && $loc['FloorNumber'] == $request['FloorNumber'] && $loc['RoomNumber'] == $request['RoomNumber']) ? 'selected' : ''; ?>>
+                                        <?php echo e($loc['BuildingName'] . ' - Floor ' . $loc['FloorNumber'] . ' - Room ' . $loc['RoomNumber']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">📂 Category *</label>
+                            <select name="category_id" id="editCategory" class="form-input" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;" onchange="toggleEditOther()">
+                                <option value="">Select Category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?php echo $cat['CategoryID']; ?>"
+                                        <?php echo ($cat['CategoryName'] == $request['CategoryName']) ? 'selected' : ''; ?>>
+                                        <?php echo e($cat['CategoryName']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="editOtherField" style="margin-bottom: 1rem; display: none;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">Please specify *</label>
+                        <input type="text" name="other_category" class="form-input" placeholder="Describe the issue type..." 
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">📝 Description (optional)</label>
+                        <textarea name="description" class="form-input" rows="3" placeholder="Describe the issue..."
+                                  style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; resize: vertical;"><?php echo e($request['Description']); ?></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #1e293b;">📷 Add Another Photo (optional)</label>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/gif" class="form-input"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem;">Max 20MB. JPEG, PNG, or GIF. This will add a new photo, not replace existing ones.</p>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary" id="editSubmitBtn">
+                            💾 Save Changes
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('editForm').parentElement.style.display='none';">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <?php endif; ?>
             <?php if ($technician): ?>
             <div class="detail-card">
                 <h2 class="section-title">👨‍🔧 Assigned Technician</h2>
@@ -557,6 +755,43 @@ $current_page = 'my-requests';
                 }
             });
         }
+
+        // Edit countdown timer
+        <?php if ($can_edit): ?>
+        (function() {
+            let remaining = <?php echo $remaining_seconds; ?>;
+            const countdownEl = document.getElementById('edit-countdown');
+            const editForm = document.getElementById('editForm');
+            const submitBtn = document.getElementById('editSubmitBtn');
+            
+            const timer = setInterval(function() {
+                remaining--;
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    if (countdownEl) countdownEl.textContent = '0:00';
+                    if (editForm) {
+                        editForm.parentElement.innerHTML = '<div style="background: #fef3c7; padding: 1.5rem; border-radius: 0.75rem; text-align: center; color: #92400e;">' +
+                            '<strong>⏰ Edit window has expired.</strong><br>The 10-minute editing period has ended. This request can no longer be modified.' +
+                            '</div>';
+                    }
+                    return;
+                }
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                if (countdownEl) countdownEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+            }, 1000);
+        })();
+
+        // Toggle "Other" category field
+        function toggleEditOther() {
+            const sel = document.getElementById('editCategory');
+            const field = document.getElementById('editOtherField');
+            if (!sel || !field) return;
+            const text = sel.options[sel.selectedIndex]?.text.toLowerCase().trim() || '';
+            field.style.display = (text === 'other' || text === 'others' || text === 'أخرى') ? 'block' : 'none';
+        }
+        toggleEditOther();
+        <?php endif; ?>
     </script>
 </body>
 </html>

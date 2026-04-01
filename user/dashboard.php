@@ -30,26 +30,10 @@ $user_email = $_SESSION['email'];
 // Get user request limits and stats
 $limit_info = checkRequestLimits($conn, $user_id);
 
-// Get next reset time
+// Reset label from limit_info
 $reset_label = '';
-$reset_sql = "SELECT u.LastResetAt, MIN(mr.SubmittedAt) as OldestRequest
-              FROM user u
-              LEFT JOIN maintenancerequest mr ON mr.UserID = u.UserID
-                  AND mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 7 DAY))
-              WHERE u.UserID = ?
-              GROUP BY u.UserID";
-$reset_stmt = $conn->prepare($reset_sql);
-$reset_stmt->bind_param("i", $user_id);
-$reset_stmt->execute();
-$reset_row = $reset_stmt->get_result()->fetch_assoc();
-
-// Base: oldest request after last reset, fallback to LastResetAt itself
-$base_date = $reset_row['OldestRequest'] ?? $reset_row['LastResetAt'] ?? null;
-
-if ($base_date) {
-    $reset_ts = strtotime($base_date) + 7 * 24 * 3600;
-    $diff = $reset_ts - time();
-    $reset_date_str = date("M d, Y", $reset_ts) . " at " . date("h:i A", $reset_ts);
+if (isset($limit_info['next_reset_ts'])) {
+    $diff = $limit_info['next_reset_ts'] - time();
     if ($diff > 0) {
         $days  = floor($diff / 86400);
         $hours = floor(($diff % 86400) / 3600);
@@ -57,9 +41,7 @@ if ($base_date) {
         if ($days > 0)      $countdown = "{$days}d {$hours}h";
         elseif ($hours > 0) $countdown = "{$hours}h {$mins}m";
         else                $countdown = "{$mins} min";
-        $reset_label = "Resets on {$reset_date_str}";
-    } else {
-        $reset_label = "Limit has reset!";
+        $reset_label = "Resets on {$limit_info['next_reset']} ({$countdown} remaining)";
     }
 }
 $stats = getUserRequestStats($conn, $user_id);
@@ -133,6 +115,11 @@ $current_page = 'dashboard';
             <a href="my-requests.php" class="sidebar-link <?php echo $current_page === 'my-requests' ? 'active' : ''; ?>">
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
+            <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+
             <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
@@ -210,19 +197,6 @@ $current_page = 'dashboard';
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h2 class="quick-actions-title">Quick Actions</h2>
-                <div class="action-buttons">
-                    <a href="submit-request.php" class="btn btn-primary btn-large">
-                        ➕ Submit New Request
-                    </a>
-                    <a href="my-requests.php" class="btn btn-secondary btn-large">
-                        📋 View All My Requests
-                    </a>
-                </div>
-            </div>
-
             <!-- Recent Requests -->
             <div class="requests-section">
                 <h2 class="section-title">Recent Requests</h2>
@@ -233,7 +207,6 @@ $current_page = 'dashboard';
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Title</th>
                                     <th>Location</th>
                                     <th>Category</th>
                                     <th>Priority</th>
@@ -245,7 +218,6 @@ $current_page = 'dashboard';
                                 <?php foreach ($requests as $req): ?>
                                     <tr>
                                         <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                        <td class="request-title"><?php echo e($req['Title']); ?></td>
                                         <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
                                         <td><?php echo e($req['CategoryName']); ?></td>
                                         <td>

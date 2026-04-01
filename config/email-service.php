@@ -161,6 +161,40 @@ function getEmailTemplate($type, $data = []) {
                     </div>
                 </div>'
         ],
+
+        'request_confirmation' => [
+            'subject' => '✅ Your Request #{request_id} Has Been Submitted',
+            'body' => '
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                        <h1 style="color: white; margin: 0;">🔧 FixPoint</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0;">University Maintenance System</p>
+                    </div>
+                    <div style="background: white; padding: 30px; border: 1px solid #e2e8f0;">
+                        <h2 style="color: #1e293b; margin-top: 0;">📝 Request Submitted Successfully</h2>
+                        <p style="color: #64748b;">Hi {user_name}, your maintenance request has been received and is being processed.</p>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Request ID:</td><td style="padding: 8px 0; color: #1e293b;">#{request_id}</td></tr>
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Location:</td><td style="padding: 8px 0; color: #1e293b;">{location}</td></tr>
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Category:</td><td style="padding: 8px 0; color: #1e293b;">{category}</td></tr>
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Priority:</td><td style="padding: 8px 0; color: #1e293b;">{priority}</td></tr>
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Status:</td><td style="padding: 8px 0;"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">Pending</span></td></tr>
+                            </table>
+                        </div>
+                        <p style="color: #64748b;">You will receive email notifications when the status of your request changes. You can also track your request in real-time through your dashboard.</p>
+                        <div style="text-align: center; margin-top: 25px;">
+                            <a href="{site_url}/user/request-details.php?id={request_id}" 
+                            style="background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                                👁️ Track My Request
+                            </a>
+                        </div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e2e8f0; border-top: none;">
+                        <p style="color: #94a3b8; font-size: 12px; margin: 0;">FixPoint - Saudi Electronic University © 2026</p>
+                    </div>
+                </div>'
+        ],
         
         'feedback_received' => [
             'subject' => '⭐ New Feedback for Request #{request_id} - {rating} Stars',
@@ -419,6 +453,35 @@ function emailFeedbackReceived($conn, $request_id, $user_name, $rating, $comment
         ]);
         if ($template) {
             sendEmail($admin['Email'], $admin['Name'], $template['subject'], $template['body']);
+        }
+    }
+}
+
+function emailRequestConfirmation($conn, $request_id, $user_id) {
+    $sql = "SELECT u.Email, u.Name, mr.Title, mr.Description,
+                CONCAT(l.BuildingName, ' - Floor ', l.FloorNumber, ' - Room ', l.RoomNumber) as Location,
+                c.CategoryName, p.PriorityLevel
+            FROM maintenancerequest mr
+            JOIN user u ON mr.UserID = u.UserID
+            JOIN location l ON mr.LocationID = l.LocationID
+            JOIN category c ON mr.CategoryID = c.CategoryID
+            JOIN priority p ON mr.PriorityID = p.PriorityID
+            WHERE mr.RequestID = ? AND u.UserID = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $request_id, $user_id);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_assoc();
+    
+    if ($data) {
+        $template = getEmailTemplate('request_confirmation', [
+            'request_id' => $request_id,
+            'user_name'  => $data['Name'],
+            'location'   => $data['Location'],
+            'category'   => $data['CategoryName'],
+            'priority'   => $data['PriorityLevel']
+        ]);
+        if ($template) {
+            sendEmail($data['Email'], $data['Name'], $template['subject'], $template['body']);
         }
     }
 }

@@ -130,6 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 require_once __DIR__ . '/../config/email-service.php';
                 emailNewRequest($conn, $request_id, $title, $description, $_SESSION['name'], '', '', '');
+                emailRequestConfirmation($conn, $request_id, $user_id);
                 
                 // Auto-assign technician
                 require_once __DIR__ . '/../config/auto-assign.php';
@@ -426,6 +427,10 @@ $current_page = 'submit-request';
             <a href="my-requests.php" class="sidebar-link <?php echo $current_page === 'my-requests' ? 'active' : ''; ?>">
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
+            <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
             <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>

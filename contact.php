@@ -55,9 +55,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - FixPoint</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: #1e293b; background: #f8fafc; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
+        .header { padding: 14px 0; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 9px; }
+        .logo-dot { width: 30px; height: 30px; background: #2563EB; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-dot svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .logo-name { font-size: 1.05rem; font-weight: 700; color: #fff; }
+        .logo-badge { font-size: 0.6rem; font-weight: 700; color: #2563EB; background: rgba(37,99,235,0.15); padding: 2px 7px; border-radius: 4px; }
+        .header-right { display: flex; align-items: center; gap: 6px; }
+        .h-link { font-size: 0.825rem; font-weight: 500; color: rgba(255,255,255,0.6); padding: 7px 14px; border-radius: 7px; transition: all 0.2s; }
+        .h-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .h-btn { font-size: 0.825rem; font-weight: 600; color: #fff; background: #2563EB; padding: 7px 18px; border-radius: 7px; transition: all 0.2s; }
+        .h-btn:hover { background: #1D4ED8; }
+
+        /* Footer */
+        .ft { background: #080E1A; padding: 44px 0 22px; color: rgba(255,255,255,0.5); }
+        .ft-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 28px; margin-bottom: 28px; }
+        .ft-brand { font-size: 0.84rem; line-height: 1.7; margin-top: 10px; }
+        .ft h4 { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+        .ft ul { list-style: none; } .ft ul li { margin-bottom: 7px; font-size: 0.84rem; }
+        .ft ul a { color: rgba(255,255,255,0.45); transition: color 0.2s; } .ft ul a:hover { color: #fff; }
+        .ft-line { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 18px; display: flex; justify-content: space-between; font-size: 0.75rem; flex-wrap: wrap; gap: 6px; }
+
+        /* Form */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 600; color: #1e293b; margin-bottom: 0.4rem; font-size: 0.85rem; }
+        .form-input { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 0.625rem; font-size: 0.925rem; font-family: inherit; color: #1e293b; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .btn-submit { width: 100%; padding: 0.85rem; background: #2563eb; color: white; border: none; border-radius: 0.625rem; font-size: 0.95rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.25s; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+        .btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .alert { padding: 0.85rem 1rem; border-radius: 0.625rem; margin-bottom: 1.25rem; font-size: 0.875rem; }
+        .alert-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
         .contact-container {
             max-width: 1200px;
             margin: 2rem auto;
@@ -66,11 +105,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         .contact-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             padding: 3rem 2rem;
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            background: #0F172A;
             color: white;
             border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .contact-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
         
         .contact-header h1 {
@@ -210,36 +258,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="index.php" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="logo-icon">🔧</span>
-                        <span class="logo-text">FixPoint</span>
-                        <span class="logo-subtitle">SEU</span>
-                    </a>
-                </div>
-                <nav class="nav-links">
-                    <a href="index.php" class="nav-link">Home</a>
-                    <a href="help-center.php" class="nav-link">Help Center</a>
-                    <?php if ($is_logged_in): ?>
-                        <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
-                        <?php if ($user_role == 1): ?>
-                            <a href="admin/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php elseif ($user_role == 2): ?>
-                            <a href="technician/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php else: ?>
-                            <a href="user/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php endif; ?>
-                        <a href="auth/logout.php" class="btn btn-outline">Logout</a>
+            <a href="index.php" class="logo">
+                <div class="logo-dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <span class="logo-name">FixPoint</span>
+                <span class="logo-badge">SEU</span>
+            </a>
+            <nav class="header-right">
+                <a href="index.php" class="h-link">Home</a>
+                <a href="help-center.php" class="h-link">Help</a>
+                <?php if ($is_logged_in): ?>
+                    <?php if ($user_role == 1): ?>
+                        <a href="admin/dashboard.php" class="h-btn">Dashboard</a>
+                    <?php elseif ($user_role == 2): ?>
+                        <a href="technician/dashboard.php" class="h-btn">Dashboard</a>
                     <?php else: ?>
-                        <a href="auth/login.php" class="btn btn-outline">Login</a>
-                        <a href="auth/register.php" class="btn btn-primary">Get Started</a>
+                        <a href="user/dashboard.php" class="h-btn">Dashboard</a>
                     <?php endif; ?>
-                </nav>
-            </div>
+                <?php else: ?>
+
+                    <a href="auth/login.php" class="h-btn">Log in</a>
+                <?php endif; ?>
+            </nav>
         </div>
     </header>
 
@@ -401,59 +442,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <!-- FAQ Quick Links -->
-        <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 2rem;">
-            <h2 class="section-title">💡 Quick Help</h2>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                <div style="padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 0.5rem;">📝 Submit Request</h4>
-                    <p style="color: #64748b; font-size: 0.875rem;">Learn how to submit maintenance requests</p>
-                    <a href="help-center.php#submit" style="color: #2563eb; font-weight: 600; font-size: 0.875rem;">Read Guide →</a>
-                </div>
-                
-                <div style="padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 0.5rem;">🔍 Track Status</h4>
-                    <p style="color: #64748b; font-size: 0.875rem;">Check your request status</p>
-                    <a href="help-center.php#track" style="color: #2563eb; font-weight: 600; font-size: 0.875rem;">Read Guide →</a>
-                </div>
-                
-                <div style="padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 0.5rem;">❓ Common Issues</h4>
-                    <p style="color: #64748b; font-size: 0.875rem;">Troubleshooting guide</p>
-                    <a href="help-center.php#troubleshooting" style="color: #2563eb; font-weight: 600; font-size: 0.875rem;">Read Guide →</a>
-                </div>
-                
-                <div style="padding: 1rem; background: #f8fafc; border-radius: 0.5rem;">
-                    <h4 style="color: #1e293b; margin-bottom: 0.5rem;">👤 Account Help</h4>
-                    <p style="color: #64748b; font-size: 0.875rem;">Login and registration help</p>
-                    <a href="help-center.php#account" style="color: #2563eb; font-weight: 600; font-size: 0.875rem;">Read Guide →</a>
-                </div>
-            </div>
-        </div>
+
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
+    <footer class="ft">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>FixPoint</h3>
-                    <p>Maintenance management system for Saudi Electronic University</p>
+            <div class="ft-grid">
+                <div>
+                    <a href="index.php" class="logo">
+                        <div class="logo-dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                        <span class="logo-name">FixPoint</span>
+                    </a>
+                    <p class="ft-brand">Making university maintenance simple, transparent, and efficient.</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <a href="index.php">Home</a>
-                    <a href="help-center.php">Help Center</a>
-                    <a href="contact.php">Contact Us</a>
+                <div>
+                    <h4>Links</h4>
+                    <ul>
+                        <li><a href="index.php">Home</a></li>
+                        <li><a href="auth/login.php">Login</a></li>
+                        <li><a href="auth/register.php">Register</a></li>
+                    </ul>
                 </div>
-                <div class="footer-section">
+                <div>
                     <h4>Support</h4>
-                    <p>Email: support@fixpoint.seu.edu.sa</p>
-                    <p>Phone: +966 11 XXX XXXX</p>
+                    <ul>
+                        <li><a href="help-center.php">Help Center</a></li>
+                        <li><a href="contact.php">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>University</h4>
+                    <ul>
+                        <li>Saudi Electronic University</li>
+                        <li>Senior Project — 2026</li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 FixPoint - Saudi Electronic University. All rights reserved.</p>
+            <div class="ft-line">
+                <span>&copy; 2026 FixPoint — Saudi Electronic University</span>
+                <span>Ayman, Al-Abbas, Omar, Yahya, Talal, Abdulaziz</span>
             </div>
         </div>
     </footer>

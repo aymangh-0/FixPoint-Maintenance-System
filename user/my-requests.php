@@ -118,6 +118,11 @@ $current_page = 'my-requests';
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -207,7 +212,6 @@ $current_page = 'my-requests';
                                 <tr>
                                     <th>ID</th>
                                     <th>Photo</th>
-                                    <th>Title</th>
                                     <th>Location</th>
                                     <th>Category</th>
                                     <th>Priority</th>
@@ -229,7 +233,6 @@ $current_page = 'my-requests';
                                                 <span style="color:#94a3b8;">📷 No photo</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="request-title"><?php echo e($req['Title']); ?></td>
                                         <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
                                         <td><?php echo e($req['CategoryName']); ?></td>
                                         <td>
@@ -272,7 +275,6 @@ $current_page = 'my-requests';
                                 <div class="rcm-header">
                                     <div>
                                         <div class="rcm-id">#<?php echo $req['RequestID']; ?></div>
-                                        <div class="rcm-title"><?php echo e($req['Title']); ?></div>
                                     </div>
                                     <?php if ($req['PhotoPath']): ?>
                                         <img src="<?php echo e($req['PhotoPath']); ?>" class="rcm-photo" alt="photo">

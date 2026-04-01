@@ -20,21 +20,61 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help Center - FixPoint</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: #1e293b; background: #f8fafc; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
+        .header { padding: 14px 0; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 9px; }
+        .logo-dot { width: 30px; height: 30px; background: #2563EB; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-dot svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .logo-name { font-size: 1.05rem; font-weight: 700; color: #fff; }
+        .logo-badge { font-size: 0.6rem; font-weight: 700; color: #2563EB; background: rgba(37,99,235,0.15); padding: 2px 7px; border-radius: 4px; }
+        .header-right { display: flex; align-items: center; gap: 6px; }
+        .h-link { font-size: 0.825rem; font-weight: 500; color: rgba(255,255,255,0.6); padding: 7px 14px; border-radius: 7px; transition: all 0.2s; }
+        .h-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .h-btn { font-size: 0.825rem; font-weight: 600; color: #fff; background: #2563EB; padding: 7px 18px; border-radius: 7px; transition: all 0.2s; }
+        .h-btn:hover { background: #1D4ED8; }
+
+        /* Footer */
+        .ft { background: #080E1A; padding: 44px 0 22px; color: rgba(255,255,255,0.5); }
+        .ft-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 28px; margin-bottom: 28px; }
+        .ft-brand { font-size: 0.84rem; line-height: 1.7; margin-top: 10px; }
+        .ft h4 { font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+        .ft ul { list-style: none; } .ft ul li { margin-bottom: 7px; font-size: 0.84rem; }
+        .ft ul a { color: rgba(255,255,255,0.45); transition: color 0.2s; } .ft ul a:hover { color: #fff; }
+        .ft-line { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 18px; display: flex; justify-content: space-between; font-size: 0.75rem; flex-wrap: wrap; gap: 6px; }
+
+        /* Page content */
         .help-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 2rem 24px;
         }
         
         .help-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             padding: 3rem 2rem;
-            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            background: #0F172A;
             color: white;
             border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .help-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
         
         .help-header h1 {
@@ -90,19 +130,47 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
         
         .faq-section {
             background: white;
-            padding: 2rem;
             border-radius: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 1.25rem;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
         }
         
         .section-title {
-            font-size: 1.75rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e2e8f0;
+            padding: 1.5rem 2rem;
+            margin: 0;
+            border-bottom: 2px solid #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .section-title:hover {
+            background: #f8fafc;
+        }
+        .section-toggle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            transition: transform 0.3s;
+        }
+        .section-title.collapsed .section-toggle {
+            transform: rotate(-90deg);
+        }
+        .section-title.collapsed {
+            border-bottom-color: transparent;
+        }
+        .section-body {
+            padding: 0.5rem 2rem 1.5rem;
+            transition: all 0.3s;
+        }
+        .section-body.hidden {
+            display: none;
         }
         
         .faq-item {
@@ -156,7 +224,8 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
+            margin-bottom: 2.5rem;
         }
         
         .quick-link-btn {
@@ -187,36 +256,28 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="index.php" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="logo-icon">🔧</span>
-                        <span class="logo-text">FixPoint</span>
-                        <span class="logo-subtitle">SEU</span>
-                    </a>
-                </div>
-                <nav class="nav-links">
-                    <a href="index.php" class="nav-link">Home</a>
-                    <a href="contact.php" class="nav-link">Contact Us</a>
-                    <?php if ($is_logged_in): ?>
-                        <span style="color: #64748b;">👤 <?php echo e($user_name); ?></span>
-                        <?php if ($user_role == 1): ?>
-                            <a href="admin/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php elseif ($user_role == 2): ?>
-                            <a href="technician/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php else: ?>
-                            <a href="user/dashboard.php" class="btn btn-primary">Dashboard</a>
-                        <?php endif; ?>
-                        <a href="auth/logout.php" class="btn btn-outline">Logout</a>
+            <a href="index.php" class="logo">
+                <div class="logo-dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <span class="logo-name">FixPoint</span>
+                <span class="logo-badge">SEU</span>
+            </a>
+            <nav class="header-right">
+                <a href="index.php" class="h-link">Home</a>
+                <a href="contact.php" class="h-link">Contact</a>
+                <?php if ($is_logged_in): ?>
+                    <?php if ($user_role == 1): ?>
+                        <a href="admin/dashboard.php" class="h-btn">Dashboard</a>
+                    <?php elseif ($user_role == 2): ?>
+                        <a href="technician/dashboard.php" class="h-btn">Dashboard</a>
                     <?php else: ?>
-                        <a href="auth/login.php" class="btn btn-outline">Login</a>
-                        <a href="auth/register.php" class="btn btn-primary">Get Started</a>
+                        <a href="user/dashboard.php" class="h-btn">Dashboard</a>
                     <?php endif; ?>
-                </nav>
-            </div>
+                <?php else: ?>
+                    <a href="auth/login.php" class="h-btn">Log in</a>
+                <?php endif; ?>
+            </nav>
         </div>
     </header>
 
@@ -256,7 +317,7 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
 
         <!-- FAQ Section - Getting Started -->
         <div class="faq-section">
-            <h2 class="section-title">🚀 Getting Started</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">🚀 Getting Started <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -302,11 +363,12 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <p><strong>Future Update:</strong> Self-service password reset via email will be available soon.</p>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- FAQ Section - Submitting Requests -->
         <div class="faq-section">
-            <h2 class="section-title">📝 Submitting Requests</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">📝 Submitting Requests <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -381,11 +443,12 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     </ol>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- FAQ Section - Tracking Requests -->
         <div class="faq-section">
-            <h2 class="section-title">🔍 Tracking Requests</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">🔍 Tracking Requests <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -436,11 +499,12 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <p><strong>Note:</strong> Feedback helps us improve service quality!</p>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- FAQ Section - For Admins -->
         <div class="faq-section">
-            <h2 class="section-title">👨‍💼 For Administrators</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">👨‍💼 For Administrators <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -492,11 +556,12 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <p><strong>Note:</strong> You cannot change your own role for security reasons.</p>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- FAQ Section - For Technicians -->
         <div class="faq-section">
-            <h2 class="section-title">🔧 For Technicians</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">🔧 For Technicians <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -530,11 +595,12 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     </ol>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- FAQ Section - Technical Issues -->
         <div class="faq-section">
-            <h2 class="section-title">⚠️ Troubleshooting</h2>
+            <h2 class="section-title" onclick="toggleSection(this)">⚠️ Troubleshooting <span class="section-toggle">▼</span></h2><div class="section-body">
             
             <div class="faq-item">
                 <div class="faq-question" onclick="toggleFaq(this)">
@@ -588,6 +654,7 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     </ol>
                 </div>
             </div>
+            </div>
         </div>
 
         <!-- Quick Links -->
@@ -603,38 +670,64 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <a href="user/dashboard.php" class="quick-link-btn">👤 My Dashboard</a>
                 <?php endif; ?>
             <?php else: ?>
-                <a href="auth/register.php" class="quick-link-btn">🚀 Get Started</a>
+                <a href="auth/login.php" class="quick-link-btn">🚀 Get Started</a>
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
+    <footer class="ft">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>FixPoint</h3>
-                    <p>Maintenance management system for Saudi Electronic University</p>
+            <div class="ft-grid">
+                <div>
+                    <a href="index.php" class="logo">
+                        <div class="logo-dot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                        <span class="logo-name">FixPoint</span>
+                    </a>
+                    <p class="ft-brand">Making university maintenance simple, transparent, and efficient.</p>
                 </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <a href="index.php">Home</a>
-                    <a href="help-center.php">Help Center</a>
-                    <a href="contact.php">Contact Us</a>
+                <div>
+                    <h4>Links</h4>
+                    <ul>
+                        <li><a href="index.php">Home</a></li>
+                        <li><a href="auth/login.php">Login</a></li>
+                        <li><a href="auth/register.php">Register</a></li>
+                    </ul>
                 </div>
-                <div class="footer-section">
+                <div>
                     <h4>Support</h4>
-                    <p>Email: support@fixpoint.seu.edu.sa</p>
-                    <p>Phone: +966 11 XXX XXXX</p>
+                    <ul>
+                        <li><a href="help-center.php">Help Center</a></li>
+                        <li><a href="contact.php">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>University</h4>
+                    <ul>
+                        <li>Saudi Electronic University</li>
+                        <li>Senior Project — 2026</li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 FixPoint - Saudi Electronic University. All rights reserved.</p>
+            <div class="ft-line">
+                <span>&copy; 2026 FixPoint — Saudi Electronic University</span>
+                <span>Ayman, Al-Abbas, Omar, Yahya, Talal, Abdulaziz</span>
             </div>
         </div>
     </footer>
 
     <script>
+        // Collapse all sections on page load
+        document.querySelectorAll('.section-title').forEach(title => {
+            title.classList.add('collapsed');
+            title.nextElementSibling.classList.add('hidden');
+        });
+
+        function toggleSection(element) {
+            const body = element.nextElementSibling;
+            element.classList.toggle('collapsed');
+            body.classList.toggle('hidden');
+        }
+
         function toggleFaq(element) {
             const answer = element.nextElementSibling;
             const toggle = element.querySelector('.faq-toggle');

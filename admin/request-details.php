@@ -98,6 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         // Audit
         logAuditAction($conn, $admin_id, 'STATUS_CHANGED', 'maintenancerequest', $request_id, "Status: $old_status_id", "Status: $new_status_id");
+        
+        // Send email notification to user
+        require_once __DIR__ . '/../config/email-service.php';
+        if ($ri_row) {
+            if ($new_status_id == 5) {
+                emailRequestCompleted($conn, $request_id);
+            } else {
+                emailStatusUpdate($conn, $request_id, $ri_row['UserID'], $ri_row['StatusName']);
+            }
+        }
+        
         $success_msg = "✅ Status updated successfully.";
 
         header("Location: request-details.php?id=$request_id&success=status");
@@ -182,6 +193,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
             logAuditAction($conn, $admin_id, 'ASSIGN_TECHNICIAN', 'assignment', $request_id, null, "TechnicianID: $tech_id");
 
+            // Send email to technician
+            require_once __DIR__ . '/../config/email-service.php';
+            emailTechnicianAssigned($conn, $request_id, $tech_id);
+            // Send email to user about status change
+            $req_user = $conn->prepare("SELECT UserID FROM maintenancerequest WHERE RequestID = ?");
+            $req_user->bind_param("i", $request_id);
+            $req_user->execute();
+            $req_user_id = $req_user->get_result()->fetch_assoc()['UserID'];
+            emailStatusUpdate($conn, $request_id, $req_user_id, 'Assigned');
+
             header("Location: request-details.php?id=$request_id&success=assigned");
             exit();
         }
@@ -216,6 +237,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $n->execute();
 
         logAuditAction($conn, $admin_id, 'REQUEST_CANCELLED', 'maintenancerequest', $request_id, null, 'Cancelled by admin');
+
+        // Send email to user about cancellation
+        require_once __DIR__ . '/../config/email-service.php';
+        emailStatusUpdate($conn, $request_id, $requester_id, 'Cancelled');
 
         header("Location: request-details.php?id=$request_id&success=cancelled");
         exit();

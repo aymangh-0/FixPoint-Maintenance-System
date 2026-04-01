@@ -24,29 +24,6 @@ require_once __DIR__ . '/../config/helpers.php';
 
 $tech_id = $_SESSION['user_id'];
 $tech_name = $_SESSION['name'];
-$delete_msg = '';
-
-// Handle bulk delete of completed tasks (hides from technician's view)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_completed') {
-    $ids = $_POST['selected_ids'] ?? [];
-    if (!empty($ids)) {
-        $count = 0;
-        foreach ($ids as $rid) {
-            $rid = (int)$rid;
-            // Only allow removing completed/cancelled requests from technician's view
-            $del = $conn->prepare("DELETE a FROM assignment a 
-                JOIN maintenancerequest mr ON a.RequestID = mr.RequestID 
-                WHERE a.RequestID = ? AND a.TechnicianID = ? AND mr.StatusID IN (5, 6)");
-            $del->bind_param("ii", $rid, $tech_id);
-            $del->execute();
-            if ($del->affected_rows > 0) $count++;
-        }
-        if ($count > 0) {
-            $delete_msg = "✅ $count completed task(s) removed from your list.";
-        }
-    }
-}
-
 // Get technician's statistics
 $stats = [];
 
@@ -184,6 +161,10 @@ $current_page = 'dashboard';
                 <span class="sidebar-icon">🔧</span><span>My Tasks</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -246,7 +227,6 @@ $current_page = 'dashboard';
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Title</th>
                                 <th>Requester</th>
                                 <th>Location</th>
                                 <th>Category</th>
@@ -260,14 +240,6 @@ $current_page = 'dashboard';
                             <?php foreach ($active_requests as $req): ?>
                                 <tr style="<?php echo ($req['PriorityID'] >= 3) ? 'background: #fef2f2;' : ''; ?>">
                                     <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                    
-                                    <!-- Title -->
-                                    <td class="request-title">
-                                        <?php echo e($req['Title']); ?>
-                                        <?php if ($req['PriorityID'] == 4): ?>
-                                            <span style="color: #ef4444;">🚨</span>
-                                        <?php endif; ?>
-                                    </td>
                                     
                                     <!-- Requester -->
                                     <td>
@@ -334,30 +306,13 @@ $current_page = 'dashboard';
             <!-- Recently Completed -->
             <?php if (count($completed_requests) > 0): ?>
             <div class="requests-section">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1rem;">
-                    <h2 class="section-title" style="margin-bottom:0;">✅ Recently Completed (<?php echo count($completed_requests); ?>)</h2>
-                    <button type="submit" form="deleteForm" onclick="return confirmDelete()" class="btn" id="deleteBtn" style="background:#ef4444; color:white; padding:0.5rem 1rem; font-size:0.85rem; border:none; border-radius:0.5rem; cursor:pointer; display:none;">
-                        🗑️ Delete Selected (<span id="deleteCount">0</span>)
-                    </button>
-                </div>
-
-                <?php if ($delete_msg): ?>
-                    <div style="background:#d1fae5; border:1px solid #6ee7b7; color:#065f46; padding:0.75rem 1rem; border-radius:0.5rem; margin-bottom:1rem; font-weight:500;">
-                        <?php echo $delete_msg; ?>
-                    </div>
-                <?php endif; ?>
+                <h2 class="section-title">✅ Recently Completed (<?php echo count($completed_requests); ?>)</h2>
                 
-                <form method="POST" id="deleteForm">
-                    <input type="hidden" name="action" value="delete_completed">
                 <div style="overflow-x: auto;">
                     <table class="requests-table">
                         <thead>
                             <tr>
-                                <th style="width:40px;">
-                                    <input type="checkbox" id="selectAll" title="Select all" style="width:16px; height:16px; cursor:pointer;">
-                                </th>
                                 <th>ID</th>
-                                <th>Title</th>
                                 <th>Location</th>
                                 <th>Category</th>
                                 <th>Status</th>
@@ -369,11 +324,7 @@ $current_page = 'dashboard';
                         <tbody>
                             <?php foreach ($completed_requests as $req): ?>
                                 <tr>
-                                    <td>
-                                        <input type="checkbox" name="selected_ids[]" value="<?php echo $req['RequestID']; ?>" class="row-check" style="width:16px; height:16px; cursor:pointer;">
-                                    </td>
                                     <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                    <td class="request-title"><?php echo e($req['Title']); ?></td>
                                     <td><?php echo e($req['BuildingName'] . ' - ' . $req['RoomNumber']); ?></td>
                                     <td><?php echo e($req['CategoryName']); ?></td>
                                     <td>
@@ -401,7 +352,6 @@ $current_page = 'dashboard';
                         </tbody>
                     </table>
                 </div>
-                </form>
             </div>
             <?php endif; ?>
             
@@ -433,46 +383,6 @@ $current_page = 'dashboard';
             });
         }
 
-        // Select all / Delete logic for completed tasks
-        const selectAll = document.getElementById('selectAll');
-        const rowChecks = document.querySelectorAll('.row-check');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const deleteCount = document.getElementById('deleteCount');
-
-        function updateDeleteBtn() {
-            const checked = document.querySelectorAll('.row-check:checked').length;
-            if (deleteBtn) {
-                deleteBtn.style.display = checked > 0 ? 'inline-block' : 'none';
-                deleteCount.textContent = checked;
-            }
-            if (selectAll) {
-                selectAll.checked = rowChecks.length > 0 && checked === rowChecks.length;
-            }
-        }
-
-        if (selectAll) {
-            selectAll.addEventListener('change', function() {
-                rowChecks.forEach(cb => cb.checked = this.checked);
-                updateDeleteBtn();
-            });
-        }
-
-        rowChecks.forEach(cb => cb.addEventListener('change', updateDeleteBtn));
-
-        function confirmDelete() {
-            const count = document.querySelectorAll('.row-check:checked').length;
-            if (count === 0) return false;
-            return confirm('Remove ' + count + ' completed task(s) from your list?');
-        }
-
-        // Auto-hide success message
-        setTimeout(() => {
-            document.querySelectorAll('.alert-success, [style*="d1fae5"]').forEach(el => {
-                el.style.transition = 'opacity 0.5s';
-                el.style.opacity = '0';
-                setTimeout(() => el.remove(), 500);
-            });
-        }, 3000);
     </script>
 </body>
 </html>

@@ -383,7 +383,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role_id'])) {
         }
         .footer-grid {
             display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr;
             gap: 28px;
             margin-bottom: 28px;
         }
@@ -454,8 +454,10 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role_id'])) {
             </a>
             <nav class="header-right">
                 <a href="#features" class="h-link desktop">Features</a>
-                <a href="auth/login.php" class="h-link">Log in</a>
-                <a href="auth/register.php" class="h-btn">Register</a>
+                <a href="help-center.php" class="h-link desktop">Help</a>
+                <a href="contact.php" class="h-link desktop">Contact</a>
+                    <a href="auth/login.php" class="h-btn">Log in</a>
+
             </nav>
         </div>
     </header>
@@ -551,6 +553,13 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role_id'])) {
                         <li><a href="#features">Features</a></li>
                         <li><a href="auth/login.php">Login</a></li>
                         <li><a href="auth/register.php">Register</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="help-center.php">Help Center</a></li>
+                        <li><a href="contact.php">Contact Us</a></li>
                     </ul>
                 </div>
                 <div>

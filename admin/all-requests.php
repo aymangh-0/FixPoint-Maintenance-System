@@ -160,6 +160,10 @@ $current_page = 'all-requests';
                 <span class="sidebar-icon">💾</span><span>Backup</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -287,7 +291,6 @@ $current_page = 'all-requests';
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Title</th>
                                     <th>Requester</th>
                                     <th>Location</th>
                                     <th>Category</th>
@@ -302,10 +305,6 @@ $current_page = 'all-requests';
                                 <?php foreach ($requests as $req): ?>
                                     <tr style="<?php echo ($req['PriorityID'] >= 3 && $req['StatusID'] < 5) ? 'background:#fef2f2;' : ''; ?>">
                                         <td><strong>#<?php echo $req['RequestID']; ?></strong></td>
-                                        <td class="request-title">
-                                            <?php echo e($req['Title']); ?>
-                                            <?php if ($req['PriorityID'] == 4): ?><span style="color:#ef4444;">🚨</span><?php endif; ?>
-                                        </td>
                                         <td>
                                             <strong><?php echo e($req['RequesterName']); ?></strong><br>
                                             <small style="color:#64748b;"><?php echo e($req['RequesterRole']); ?></small>
@@ -355,7 +354,6 @@ $current_page = 'all-requests';
                                             #<?php echo $req['RequestID']; ?>
                                             <?php if ($req['PriorityID'] == 4): ?>🚨<?php endif; ?>
                                         </div>
-                                        <div class="rcm-title"><?php echo e($req['Title']); ?></div>
                                         <div style="font-size:0.8rem;color:#64748b;margin-top:0.25rem;">
                                             👤 <?php echo e($req['RequesterName']); ?>
                                             <span style="color:#94a3b8;">(<?php echo e($req['RequesterRole']); ?>)</span>

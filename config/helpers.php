@@ -42,25 +42,13 @@ function checkDuplicateRequest($conn, $location_id, $category_id, $exclude_reque
 }
 
 function checkRequestLimits($conn, $user_id) {
-    $sql = "SELECT 
-                u.UserID,
-                u.MaxRequestsPerWeek,
-                u.LastResetAt,
-                COUNT(CASE 
-                    WHEN mr.SubmittedAt > COALESCE(u.LastResetAt, DATE_SUB(NOW(), INTERVAL 7 DAY))
-                    THEN 1 
-                END) AS RequestsThisWeek
-            FROM user u
-            LEFT JOIN maintenancerequest mr ON u.UserID = mr.UserID
-            WHERE u.UserID = ?
-            GROUP BY u.UserID";
+    // First, check if a week has passed since LastResetAt — if so, reset automatically
+    $reset_check = $conn->prepare("SELECT LastResetAt, MaxRequestsPerWeek FROM user WHERE UserID = ?");
+    $reset_check->bind_param("i", $user_id);
+    $reset_check->execute();
+    $user_data = $reset_check->get_result()->fetch_assoc();
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 0) {
+    if (!$user_data) {
         return [
             'can_submit'     => false,
             'week_count'     => 0,
@@ -69,24 +57,43 @@ function checkRequestLimits($conn, $user_id) {
         ];
     }
     
-    $data = $result->fetch_assoc();
+    $last_reset = $user_data['LastResetAt'];
+    $week_limit = (int)$user_data['MaxRequestsPerWeek'];
     
-    $week_count = (int)$data['RequestsThisWeek'];
-    $week_limit = (int)$data['MaxRequestsPerWeek'];
+    // Auto-reset: if LastResetAt is NULL or more than 7 days ago, update it to NOW
+    if ($last_reset === null || (time() - strtotime($last_reset)) >= 7 * 24 * 3600) {
+        $update_reset = $conn->prepare("UPDATE user SET LastResetAt = NOW() WHERE UserID = ?");
+        $update_reset->bind_param("i", $user_id);
+        $update_reset->execute();
+        $last_reset = date('Y-m-d H:i:s'); // use current time
+    }
+    
+    // Count requests submitted after the (possibly just-updated) LastResetAt
+    $count_sql = $conn->prepare("SELECT COUNT(*) as cnt FROM maintenancerequest WHERE UserID = ? AND SubmittedAt > ?");
+    $count_sql->bind_param("is", $user_id, $last_reset);
+    $count_sql->execute();
+    $week_count = (int)$count_sql->get_result()->fetch_assoc()['cnt'];
     
     $can_submit = $week_count < $week_limit;
+    $week_remaining = max(0, $week_limit - $week_count);
+    
+    // Calculate next reset time
+    $next_reset_ts = strtotime($last_reset) + 7 * 24 * 3600;
+    $next_reset_str = date("M d, Y", $next_reset_ts) . " at " . date("h:i A", $next_reset_ts);
     
     if (!$can_submit) {
         $message = "You have reached your weekly limit of {$week_limit} requests";
     } else {
-        $week_remaining = $week_limit - $week_count;
         $message = "You can submit {$week_remaining} more request(s) this week.";
     }
     
     return [
         'can_submit'     => $can_submit,
         'week_count'     => $week_count,
-        'week_remaining' => max(0, $week_limit - $week_count),
+        'week_remaining' => $week_remaining,
+        'week_limit'     => $week_limit,
+        'next_reset'     => $next_reset_str,
+        'next_reset_ts'  => $next_reset_ts,
         'message'        => $message
     ];
 }

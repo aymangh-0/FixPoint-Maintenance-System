@@ -257,6 +257,10 @@ $current_page = 'my-tasks';
                 <span class="sidebar-icon">🔧</span><span>My Tasks</span>
             </a>
             <div class="sidebar-divider"></div>
+<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
+    <span class="sidebar-icon">👤</span><span>My Profile</span>
+</a>
+            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -328,7 +332,7 @@ $current_page = 'my-tasks';
                     <div class="task-card <?php echo $card_class; ?>">
                         <div class="task-card-header">
                             <div class="task-title">
-                                #<?php echo $task['RequestID']; ?> — <?php echo e($task['Title']); ?>
+                                #<?php echo $task['RequestID']; ?> — <?php echo e($task['CategoryName']); ?>
                             </div>
                             <div class="task-badges">
                                 <span class="status-badge <?php echo getStatusBadgeClass($task['StatusName']); ?>">
