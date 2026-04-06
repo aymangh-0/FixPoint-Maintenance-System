@@ -182,6 +182,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_request']) && 
         $del_assign->bind_param("i", $request_id);
         $del_assign->execute();
         
+        // Log in audit trail
+        require_once __DIR__ . '/../config/audit-logger.php';
+        logAuditAction($conn, $user_id, 'REQUEST_CANCELLED_BY_USER', 'maintenancerequest', $request_id, "Status: $old_status_id", "Status: 6 (Cancelled)");
+        
         // Send cancellation email to user + notify admin
         require_once __DIR__ . '/../config/email-service.php';
         emailStatusUpdate($conn, $request_id, $user_id, 'Cancelled');
