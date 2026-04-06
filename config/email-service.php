@@ -179,7 +179,7 @@ function getEmailTemplate($type, $data = []) {
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Location:</td><td style="padding: 8px 0; color: #1e293b;">{location}</td></tr>
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Category:</td><td style="padding: 8px 0; color: #1e293b;">{category}</td></tr>
                                 <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Priority:</td><td style="padding: 8px 0; color: #1e293b;">{priority}</td></tr>
-                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Status:</td><td style="padding: 8px 0;"><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">Pending</span></td></tr>
+                                <tr><td style="padding: 8px 0; color: #64748b; font-weight: 600;">Status:</td><td style="padding: 8px 0;"><span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">{status}</span></td></tr>
                             </table>
                         </div>
                         <p style="color: #64748b;">You will receive email notifications when the status of your request changes. You can also track your request in real-time through your dashboard.</p>
@@ -460,12 +460,13 @@ function emailFeedbackReceived($conn, $request_id, $user_name, $rating, $comment
 function emailRequestConfirmation($conn, $request_id, $user_id) {
     $sql = "SELECT u.Email, u.Name, mr.Title, mr.Description,
                 CONCAT(l.BuildingName, ' - Floor ', l.FloorNumber, ' - Room ', l.RoomNumber) as Location,
-                c.CategoryName, p.PriorityLevel
+                c.CategoryName, p.PriorityLevel, s.StatusName
             FROM maintenancerequest mr
             JOIN user u ON mr.UserID = u.UserID
             JOIN location l ON mr.LocationID = l.LocationID
             JOIN category c ON mr.CategoryID = c.CategoryID
             JOIN priority p ON mr.PriorityID = p.PriorityID
+            JOIN status s ON mr.StatusID = s.StatusID
             WHERE mr.RequestID = ? AND u.UserID = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $request_id, $user_id);
@@ -478,7 +479,8 @@ function emailRequestConfirmation($conn, $request_id, $user_id) {
             'user_name'  => $data['Name'],
             'location'   => $data['Location'],
             'category'   => $data['CategoryName'],
-            'priority'   => $data['PriorityLevel']
+            'priority'   => $data['PriorityLevel'],
+            'status'     => $data['StatusName']
         ]);
         if ($template) {
             sendEmail($data['Email'], $data['Name'], $template['subject'], $template['body']);

@@ -128,20 +128,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     );
                 }
 
+                // Auto-assign technician FIRST (before sending emails)
+                require_once __DIR__ . '/../config/auto-assign.php';
+                $assign_result = autoAssignTechnician($conn, $request_id);
+                
+                // Now send emails (after status is updated by auto-assign)
                 require_once __DIR__ . '/../config/email-service.php';
                 emailNewRequest($conn, $request_id, $title, $description, $_SESSION['name'], '', '', '');
                 emailRequestConfirmation($conn, $request_id, $user_id);
                 
-                // Auto-assign technician
-                require_once __DIR__ . '/../config/auto-assign.php';
-                $assign_result = autoAssignTechnician($conn, $request_id);
                 if ($assign_result['assigned']) {
-                    $success = "Request submitted and assigned to " . $assign_result['technician_name'] . "! Request #$request_id";
+                    // Send email to assigned technician
+                    $tech_id_for_email = $assign_result['technician_id'] ?? null;
+                    if (!$tech_id_for_email) {
+                        // Fallback: get tech ID from assignment table
+                        $t = $conn->prepare("SELECT TechnicianID FROM assignment WHERE RequestID = ? ORDER BY AssignedAt DESC LIMIT 1");
+                        $t->bind_param("i", $request_id);
+                        $t->execute();
+                        $tech_row = $t->get_result()->fetch_assoc();
+                        $tech_id_for_email = $tech_row ? $tech_row['TechnicianID'] : null;
+                    }
+                    if ($tech_id_for_email) {
+                        emailTechnicianAssigned($conn, $request_id, $tech_id_for_email);
+                    }
+                    $success = "Request submitted and assigned to " . $assign_result['technician_name'] . "! Request #$request_id. You can edit or delete this request within 10 minutes.";
                 } else {
-                    $success = "Request submitted successfully! Request #$request_id";
+                    $success = "Request submitted successfully! Request #$request_id. You can edit or delete this request within 10 minutes.";
                 }
-                
-                header("refresh:2;url=dashboard.php");
+                $new_request_id = $request_id;
             } else {
                 $error = "Failed to submit request. Please try again.";
             }
@@ -428,10 +442,6 @@ $current_page = 'submit-request';
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
             <div class="sidebar-divider"></div>
-<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
-    <span class="sidebar-icon">👤</span><span>My Profile</span>
-</a>
-            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -474,12 +484,75 @@ $current_page = 'submit-request';
                     </div>
                 <?php endif; ?>
 
-                <!-- Success -->
+                <!-- Success Modal -->
                 <?php if ($success): ?>
-                    <div class="sr-alert sr-alert-success">
-                        ✅ <?php echo e($success); ?>
-                        <br><small>Redirecting to dashboard...</small>
+                <div id="successModal" style="
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+                    display: flex; align-items: center; justify-content: center; 
+                    z-index: 9999; animation: modalFadeIn 0.3s ease;">
+                    <div style="
+                        background: white; border-radius: 1.25rem; padding: 2.5rem; 
+                        max-width: 440px; width: 90%; text-align: center;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        animation: modalSlideUp 0.4s ease;">
+                        
+                        <!-- Success Icon -->
+                        <div style="
+                            width: 80px; height: 80px; border-radius: 50%; 
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            display: flex; align-items: center; justify-content: center;
+                            margin: 0 auto 1.25rem; font-size: 2.5rem;
+                            box-shadow: 0 8px 20px rgba(16,185,129,0.3);">
+                            ✓
+                        </div>
+                        
+                        <h2 style="color: #1e293b; font-size: 1.4rem; margin-bottom: 0.5rem;">Request Submitted!</h2>
+                        <p style="color: #2563eb; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem;">
+                            Request #<?php echo $new_request_id ?? ''; ?>
+                        </p>
+                        
+                        <!-- Edit/Delete Notice -->
+                        <div style="
+                            background: #eff6ff; border: 1.5px solid #bfdbfe; 
+                            border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                            <div style="font-size: 1.25rem; margin-bottom: 0.25rem;">⏱️</div>
+                            <p style="color: #1e40af; font-size: 0.9rem; font-weight: 500; margin: 0;">
+                                You can <strong>edit</strong> or <strong>delete</strong> this request within <strong>10 minutes</strong>
+                            </p>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                            <?php if (isset($new_request_id)): ?>
+                            <a href="request-details.php?id=<?php echo $new_request_id; ?>" style="
+                                background: #2563eb; color: white; padding: 0.85rem 1.5rem;
+                                border-radius: 0.6rem; text-decoration: none; font-weight: 600;
+                                font-size: 0.95rem; display: block; transition: background 0.2s;">
+                                ✏️ View / Edit Request
+                            </a>
+                            <?php endif; ?>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="my-requests.php" style="
+                                    flex: 1; background: #f1f5f9; color: #475569; padding: 0.75rem;
+                                    border-radius: 0.6rem; text-decoration: none; font-weight: 600;
+                                    font-size: 0.85rem; transition: background 0.2s;">
+                                    📋 My Requests
+                                </a>
+                                <a href="dashboard.php" style="
+                                    flex: 1; background: #f1f5f9; color: #475569; padding: 0.75rem;
+                                    border-radius: 0.6rem; text-decoration: none; font-weight: 600;
+                                    font-size: 0.85rem; transition: background 0.2s;">
+                                    🏠 Dashboard
+                                </a>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                <style>
+                    @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                    @keyframes modalSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                </style>
                 <?php endif; ?>
 
                 <!-- Form -->

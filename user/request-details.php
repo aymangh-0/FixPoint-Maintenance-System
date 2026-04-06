@@ -158,6 +158,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_request']) && $c
     }
 }
 
+// Handle delete request (within 10 minutes) — Soft Delete: change to Cancelled
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_request']) && $can_edit) {
+    // Get current status
+    $cur = $conn->prepare("SELECT StatusID FROM maintenancerequest WHERE RequestID = ? AND UserID = ?");
+    $cur->bind_param("ii", $request_id, $user_id);
+    $cur->execute();
+    $old_status_id = $cur->get_result()->fetch_assoc()['StatusID'] ?? 0;
+    
+    // Update status to Cancelled (6)
+    $cancel = $conn->prepare("UPDATE maintenancerequest SET StatusID = 6, UpdatedAt = NOW() WHERE RequestID = ? AND UserID = ?");
+    $cancel->bind_param("ii", $request_id, $user_id);
+    $cancel->execute();
+    
+    if ($cancel->affected_rows > 0) {
+        // Add status history
+        $h = $conn->prepare("INSERT INTO statushistory (RequestID, OldStatusID, NewStatusID, ChangedBy, ChangedAt) VALUES (?, ?, 6, ?, NOW())");
+        $h->bind_param("iii", $request_id, $old_status_id, $user_id);
+        $h->execute();
+        
+        // Remove assignment if exists
+        $del_assign = $conn->prepare("DELETE FROM assignment WHERE RequestID = ?");
+        $del_assign->bind_param("i", $request_id);
+        $del_assign->execute();
+        
+        // Send cancellation email to user + notify admin
+        require_once __DIR__ . '/../config/email-service.php';
+        emailStatusUpdate($conn, $request_id, $user_id, 'Cancelled');
+        
+        // Notify admin
+        $admin_result = $conn->query("SELECT UserID FROM user WHERE RoleID = 1");
+        while ($admin = $admin_result->fetch_assoc()) {
+            $notif_msg = "Request #$request_id has been cancelled by the user within the 10-minute edit window.";
+            $n = $conn->prepare("INSERT INTO notification (UserID, Title, Message, RequestID, CreatedAt) VALUES (?, 'Request Cancelled by User', ?, ?, NOW())");
+            $n->bind_param("isi", $admin['UserID'], $notif_msg, $request_id);
+            $n->execute();
+        }
+        
+        header("Location: my-requests.php?deleted=1");
+        exit();
+    } else {
+        $edit_error = "Failed to cancel request. Please try again.";
+    }
+}
+
 // Check for edit success message from redirect
 if (isset($_GET['edited']) && $_GET['edited'] == 1) {
     $edit_success = "Request updated successfully.";
@@ -414,11 +458,6 @@ $current_page = 'my-requests';
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
             <div class="sidebar-divider"></div>
-<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
-    <span class="sidebar-icon">👤</span><span>My Profile</span>
-</a>
-<a href="../auth/logout.php" class="sidebar-link sidebar-logout"></a>
-            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -571,14 +610,17 @@ $current_page = 'my-requests';
                         <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem;">Max 20MB. JPEG, PNG, or GIF. This will add a new photo, not replace existing ones.</p>
                     </div>
 
-                    <div style="display: flex; gap: 1rem;">
+                    <div style="display: flex; gap: 1rem; align-items: center;">
                         <button type="submit" class="btn btn-primary" id="editSubmitBtn">
                             💾 Save Changes
                         </button>
-                        <button type="button" class="btn btn-outline" onclick="document.getElementById('editForm').parentElement.style.display='none';">
-                            Cancel
+                        <button type="button" onclick="confirmCancelRequest()" style="background: #ef4444; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                            ✕ Cancel Request
                         </button>
                     </div>
+                </form>
+                <form method="POST" action="" id="deleteRequestForm" style="display:none;">
+                    <input type="hidden" name="delete_request" value="1">
                 </form>
             </div>
             <?php endif; ?>
@@ -791,6 +833,12 @@ $current_page = 'my-requests';
             field.style.display = (text === 'other' || text === 'others' || text === 'أخرى') ? 'block' : 'none';
         }
         toggleEditOther();
+
+        function confirmCancelRequest() {
+            if (confirm('⚠️ Are you sure you want to cancel this request?\n\nThe request will be marked as Cancelled and your weekly request limit will be restored.')) {
+                document.getElementById('deleteRequestForm').submit();
+            }
+        }
         <?php endif; ?>
     </script>
 </body>

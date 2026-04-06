@@ -1,525 +1,179 @@
 
 ============================================================
-📧 EMAIL LOG - 2026-02-16 02:23:08
+📧 EMAIL LOG - 2026-04-05 20:43:27
 ============================================================
 TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #3 - asdasdasdasd
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
+SUBJECT: 🔔 New Maintenance Request #22 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
 ============================================================
 
 ============================================================
-📧 EMAIL LOG - 2026-02-16 17:30:54
+📧 EMAIL LOG - 2026-04-05 20:43:28
+============================================================
+TO:      Omar Marzouq Almutairi <S220042171@seu.edu.sa>
+SUBJECT: ✅ Your Request #22 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-05 20:47:38
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #23 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-05 20:47:39
+============================================================
+TO:      Omar Marzouq Almutairi <S220042171@seu.edu.sa>
+SUBJECT: ✅ Your Request #23 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 00:31:50
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #24 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 00:31:52
+============================================================
+TO:      Dr. Jameel Alhejely <a.ym_95@hotmail.com>
+SUBJECT: ✅ Your Request #24 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 00:34:42
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #25 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 00:34:44
+============================================================
+TO:      Dr. Jameel Alhejely <a.ym_95@hotmail.com>
+SUBJECT: ✅ Your Request #25 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:22:24
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #26 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:22:26
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #26 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:35:50
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #27 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:35:52
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #27 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:38:15
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #28 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:38:16
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #28 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:54:21
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #29 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:54:22
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #29 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 15:54:24
 ============================================================
 TO:      Ahmed Hassan <ahmed.tech@seu.edu.sa>
-SUBJECT: 🔧 New Task Assigned - Request #3
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-16 17:30:54
-============================================================
-TO:      Ayman Ahmed Alghamdi <S220053790@seu.edu.sa>
-SUBJECT: 📊 Request #3 Status Updated - Assigned
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-16 17:31:34
-============================================================
-TO:      Ayman Ahmed Alghamdi <S220053790@seu.edu.sa>
-SUBJECT: 📊 Request #3 Status Updated - In Progress
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-16 17:31:51
-============================================================
-TO:      Ayman Ahmed Alghamdi <S220053790@seu.edu.sa>
-SUBJECT: ✅ Request #3 Completed - Please Leave Feedback
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        ✅ Request Completed!
-                        FixPoint - University Maintenance System
-                    
-                    
-...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-16 17:37:00
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #3 - 5 Stars
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-17 20:24:03
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #4 - asdasdasdasdasd
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-17 20:24:37
-============================================================
-TO:      Dr. Jameel Alhejely <jameel.alhejely@seu.edu.sa>
-SUBJECT: 📊 Request #4 Status Updated - 
-MODE:    log
-STATUS:  Logged (not sent)
-BODY PREVIEW: 
-                
-                    
-                        🔧 FixPoint
-                        University Maintenance System
-                    
-                    
-                    ...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 04:41:10
-============================================================
-TO:      Test User <إيميلك@gmail.com>
-SUBJECT: 🧪 FixPoint Email Test
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SMTP ERROR: Server does not support SMTPUTF8 needed to send to Unicode addresses]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 04:42:53
-============================================================
-TO:      Test User <user12342188@gmail.com>
-SUBJECT: 🧪 FixPoint Email Test
+SUBJECT: 🔧 New Task Assigned - Request #29
 MODE:    smtp
 STATUS:  Attempted
 BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
 ============================================================
 
 ============================================================
-📧 EMAIL LOG - 2026-02-18 04:51:51
+📧 EMAIL LOG - 2026-04-06 15:54:50
 ============================================================
-TO:      Test User <user12342188@gmail.com>
-SUBJECT: 🧪 FixPoint Email Test
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 19:18:54
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #5 - asdjhaslidjasd
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 19:20:33
-============================================================
-TO:      Ayman Ahmed Alghamdi <S220053790@seu.edu.sa>
-SUBJECT: 📊 Request #5 Status Updated - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 19:22:30
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #5 - 5 Stars
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 20:02:52
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #6 - شسييشسيشسيشسيشسي
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-02-18 20:04:50
-============================================================
-TO:      Ayman Ahmed Alghamdi <S220053790@seu.edu.sa>
-SUBJECT: 📊 Request #6 Status Updated - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-02 22:58:43
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #7 - asdasdasdasdasd
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-02 23:36:14
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #7 - 5 Stars
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-02 23:37:06
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #8 - يبليسبلشسثبشسثبشصثسبشصث
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-02 23:40:16
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #8 - 5 Stars
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 00:28:30
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #9 - srfwsaerfqweafweas
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 00:34:29
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #9 - 5 Stars
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 00:47:19
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #10 - حخلتسبخحهلمتسيبخكلتسيقبلكخت
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 00:54:57
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #11 - asdasdasdasdasdasd
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 01:07:27
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #12 - asdfafasfdasdasdasd
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 22:22:54
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #13 - asdhjashdjashhj
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 22:23:38
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #13 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-03 22:23:47
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Request #13 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 19:22:45
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #14 - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 19:26:43
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #14 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 19:26:48
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Request #14 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 19:37:23
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #13 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 19:37:41
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Request #13 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 21:27:50
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #14 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 21:28:46
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #14 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-04 21:29:29
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Request #14 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-05 06:06:43
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: 📊 Request #14 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-05 06:06:52
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Request #14 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-17 18:51:09
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #15 - dfsdfs
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-17 18:51:43
-============================================================
-TO:      Dr. Jameel Alhejely <jameel.alhejely@seu.edu.sa>
-SUBJECT: 📊 Request #15 Status Updated - In Progress
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-17 18:51:51
-============================================================
-TO:      Dr. Jameel Alhejely <jameel.alhejely@seu.edu.sa>
-SUBJECT: ✅ Request #15 Completed - Please Leave Feedback
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-17 18:52:22
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: ⭐ New Feedback for Request #15 - 5 Stars
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-31 21:36:00
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #16 - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-03-31 22:17:12
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #17 - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-04-01 02:22:33
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #18 - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-04-01 02:45:02
-============================================================
-TO:      System Administrator <admin@seu.edu.sa>
-SUBJECT: 🔔 New Maintenance Request #19 - 
-MODE:    smtp
-STATUS:  Attempted
-BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
-============================================================
-
-============================================================
-📧 EMAIL LOG - 2026-04-01 02:45:04
-============================================================
-TO:      ayn <user12342188@gmail.com>
-SUBJECT: ✅ Your Request #19 Has Been Submitted
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #29 Status Updated - Cancelled
 MODE:    smtp
 STATUS:  Attempted
 BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...

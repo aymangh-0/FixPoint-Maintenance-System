@@ -118,11 +118,6 @@ $current_page = 'my-requests';
                 <span class="sidebar-icon">📋</span><span>My Requests</span>
             </a>
             <div class="sidebar-divider"></div>
-<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
-    <span class="sidebar-icon">👤</span><span>My Profile</span>
-</a>
-
-            <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
             </a>
@@ -144,6 +139,12 @@ $current_page = 'my-requests';
                 <h1 class="welcome-text">My Requests 📋</h1>
                 <p class="user-info">View and track all your maintenance requests</p>
             </div>
+
+            <?php if (isset($_GET['deleted']) && $_GET['deleted'] == 1): ?>
+                <div style="background: #d1fae5; border: 2px solid #a7f3d0; padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; color: #065f46; font-weight: 600;">
+                    ✅ Request cancelled successfully. Your weekly request limit has been restored.
+                </div>
+            <?php endif; ?>
 
             <!-- Stats -->
             <div class="stats-grid">
