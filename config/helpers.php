@@ -19,25 +19,19 @@ function checkDuplicateRequest($conn, $location_id, $category_id, $exclude_reque
     
     if ($exclude_request_id !== null) {
         $sql .= " AND mr.RequestID != ?";
-    }
-    
-    $sql .= " ORDER BY mr.SubmittedAt DESC LIMIT 1";
-    
-    $stmt = $conn->prepare($sql);
-    
+    }    
+    $sql .= " ORDER BY mr.SubmittedAt DESC LIMIT 1";    
+    $stmt = $conn->prepare($sql);    
     if ($exclude_request_id !== null) {
         $stmt->bind_param("iii", $location_id, $category_id, $exclude_request_id);
     } else {
         $stmt->bind_param("ii", $location_id, $category_id);
-    }
-    
+    }    
     $stmt->execute();
-    $result = $stmt->get_result();
-    
+    $result = $stmt->get_result();    
     if ($result->num_rows > 0) {
         return $result->fetch_assoc();
-    }
-    
+    }   
     return null;
 }
 

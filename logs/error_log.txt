@@ -2960,3 +2960,311 @@ URL:      POST /FixPoint/technician/task-details.php?id=15
 IP:       ::1
 USER:     UserID: 2, Name: Ahmed Hassan, Role: Technician
 ------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:27:33
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:27:33
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:27:33
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:27:33
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:30:56
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:30:56
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:30:56
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:30:56
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:31:09
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:31:09
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:31:09
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:31:09
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=17
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:46
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:46
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:46
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:46
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:51
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:51
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:51
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-09 15:53:51
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=33
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:24
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:24
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:24
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:24
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      GET /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:35
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:35
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:35
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------
+
+------------------------------------------------------------
+🚨 [WARNING] - 2026-04-12 03:27:35
+------------------------------------------------------------
+MESSAGE:  Undefined array key "PriorityID"
+FILE:     C:\xampp\htdocs\fixpoint\technician\task-details.php
+LINE:     594
+URL:      POST /FixPoint/technician/task-details.php?id=35
+IP:       ::1
+USER:     UserID: 3, Name: Khalid Abdullah, Role: Technician
+------------------------------------------------------------

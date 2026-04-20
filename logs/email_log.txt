@@ -178,3 +178,373 @@ MODE:    smtp
 STATUS:  Attempted
 BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
 ============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 19:48:02
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #30 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 19:48:03
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #30 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 19:48:05
+============================================================
+TO:      Khalid Abdullah <khalid.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #30
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-06 19:48:28
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #30 Status Updated - Cancelled
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 22:59:44
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #31 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 22:59:46
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #31 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 22:59:47
+============================================================
+TO:      Ahmed Hassan <ahmed.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #31
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 23:00:19
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #31 Status Updated - Cancelled
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 23:32:49
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #32 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 23:32:51
+============================================================
+TO:      ayn <user12342188@gmail.com>
+SUBJECT: ✅ Your Request #32 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 23:32:53
+============================================================
+TO:      Ahmed Hassan <ahmed.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #32
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-08 23:33:27
+============================================================
+TO:      ayn <user12342188@gmail.com>
+SUBJECT: 📊 Request #32 Status Updated - Cancelled
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 00:49:10
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #17 Status Updated - Pending
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 00:56:09
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #17 Status Updated - Assigned
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:31:09
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #17 Status Updated - In Progress
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:31:35
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Request #17 Completed - Please Leave Feedback
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:52:43
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #33 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:52:44
+============================================================
+TO:      ayn <user12342188@gmail.com>
+SUBJECT: ✅ Your Request #33 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:52:46
+============================================================
+TO:      Khalid Abdullah <khalid.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #33
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:53:51
+============================================================
+TO:      ayn <user12342188@gmail.com>
+SUBJECT: 📊 Request #33 Status Updated - In Progress
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-09 15:54:21
+============================================================
+TO:      ayn <user12342188@gmail.com>
+SUBJECT: ✅ Request #33 Completed - Please Leave Feedback
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SENT SUCCESSFULLY VIA SMTP]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:10:36
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: ⭐ New Feedback for Request #17 - 5 Stars
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:12:06
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #34 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:12:07
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #34 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:12:08
+============================================================
+TO:      Ahmed Hassan <ahmed.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #34
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:12:25
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #34 Status Updated - Cancelled
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:25:11
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #35 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:25:12
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #35 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:25:14
+============================================================
+TO:      Khalid Abdullah <khalid.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #35
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:27:35
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #35 Status Updated - In Progress
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-12 03:28:10
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Request #35 Completed - Please Leave Feedback
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 17:25:11
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: 📊 Request #35 Status Updated - In Progress
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 17:25:39
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Request #35 Completed - Please Leave Feedback
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 22:56:31
+============================================================
+TO:      System Administrator <admin@seu.edu.sa>
+SUBJECT: 🔔 New Maintenance Request #36 - 
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 22:56:33
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Your Request #36 Has Been Submitted
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 22:56:34
+============================================================
+TO:      Ahmed Hassan <ahmed.tech@seu.edu.sa>
+SUBJECT: 🔧 New Task Assigned - Request #36
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
+
+============================================================
+📧 EMAIL LOG - 2026-04-19 23:20:09
+============================================================
+TO:      Ayman GH <S220053790@seu.edu.sa>
+SUBJECT: ✅ Request #36 Completed - Please Leave Feedback
+MODE:    smtp
+STATUS:  Attempted
+BODY PREVIEW: [SMTP ERROR: SMTP Error: Could not authenticate.]...
+============================================================
