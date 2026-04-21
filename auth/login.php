@@ -85,11 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 exit();
             } else {
                 logLoginFailedPassword($conn, $email, $user['UserID']);
-                $error = "Incorrect password";
+                $error = "Incorrect email or password";
             }
         } else {
             logLoginFailedEmail($conn, $email);
-            $error = "No account found with this email";
+            $error = "Incorrect email or password";
         }
         
         $stmt->close();

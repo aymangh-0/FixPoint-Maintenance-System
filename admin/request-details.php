@@ -152,16 +152,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'assign_tech') {
         $tech_id = (int)$_POST['technician_id'];
 
-        // Check if already assigned to this tech
-        $chk = $conn->prepare("SELECT AssignmentID FROM assignment WHERE RequestID = ? AND TechnicianID = ?");
-        $chk->bind_param("ii", $request_id, $tech_id);
-        $chk->execute();
-        if ($chk->get_result()->num_rows > 0) {
+        // Get old technician for audit log
+        $old_tech = $conn->prepare("SELECT TechnicianID FROM assignment WHERE RequestID = ? ORDER BY AssignedAt DESC LIMIT 1");
+        $old_tech->bind_param("i", $request_id);
+        $old_tech->execute();
+        $old_tech_row = $old_tech->get_result()->fetch_assoc();
+        $old_tech_id = $old_tech_row ? $old_tech_row['TechnicianID'] : null;
+
+        // If same technician, do nothing
+        if ($old_tech_id == $tech_id) {
             $error_msg = "This technician is already assigned to this request.";
         } else {
-            // Insert assignment
-            $a = $conn->prepare("INSERT INTO assignment (RequestID, TechnicianID, AssignedAt) VALUES (?, ?, NOW())");
-            $a->bind_param("ii", $request_id, $tech_id);
+            // Delete old assignment first
+            $del = $conn->prepare("DELETE FROM assignment WHERE RequestID = ?");
+            $del->bind_param("i", $request_id);
+            $del->execute();
+
+            // Insert new assignment
+            $a = $conn->prepare("INSERT INTO assignment (RequestID, TechnicianID, AdminID, AssignedAt) VALUES (?, ?, ?, NOW())");
+            $a->bind_param("iii", $request_id, $tech_id, $admin_id);
             $a->execute();
 
             // Update status to Assigned (3) if still Pending/Reviewed
@@ -191,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $n->bind_param("isi", $tech_id, $notif_msg, $request_id);
             $n->execute();
 
-            logAuditAction($conn, $admin_id, 'ASSIGN_TECHNICIAN', 'assignment', $request_id, null, "TechnicianID: $tech_id");
+            logAuditAction($conn, $admin_id, 'ASSIGN_TECHNICIAN', 'assignment', $request_id, "TechnicianID: $old_tech_id", "TechnicianID: $tech_id");
 
             // Send email to technician
             require_once __DIR__ . '/../config/email-service.php';
