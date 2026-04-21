@@ -13,7 +13,7 @@ define('EMAIL_MODE', 'smtp');
 define('SMTP_HOST', 'smtp-relay.brevo.com');
 define('SMTP_PORT', 587);
 define('SMTP_USERNAME', 'a2ab48001@smtp-brevo.com');
-define('SMTP_PASSWORD', 'xsmtpsib-7d603282b18175fcb03bb97e7a119161111d3eb0afbfb16364efa6c9cd043dcf-VW5i6AJhdEH9ZE3m');
+define('SMTP_PASSWORD', 'xsmtpsib-7d603282b18175fcb03bb97e7a119161111d3eb0afbfb16364efa6c9cd043dcf-W1ujrvFI5BgRLUJa');
 define('SMTP_FROM_EMAIL', 'a.aalghamdi147@gmail.com');
 define('SMTP_FROM_NAME',  'FixPoint - SEU Maintenance');
 define('EMAIL_LOG_FILE', __DIR__ . '/../logs/email_log.txt');
