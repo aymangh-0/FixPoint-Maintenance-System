@@ -256,10 +256,7 @@ $current_page = 'my-tasks';
             <a href="my-tasks.php" class="sidebar-link <?php echo $current_page === 'my-tasks' ? 'active' : ''; ?>">
                 <span class="sidebar-icon">🔧</span><span>My Tasks</span>
             </a>
-            <div class="sidebar-divider"></div>
-<a href="profile.php" class="sidebar-link <?php echo $current_page === 'profile' ? 'active' : ''; ?>">
-    <span class="sidebar-icon">👤</span><span>My Profile</span>
-</a>
+
             <div class="sidebar-divider"></div>
             <a href="../auth/logout.php" class="sidebar-link sidebar-logout">
                 <span class="sidebar-icon">🚪</span><span>Logout</span>
