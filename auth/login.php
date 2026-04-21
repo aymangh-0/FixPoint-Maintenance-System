@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="demo-account">👨‍💼 Admin: admin@seu.edu.sa</div>
                     <div class="demo-account">👨‍🔧 Technician: ahmed.tech@seu.edu.sa</div>
                     <div class="demo-account">👨‍🎓 User: S220053790@seu.edu.sa</div>
-                    <div class="demo-account">👨‍🏫 Faculty: jameel.alhejely@seu.edu.sa</div>
+                    <div class="demo-account">👨‍🏫 Faculty: a.ym_95@hotmail.com</div>
                 </div>
             </div>
         </div>
