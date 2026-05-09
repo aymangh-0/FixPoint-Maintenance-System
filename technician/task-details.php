@@ -92,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Mark as Complete
     if (isset($_POST['mark_complete'])) {
-        $notes = trim($_POST['completion_notes']);
         
         // Update assignment CompletedAt
         $sql = "UPDATE assignment SET CompletedAt = NOW() WHERE RequestID = ? AND TechnicianID = ?";
@@ -109,23 +108,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Log status change with notes
             logStatusChange($conn, $request_id, 4, 5, $tech_id);
             require_once __DIR__ . '/../config/audit-logger.php';
-            logStatusChangeAudit($conn, $tech_id, $request_id, 'Assigned', 'In Progress');
+            logStatusChangeAudit($conn, $tech_id, $request_id, 'In Progress', 'Completed');
 
-            
+
             // Notify requester
             $req_sql = "SELECT UserID FROM maintenancerequest WHERE RequestID = ?";
             $req_stmt = $conn->prepare($req_sql);
             $req_stmt->bind_param("i", $request_id);
             $req_stmt->execute();
             $requester_id = $req_stmt->get_result()->fetch_assoc()['UserID'];
-            
+
             createNotification($conn, $requester_id, "Your request #$request_id has been completed! Please review and provide feedback.", $request_id);
 
             // Send email notification
             require_once __DIR__ . '/../config/email-service.php';
             emailRequestCompleted($conn, $request_id);
+
+            require_once __DIR__ . '/../config/auto-assign.php';
+            $pending_assign_result = autoAssignNextPendingRequest($conn);
             
             $success = "Task marked as complete! The requester has been notified.";
+            if ($pending_assign_result['assigned']) {
+                $success .= " Pending request #" . $pending_assign_result['request_id'] . " was auto-assigned to " . $pending_assign_result['technician_name'] . ".";
+            }
         } else {
             $error = "Failed to mark as complete.";
         }
@@ -609,10 +614,6 @@ $current_page = 'my-tasks';
                             </form>
                         <?php elseif (!$assignment['CompletedAt'] && $request['StatusID'] == 4): ?>
                             <form method="POST">
-                                <div style="margin-bottom:0.75rem;">
-                                    <label style="font-size:0.825rem; font-weight:600; color:#1e293b; display:block; margin-bottom:0.35rem;">Notes <span style="color:#94a3b8; font-weight:400;">(optional)</span></label>
-                                    <textarea name="completion_notes" rows="3" placeholder="Notes about the work..." style="width:100%; padding:0.5rem 0.75rem; border:1px solid #cbd5e1; border-radius:0.375rem; font-size:0.85rem; font-family:inherit; resize:vertical;"></textarea>
-                                </div>
                                 <button type="submit" name="mark_complete" class="btn btn-success" style="width:100%; padding:0.75rem; font-size:0.9rem;">✅ Mark as Complete</button>
                             </form>
                             <p style="color:#64748b; margin-top:0.75rem; font-size:0.8rem;">💡 The requester will be notified immediately.</p>

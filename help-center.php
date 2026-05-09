@@ -329,12 +329,11 @@ $user_role = $is_logged_in ? $_SESSION['role_id'] : 0;
                     <ol>
                         <li>Click "Get Started" or "Register" button</li>
                         <li>Enter your User ID (SXXXXXXXXX) or Faculty ID</li>
-                        <li>Fill in your name and SEU email address</li>
+                        <li>Enter your email address</li>
                         <li>Create a strong password (8+ characters, uppercase, lowercase, number, special character)</li>
                         <li>Click "Register"</li>
                         <li>You'll be automatically logged in</li>
                     </ol>
-                    <p><strong>Note:</strong> Only SEU email addresses (@seu.edu.sa) are accepted.</p>
                 </div>
             </div>
             

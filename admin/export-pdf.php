@@ -110,9 +110,29 @@ $sql = "SELECT l.BuildingName, COUNT(*) as Count FROM maintenancerequest mr JOIN
 $stmt = $conn->prepare($sql); $stmt->bind_param($where_types, ...$where_params); $stmt->execute();
 $by_location = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-// Technician Performance
-$sql = "SELECT u.Name, COUNT(DISTINCT a.RequestID) as Assigned, COUNT(DISTINCT CASE WHEN mr.StatusID = 5 THEN a.RequestID END) as Completed, ROUND(AVG(TIMESTAMPDIFF(HOUR, a.AssignedAt, a.CompletedAt)), 1) as AvgHours FROM user u LEFT JOIN assignment a ON u.UserID = a.TechnicianID LEFT JOIN maintenancerequest mr ON a.RequestID = mr.RequestID WHERE u.RoleID = 2 GROUP BY u.UserID ORDER BY Completed DESC";
-$tech_performance = $conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+// Technician Performance — apply same date/priority/location filters
+$tech_where_parts = ["mr.SubmittedAt BETWEEN ? AND ?"];
+$tech_types = "ss";
+$tech_params = [$date_from, $date_to];
+if ($filter_priority) { $tech_where_parts[] = "mr.PriorityID = ?"; $tech_types .= "i"; $tech_params[] = $filter_priority; }
+if ($filter_location) { $tech_where_parts[] = "mr.LocationID = ?"; $tech_types .= "i"; $tech_params[] = $filter_location; }
+$tech_where_clause = implode(' AND ', $tech_where_parts);
+
+$tech_sql = "SELECT u.Name,
+                    COUNT(DISTINCT a.RequestID) as Assigned,
+                    COUNT(DISTINCT CASE WHEN mr.StatusID = 5 THEN a.RequestID END) as Completed,
+                    ROUND(AVG(TIMESTAMPDIFF(HOUR, a.AssignedAt, a.CompletedAt)), 1) as AvgHours
+             FROM user u
+             LEFT JOIN assignment a ON u.UserID = a.TechnicianID
+             LEFT JOIN maintenancerequest mr ON a.RequestID = mr.RequestID AND $tech_where_clause
+             WHERE u.RoleID = 2";
+if ($filter_technician) { $tech_sql .= " AND u.UserID = ?"; $tech_types .= "i"; $tech_params[] = $filter_technician; }
+$tech_sql .= " GROUP BY u.UserID, u.Name ORDER BY Completed DESC";
+
+$tech_stmt = $conn->prepare($tech_sql);
+$tech_stmt->bind_param($tech_types, ...$tech_params);
+$tech_stmt->execute();
+$tech_performance = $tech_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // All Requests
 $sql = "SELECT mr.RequestID, mr.Title, s.StatusName, p.PriorityLevel, c.CategoryName, CONCAT(l.BuildingName, ' - ', l.FloorNumber, ' - ', l.RoomNumber) as Location, u.Name as Requester, mr.SubmittedAt, mr.CompletedAt FROM maintenancerequest mr JOIN status s ON mr.StatusID = s.StatusID JOIN priority p ON mr.PriorityID = p.PriorityID JOIN category c ON mr.CategoryID = c.CategoryID JOIN location l ON mr.LocationID = l.LocationID JOIN user u ON mr.UserID = u.UserID $tech_join WHERE $where_clause ORDER BY mr.SubmittedAt DESC";

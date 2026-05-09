@@ -193,10 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_request']) && 
         // Notify admin
         $admin_result = $conn->query("SELECT UserID FROM user WHERE RoleID = 1");
         while ($admin = $admin_result->fetch_assoc()) {
-            $notif_msg = "Request #$request_id has been cancelled by the user within the 10-minute edit window.";
-            $n = $conn->prepare("INSERT INTO notification (UserID, Title, Message, RequestID, CreatedAt) VALUES (?, 'Request Cancelled by User', ?, ?, NOW())");
-            $n->bind_param("isi", $admin['UserID'], $notif_msg, $request_id);
-            $n->execute();
+            createNotification($conn, $admin['UserID'], "Request #$request_id has been cancelled by the user within the 10-minute edit window.", $request_id);
         }
         
         header("Location: my-requests.php?deleted=1");
@@ -777,6 +774,7 @@ $current_page = 'my-requests';
 
         </div>
     </div>
+    </div><!-- end main-content -->
 
     <script>
         const sidebar   = document.getElementById('sidebar');

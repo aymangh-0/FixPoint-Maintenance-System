@@ -104,6 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($ri_row) {
             if ($new_status_id == 5) {
                 emailRequestCompleted($conn, $request_id);
+
+                require_once __DIR__ . '/../config/auto-assign.php';
+                autoAssignNextPendingRequest($conn);
             } else {
                 emailStatusUpdate($conn, $request_id, $ri_row['UserID'], $ri_row['StatusName']);
             }

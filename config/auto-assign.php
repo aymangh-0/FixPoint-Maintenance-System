@@ -113,4 +113,53 @@ function autoAssignTechnician($conn, $request_id, $max_active_tasks = 5) {
         'active_tasks' => $technician['ActiveTasks']
     ];
 }
+
+/**
+ * Assign the oldest unassigned pending request when technician capacity opens.
+ *
+ * This is used after a task is completed. The regular autoAssignTechnician()
+ * function is still responsible for picking the least-busy technician and
+ * enforcing the max-active-task limit.
+ */
+function autoAssignNextPendingRequest($conn, $max_active_tasks = 5) {
+    $sql = "SELECT mr.RequestID, mr.UserID
+            FROM maintenancerequest mr
+            WHERE mr.StatusID = 1
+            AND NOT EXISTS (
+                SELECT 1
+                FROM assignment a
+                WHERE a.RequestID = mr.RequestID
+            )
+            ORDER BY mr.SubmittedAt ASC, mr.RequestID ASC
+            LIMIT 1";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows == 0) {
+        return [
+            'assigned' => false,
+            'reason' => 'No pending unassigned request found'
+        ];
+    }
+
+    $pending_request = $result->fetch_assoc();
+    $stmt->close();
+
+    $assign_result = autoAssignTechnician($conn, (int)$pending_request['RequestID'], $max_active_tasks);
+    $assign_result['request_id'] = (int)$pending_request['RequestID'];
+
+    if ($assign_result['assigned']) {
+        if (function_exists('emailTechnicianAssigned')) {
+            emailTechnicianAssigned($conn, (int)$pending_request['RequestID'], (int)$assign_result['technician_id']);
+        }
+
+        if (function_exists('emailStatusUpdate')) {
+            emailStatusUpdate($conn, (int)$pending_request['RequestID'], (int)$pending_request['UserID'], 'Assigned');
+        }
+    }
+
+    return $assign_result;
+}
 ?>

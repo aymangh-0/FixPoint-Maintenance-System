@@ -15,6 +15,7 @@ if (isset($_SESSION['timeout_message'])) {
 }
 
 // If user is already logged in, redirect to appropriate dashboard
+
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role_id'] == 1) {
         header("Location: ../admin/dashboard.php");
@@ -61,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Verify password
             if (password_verify($password, $user['Password'])) {
                 // Password correct - create session
+                session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['UserID'];
                 $_SESSION['role_id'] = $user['RoleID'];
                 $_SESSION['name'] = $user['Name'];

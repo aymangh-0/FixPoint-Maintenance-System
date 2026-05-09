@@ -199,11 +199,10 @@ function renderUsersTable($users, $admin_id, $show_limits = false) {
                                         👤 Role
                                     </button>
                                     <?php if ($show_limits): ?>
-                                        <button onclick="openLimitModal(<?php echo $user['UserID']; ?>, '<?php echo e($user['Name']); ?>', <?php echo $user['MaxRequestsPerWeek']; ?>)"
+                                        <button onclick="openLimitModal(<?php echo $user['UserID']; ?>, '<?php echo e($user['Name']); ?>', <?php echo (int)($user['MaxRequestsPerWeek'] ?? 2); ?>)"
                                             class="btn btn-primary" style="padding:0.4rem 0.75rem; font-size:0.8rem;">
                                             ⚙️ Limits
-                                        
-                                        </form>
+                                        </button>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>

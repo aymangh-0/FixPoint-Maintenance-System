@@ -365,7 +365,7 @@ $current_page = 'my-requests';
                             <small style="color: #64748b;">Share any additional thoughts about the service quality, response time, or technician performance</small>
                         </div>
                         
-                        <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                        <button type="submit" class="btn-submit" id="submitBtn">
                             📤 Submit Feedback
                         </button>
                     </form>
